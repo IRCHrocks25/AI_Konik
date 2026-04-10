@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Events — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.events-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.event-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden;transition:all .2s}
+.event-card:hover{border-color:var(--teal);box-shadow:var(--shadow2)}
+.event-banner{height:80px;display:flex;align-items:center;padding:0 24px;font-size:36px;position:relative}
+.event-body{padding:20px 24px}
+.event-title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.event-meta{display:flex;gap:12px;font-size:12px;color:var(--slate);margin-bottom:12px;flex-wrap:wrap}
+.event-desc{font-size:13px;color:var(--slate);line-height:1.5;margin-bottom:16px}
+.event-footer{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border)}
+.event-price{font-size:18px;font-weight:700;color:var(--navy)}
+.seats-badge{font-size:11px;padding:3px 8px;background:var(--amber-bg);color:var(--amber);border-radius:20px;font-weight:600}
+.reg-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.reg-modal.open{display:flex}
+.reg-modal-box{background:#fff;border-radius:20px;padding:32px;width:440px;max-width:90vw;box-shadow:var(--shadow2)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html" class="active">Events</a><a href="tools.html">Tools</a></div>
+    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+  </div>
+</nav>
+<div class="page-shell">
+  <div class="page-header"><div class="page-header-inner">
+    <div class="section-label">Events</div>
+    <h1 class="section-title" style="font-size:32px">Workshops, Summits & Masterclasses</h1>
+    <p style="font-size:14px;color:var(--slate)">Learn directly from AI practitioners who've implemented AI across 40+ industries.</p>
+  </div></div>
+  <div class="page-content">
+    <div class="filter-bar" style="margin-bottom:24px">
+      <select class="filter-select"><option>All Types</option><option>Workshop</option><option>Summit</option><option>Webinar</option><option>Masterclass</option></select>
+      <select class="filter-select"><option>All Industries</option><option>Legal</option><option>Healthcare</option><option>Finance</option><option>Marketing</option></select>
+      <select class="filter-select"><option>Upcoming</option><option>This Week</option><option>This Month</option></select>
+    </div>
+    <div class="events-grid" id="events-grid"></div>
+  </div>
+</div>
+
+<div class="reg-modal" id="reg-modal">
+  <div class="reg-modal-box">
+    <h2 style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);margin-bottom:6px" id="modal-title">Register for Event</h2>
+    <p style="font-size:13px;color:var(--slate);margin-bottom:20px">You'll receive a Zoom link and calendar invite within 5 minutes of registering.</p>
+    <div id="modal-free">
+      <div style="background:var(--teal-light);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--teal);font-weight:500"><i class="fa-solid fa-check"></i> This is a free event — one click to register</div>
+      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="completeReg()">Register now — it's free</button>
+    </div>
+    <div id="modal-paid" style="display:none">
+      <div class="form-group"><label class="form-label">Card number</label><input class="form-input" placeholder="4242 4242 4242 4242"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Expiry</label><input class="form-input" placeholder="MM/YY"></div>
+        <div class="form-group"><label class="form-label">CVC</label><input class="form-input" placeholder="123"></div>
+      </div>
+      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="completeReg()" id="pay-btn">Pay &amp; Register</button>
+    </div>
+    <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:10px" onclick="closeReg()">Cancel</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EVENTS=[
+  {id:1,emoji:'<i class="fa-solid fa-scale-balanced"></i>',bg:'#EEF2FF',title:'AI for Legal Teams: Contract Automation Workshop',type:'Workshop',date:'Apr 22, 2026',time:'2:00 PM EST',duration:'2 hours',industry:'Legal',desc:'Learn how to deploy AI contract review in your firm. Live demo with real NDA analysis and redline generation.',price:0,seats:8,cap:30,registered:false},
+  {id:2,emoji:'<i class="fa-solid fa-rocket"></i>',bg:'linear-gradient(135deg,#0D7C66,#0A0F2C)',title:'AI District Summit 2026 — Annual Flagship Event',type:'Summit',date:'May 15–16, 2026',time:'9:00 AM EST',duration:'2 days',industry:'All',desc:'Two days of keynotes, workshops, and networking with 500+ SMB leaders pioneering AI adoption.',price:297,seats:42,cap:500,registered:false},
+  {id:3,emoji:'<i class="fa-solid fa-hospital"></i>',bg:'#F0FDF4',title:'HIPAA-Compliant AI in Healthcare Practice',type:'Webinar',date:'Apr 29, 2026',time:'1:00 PM EST',duration:'90 min',industry:'Healthcare',desc:'Navigate AI implementation in a HIPAA-regulated environment. Practical guidance from a healthcare compliance expert.',price:0,seats:67,cap:200,registered:true},
+  {id:4,emoji:'<i class="fa-solid fa-sack-dollar"></i>',bg:'#FFFBEB',title:'AI for CFOs: Finance Automation Masterclass',type:'Masterclass',date:'May 8, 2026',time:'11:00 AM EST',duration:'3 hours',industry:'Finance',desc:'From automated financial reporting to AI-powered risk analysis — a hands-on session for finance leaders.',price:149,seats:12,cap:40,registered:false},
+  {id:5,emoji:'<i class="fa-solid fa-bullhorn"></i>',bg:'#FFF1F2',title:'Content Marketing at Scale with AI Agents',type:'Workshop',date:'May 3, 2026',time:'3:00 PM EST',duration:'2 hours',industry:'Marketing',desc:'Triple your content output without sacrificing quality. Live session building a content engine with AI agents.',price:0,seats:24,cap:100,registered:false},
+  {id:6,emoji:'<i class="fa-solid fa-laptop-code"></i>',bg:'#F0F9FF',title:'AI-Powered Technical Documentation Sprint',type:'Workshop',date:'May 12, 2026',time:'10:00 AM EST',duration:'2.5 hours',industry:'Technology',desc:'Build a complete docs-as-code pipeline with AI. From API specs to developer guides — automated end to end.',price:79,seats:5,cap:25,registered:false},
+];
+
+let selectedEvent=null;
+
+function renderEvents(){
+  document.getElementById('events-grid').innerHTML=EVENTS.map(e=>{
+    const seatsLeft=e.cap-e.seats;
+    const seatsWarn=seatsLeft<15;
+    return `
+    <div class="event-card">
+      <div class="event-banner" style="background:${e.bg}">${e.emoji}
+        ${e.registered?'<span class="badge badge-green" style="position:absolute;top:12px;right:12px"><i class="fa-solid fa-check"></i> Registered</span>':''}
+      </div>
+      <div class="event-body">
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <span class="badge badge-navy">${e.type}</span>
+          <span class="badge badge-gray">${e.industry}</span>
+        </div>
+        <div class="event-title">${e.title}</div>
+        <div class="event-meta">
+          <span><i class="fa-solid fa-calendar-days"></i> ${e.date}</span>
+          <span><i class="fa-regular fa-clock"></i> ${e.time}</span>
+          <span><i class="fa-solid fa-hourglass-half"></i> ${e.duration}</span>
+        </div>
+        <div class="event-desc">${e.desc}</div>
+        <div class="event-footer">
+          <div>
+            <div class="event-price">${e.price===0?'Free':'$'+e.price}</div>
+            ${seatsWarn?`<div class="seats-badge">${seatsLeft} seats left</div>`:''}
+          </div>
+          ${e.registered
+            ?'<button class="btn btn-ghost btn-sm" style="color:var(--red)">Cancel registration</button>'
+            :`<button class="btn btn-teal btn-sm" onclick="openReg(${e.id})">Register now <i class="fa-solid fa-arrow-right"></i></button>`
+          }
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openReg(id){
+  selectedEvent=EVENTS.find(e=>e.id===id);
+  document.getElementById('modal-title').textContent='Register: '+selectedEvent.title.slice(0,40)+'...';
+  document.getElementById('modal-free').style.display=selectedEvent.price===0?'block':'none';
+  document.getElementById('modal-paid').style.display=selectedEvent.price>0?'block':'none';
+  if(selectedEvent.price>0) document.getElementById('pay-btn').textContent=`Pay $${selectedEvent.price} & Register`;
+  document.getElementById('reg-modal').classList.add('open');
+}
+function closeReg(){document.getElementById('reg-modal').classList.remove('open');}
+function completeReg(){
+  closeReg();
+  selectedEvent.registered=true;
+  renderEvents();
+  showToast("You're registered! Check your email for the Zoom link and calendar invite.",'success');
+}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',4000);
+}
+renderEvents();
+</script>
+</body>
+</html>

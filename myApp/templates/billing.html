@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Billing — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
+.plan-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;position:relative;transition:all .2s}
+.plan-card.current{border:2px solid var(--teal)}
+.plan-card.popular{border:2px solid var(--navy)}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
+.plan-name{font-size:14px;font-weight:600;color:var(--slate);margin-bottom:4px}
+.plan-price{font-family:'DM Serif Display',serif;font-size:40px;color:var(--navy);line-height:1}
+.plan-period{font-size:13px;color:var(--slate);margin-top:4px;margin-bottom:20px}
+.plan-feature{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-bottom:8px}
+.plan-feature-check{color:var(--teal);font-weight:700;flex-shrink:0}
+.plan-feature-x{color:var(--slate2);flex-shrink:0}
+.invoice-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);font-size:14px}
+.invoice-row:last-child{border-bottom:none}
+.invoice-amount{font-weight:600;color:var(--ink)}
+.upgrade-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+.upgrade-modal.open{display:flex}
+.upgrade-box{background:#fff;border-radius:20px;padding:36px;width:480px;max-width:90vw;box-shadow:var(--shadow2)}
+.step-dots{display:flex;gap:6px;justify-content:center;margin-bottom:24px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s}
+.step-dot.active{background:var(--teal);width:24px;border-radius:4px}
+.step-dot.done{background:var(--teal)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html">Events</a><a href="tools.html">Tools</a></div>
+    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+  </div>
+</nav>
+<div class="page-shell">
+  <div class="page-header"><div class="page-header-inner">
+    <div class="section-label">Billing</div>
+    <h1 class="section-title" style="font-size:32px">Plans & Billing</h1>
+    <p style="font-size:14px;color:var(--slate)">Transparent pricing. Upgrade or downgrade anytime. No hidden fees.</p>
+  </div></div>
+  <div class="page-content">
+
+    <!-- Current plan banner -->
+    <div style="background:var(--teal-light);border:1px solid rgba(13,124,102,.2);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px;margin-bottom:32px">
+      <span style="font-size:20px"><i class="fa-solid fa-box-open"></i></span>
+      <div>
+        <div style="font-size:14px;font-weight:600;color:var(--teal)">You're on the Free plan</div>
+        <div style="font-size:12px;color:var(--teal)">12 of 50 sessions used this month · Resets May 1, 2026</div>
+      </div>
+      <button class="btn btn-teal btn-sm" style="margin-left:auto" onclick="openUpgrade()">Upgrade to Pro <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+
+    <!-- Plan cards -->
+    <div class="plan-grid">
+      <div class="plan-card current">
+        <span class="plan-badge" style="background:var(--teal)">Current plan</span>
+        <div class="plan-name">Free</div>
+        <div class="plan-price">$0</div>
+        <div class="plan-period">forever</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>50 agent sessions/month</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Access to prompts library</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Browse all industries</div>
+        <div class="plan-feature"><span class="plan-feature-x">—</span>Advanced agents</div>
+        <div class="plan-feature"><span class="plan-feature-x">—</span>Consulting tools</div>
+        <div class="plan-feature"><span class="plan-feature-x">—</span>Priority support</div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:20px" disabled>Current plan</button>
+      </div>
+      <div class="plan-card popular">
+        <span class="plan-badge">Most Popular</span>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">$79</div>
+        <div class="plan-period">per month, billed monthly</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>500 agent sessions/month</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>All 104 agents unlocked</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Full prompts library</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Consulting sprint tracker</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Course creator access</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Priority support</div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:20px" onclick="openUpgrade()">Upgrade to Pro <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">Custom</div>
+        <div class="plan-period">tailored to your team</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Unlimited sessions</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Custom AI agent builds</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>Dedicated consultant</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>SSO & team management</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>SLA & compliance reports</div>
+        <div class="plan-feature"><span class="plan-feature-check"><i class="fa-solid fa-check"></i></span>White-glove onboarding</div>
+        <button class="btn btn-ghost" style="width:100%;justify-content:center;margin-top:20px">Contact sales <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+
+    <!-- Invoice history -->
+    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:24px">
+      <h2 style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:20px">Invoice History</h2>
+      <div style="font-size:13px;color:var(--slate);padding:40px 0;text-align:center">
+        No invoices yet — you're on the free plan.<br>Upgrade to Pro to see payment history here.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upgrade modal -->
+<div class="upgrade-modal" id="upgrade-modal">
+  <div class="upgrade-box">
+    <div class="step-dots">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
+    <!-- Step 1 -->
+    <div id="up-step1">
+      <h2 style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--navy);margin-bottom:6px">Upgrade to Pro</h2>
+      <p style="font-size:13px;color:var(--slate);margin-bottom:20px">500 sessions/month · All 104 agents · Consulting tools</p>
+      <div style="background:var(--bg2);border-radius:12px;padding:16px;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:8px"><span>Pro plan (monthly)</span><span style="font-weight:600">$79/mo</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--teal)"><span>First month discount</span><span>-$20</span></div>
+        <div style="border-top:1px solid var(--border);margin-top:10px;padding-top:10px;display:flex;justify-content:space-between;font-size:15px;font-weight:700"><span>Total today</span><span>$59</span></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="closeUpgrade()">Cancel</button>
+        <button class="btn btn-teal" style="flex:1;justify-content:center" onclick="goUpStep(2)">Continue to payment <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+    </div>
+    <!-- Step 2 -->
+    <div id="up-step2" style="display:none">
+      <h2 style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--navy);margin-bottom:20px">Payment details</h2>
+      <div class="form-group"><label class="form-label">Card number</label><input class="form-input" placeholder="4242 4242 4242 4242"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="form-group"><label class="form-label">Expiry</label><input class="form-input" placeholder="MM / YY"></div>
+        <div class="form-group"><label class="form-label">CVC</label><input class="form-input" placeholder="123"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Name on card</label><input class="form-input" placeholder="Sarah Chen"></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-ghost" onclick="goUpStep(1)"><i class="fa-solid fa-arrow-left"></i> Back</button>
+        <button class="btn btn-teal" style="flex:1;justify-content:center" onclick="goUpStep(3)" id="pay-now-btn">Pay $59 now</button>
+      </div>
+    </div>
+    <!-- Step 3 -->
+    <div id="up-step3" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:52px;margin-bottom:16px"><i class="fa-solid fa-party-horn"></i></div>
+      <h2 style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--navy);margin-bottom:8px">Welcome to Pro!</h2>
+      <p style="font-size:14px;color:var(--slate);margin-bottom:24px">Your account has been upgraded. All 500 sessions and 104 agents are now available.</p>
+      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="closeUpgrade();window.location.href='agents.html'">Explore all agents <i class="fa-solid fa-arrow-right"></i></button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openUpgrade(){document.getElementById('upgrade-modal').classList.add('open');}
+function closeUpgrade(){document.getElementById('upgrade-modal').classList.remove('open');goUpStep(1);}
+function goUpStep(n){
+  [1,2,3].forEach(i=>{
+    document.getElementById('up-step'+i).style.display=i===n?'block':'none';
+    const dot=document.getElementById('dot'+i);
+    dot.classList.remove('active','done');
+    if(i<n)dot.classList.add('done');
+    else if(i===n)dot.classList.add('active');
+  });
+  if(n===3){
+    const btn=document.getElementById('pay-now-btn');
+    if(btn){btn.innerHTML='<div class="spinner"></div> Processing...';btn.disabled=true;}
+    setTimeout(()=>{
+      document.getElementById('up-step2').style.display='none';
+      document.getElementById('up-step3').style.display='block';
+    },1500);
+  }
+}
+</script>
+</body>
+</html>

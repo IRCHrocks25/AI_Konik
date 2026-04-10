@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI KONIK — Enterprise Intelligence for Growing Businesses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0A0F2C;--navy2:#1a2248;
+  --ink:#1C1C2E;--ink2:#3d3d5c;
+  --teal:#0D7C66;--teal2:#0B6A57;--teal-light:#E6F5F2;
+  --slate:#64748B;--slate2:#94a3b8;
+  --border:#E8EAF0;--border2:#d1d5db;
+  --bg:#FAFAFA;--bg2:#F3F4F8;--white:#fff;
+  --amber:#B45309;--amber-bg:#FEF3C7;
+  --radius:12px;--radius2:20px;
+  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
+  --shadow2:0 8px 40px rgba(0,0,0,.12);
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,250,250,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);height:64px;display:flex;align-items:center;padding:0 40px}
+.nav-inner{max-width:1200px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'DM Serif Display',serif;font-size:22px;color:var(--navy);text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo-dot{width:8px;height:8px;background:var(--teal);border-radius:50%}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-links a{text-decoration:none;color:var(--ink2);font-size:14px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--teal)}
+.nav-cta{display:flex;align-items:center;gap:12px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 20px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;cursor:pointer;transition:all .2s;border:none;font-family:inherit}
+.btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--bg2)}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-primary:hover{background:var(--navy2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(10,15,44,.25)}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-teal:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(13,124,102,.3)}
+.btn-lg{padding:14px 28px;font-size:15px;border-radius:10px}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;align-items:center;padding:100px 40px 80px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-200px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(13,124,102,.07) 0%,transparent 70%);pointer-events:none}
+.hero::after{content:'';position:absolute;bottom:-100px;left:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(10,15,44,.04) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--teal-light);color:var(--teal);font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;margin-bottom:24px;letter-spacing:.05em;text-transform:uppercase}
+.hero-badge span{width:6px;height:6px;background:var(--teal);border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+h1{font-family:'DM Serif Display',serif;font-size:clamp(42px,5vw,64px);line-height:1.1;color:var(--navy);margin-bottom:24px}
+h1 em{font-style:italic;color:var(--teal)}
+.hero-sub{font-size:17px;color:var(--slate);line-height:1.7;margin-bottom:36px;max-width:480px}
+.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hero-trust{margin-top:48px;display:flex;align-items:center;gap:16px}
+.trust-label{font-size:12px;color:var(--slate2);font-weight:500}
+.trust-badges{display:flex;gap:8px}
+.trust-badge{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--ink2)}
+
+/* HERO VISUAL */
+.hero-visual{position:relative}
+.hero-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;box-shadow:var(--shadow2);animation:floatUp .8s ease both}
+@keyframes floatUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-card-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.agent-avatar{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.agent-info h4{font-size:14px;font-weight:600;color:var(--ink)}
+.agent-info p{font-size:12px;color:var(--slate)}
+.industry-tag{background:var(--teal-light);color:var(--teal);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-left:auto}
+.chat-messages{display:flex;flex-direction:column;gap:10px;margin-bottom:16px}
+.msg{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.5;max-width:85%}
+.msg-user{background:var(--navy);color:#fff;align-self:flex-end;border-radius:10px 10px 2px 10px}
+.msg-agent{background:var(--bg2);color:var(--ink);align-self:flex-start;border-radius:10px 10px 10px 2px}
+.typing{display:flex;gap:4px;align-items:center;padding:10px 14px;background:var(--bg2);border-radius:10px;width:fit-content}
+.typing span{width:6px;height:6px;background:var(--slate2);border-radius:50%;animation:bounce .8s infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}}
+.hero-card-input{display:flex;gap:8px;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--slate2)}
+.hero-card-input button{background:var(--teal);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+.float-card{position:absolute;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px;box-shadow:var(--shadow);font-size:12px}
+.float-card-1{top:-20px;right:-20px;animation:floatUp 1s .3s both}
+.float-card-2{bottom:20px;left:-30px;animation:floatUp 1s .5s both}
+.float-stat{font-size:20px;font-weight:700;color:var(--navy)}
+.float-label{color:var(--slate);font-size:11px}
+
+/* INDUSTRIES */
+.section{padding:100px 40px}
+.section-inner{max-width:1200px;margin:0 auto}
+.section-label{font-size:12px;font-weight:600;color:var(--teal);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px}
+.section-title{font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,48px);color:var(--navy);line-height:1.2;margin-bottom:16px}
+.section-sub{font-size:16px;color:var(--slate);max-width:520px;line-height:1.7}
+.industry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:48px}
+.industry-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;cursor:pointer;transition:all .25s;text-decoration:none;display:block}
+.industry-card:hover{border-color:var(--teal);transform:translateY(-4px);box-shadow:var(--shadow2)}
+.industry-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:16px}
+.industry-card h3{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.industry-card p{font-size:13px;color:var(--slate);line-height:1.5;margin-bottom:16px}
+.industry-meta{display:flex;align-items:center;gap:8px}
+.agent-count{font-size:12px;font-weight:600;color:var(--teal)}
+.prompt-count{font-size:12px;color:var(--slate2)}
+
+/* FEATURES */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:60px}
+.feature-card{padding:32px;border-radius:var(--radius2);border:1px solid var(--border);background:var(--white)}
+.feature-icon{font-size:28px;margin-bottom:16px}
+.feature-card h3{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.feature-card p{font-size:14px;color:var(--slate);line-height:1.6}
+
+/* STATS BAND */
+.stats-band{background:var(--navy);padding:64px 40px}
+.stats-inner{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:40px;text-align:center}
+.stat-num{font-family:'DM Serif Display',serif;font-size:48px;color:#fff;line-height:1}
+.stat-label{font-size:14px;color:rgba(255,255,255,.6);margin-top:4px}
+
+/* CTA BAND */
+.cta-band{background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);padding:80px 40px;text-align:center}
+.cta-band h2{font-family:'DM Serif Display',serif;font-size:clamp(32px,4vw,48px);color:#fff;margin-bottom:16px}
+.cta-band p{font-size:17px;color:rgba(255,255,255,.8);margin-bottom:36px}
+.btn-white{background:#fff;color:var(--teal);font-weight:600}
+.btn-white:hover{background:rgba(255,255,255,.9)}
+
+/* FOOTER */
+footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
+.footer-inner{max-width:1200px;margin:0 auto}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;margin-bottom:48px}
+.footer-brand p{font-size:13px;line-height:1.7;margin-top:12px;color:rgba(255,255,255,.5)}
+.footer-col h4{font-size:13px;font-weight:600;color:#fff;margin-bottom:16px}
+.footer-col a{display:block;font-size:13px;color:rgba(255,255,255,.5);text-decoration:none;margin-bottom:8px;transition:color .2s}
+.footer-col a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.4)}
+
+/* ANIMATION */
+.fade-in{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease}
+.fade-in.visible{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo">
+      <div class="logo-dot"></div>
+      AI KONIK
+    </a>
+    <div class="nav-links">
+      <a href="agents.html">Agents</a>
+      <a href="prompts.html">Prompts</a>
+      <a href="industries.html">Industries</a>
+      <a href="events.html">Events</a>
+      <a href="tools.html">Tools</a>
+    </div>
+    <div class="nav-cta">
+      <a href="login.html" class="btn btn-ghost">Sign in</a>
+      <a href="register.html" class="btn btn-primary">Get started free</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-badge"><span></span>AI Platform for SMBs</div>
+      <h1>Enterprise AI,<br>built for <em>your</em><br>business</h1>
+      <p class="hero-sub">Specialized AI agents, 60,000+ prompts, and expert consulting — all in one platform designed for companies with $1M–$20M in revenue.</p>
+      <div class="hero-actions">
+        <a href="register.html" class="btn btn-teal btn-lg">Start free today</a>
+        <a href="agents.html" class="btn btn-ghost btn-lg">Explore agents <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+      <div class="hero-trust">
+        <span class="trust-label">Compliance ready</span>
+        <div class="trust-badges">
+          <span class="trust-badge">HIPAA</span>
+          <span class="trust-badge">SOC 2</span>
+          <span class="trust-badge">GDPR</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-card">
+        <div class="hero-card-header">
+          <div class="agent-avatar" style="background:#E6F5F2"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div class="agent-info">
+            <h4>Legal Contract Agent</h4>
+            <p>M&A · Compliance · Contracts</p>
+          </div>
+          <span class="industry-tag">Legal</span>
+        </div>
+        <div class="chat-messages">
+          <div class="msg msg-user">Review this NDA for any unfavorable clauses</div>
+          <div class="msg msg-agent">I've identified 3 areas of concern in Section 4.2 regarding data retention, the non-compete radius in Section 7, and the indemnification cap in Schedule B...</div>
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+        <div class="hero-card-input">
+          <span style="flex:1">Ask the agent anything...</span>
+          <button>Send</button>
+        </div>
+      </div>
+      <div class="float-card float-card-1">
+        <div class="float-stat">60K+</div>
+        <div class="float-label">Curated prompts</div>
+      </div>
+      <div class="float-card float-card-2">
+        <div class="float-stat">9</div>
+        <div class="float-label">Industries served</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background:var(--white)">
+  <div class="section-inner">
+    <div class="fade-in">
+      <div class="section-label">Industries</div>
+      <h2 class="section-title">Built for your sector,<br>not everyone's</h2>
+      <p class="section-sub">Every agent, every prompt, every workflow — purpose-built for your industry's specific challenges and compliance requirements.</p>
+    </div>
+    <div class="industry-grid">
+      <a href="industry-detail.html?i=legal" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#EEF2FF"><i class="fa-solid fa-scale-balanced"></i></div>
+        <h3>Legal</h3>
+        <p>Contract review, M&A due diligence, compliance monitoring, IP research</p>
+        <div class="industry-meta"><span class="agent-count">12 agents</span><span class="prompt-count">· 4,200 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=healthcare" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#F0FDF4"><i class="fa-solid fa-hospital"></i></div>
+        <h3>Healthcare</h3>
+        <p>Clinical documentation, patient communication, billing automation, compliance</p>
+        <div class="industry-meta"><span class="agent-count">15 agents</span><span class="prompt-count">· 5,800 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=finance" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#FFFBEB"><i class="fa-solid fa-sack-dollar"></i></div>
+        <h3>Finance</h3>
+        <p>Risk analysis, portfolio reporting, regulatory filings, client communications</p>
+        <div class="industry-meta"><span class="agent-count">11 agents</span><span class="prompt-count">· 3,900 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=marketing" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#FFF1F2"><i class="fa-solid fa-bullhorn"></i></div>
+        <h3>Marketing</h3>
+        <p>Content creation, SEO strategy, campaign copy, brand voice management</p>
+        <div class="industry-meta"><span class="agent-count">14 agents</span><span class="prompt-count">· 7,200 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=technology" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#F0F9FF"><i class="fa-solid fa-laptop-code"></i></div>
+        <h3>Technology</h3>
+        <p>Technical documentation, code review, architecture planning, security audits</p>
+        <div class="industry-meta"><span class="agent-count">16 agents</span><span class="prompt-count">· 6,100 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=realestate" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#F5F3FF"><i class="fa-solid fa-house"></i></div>
+        <h3>Real Estate</h3>
+        <p>Property analysis, lease review, market research, client communications</p>
+        <div class="industry-meta"><span class="agent-count">10 agents</span><span class="prompt-count">· 3,200 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=accounting" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#ECFDF5"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Accounting</h3>
+        <p>Tax preparation, audit support, financial reporting, payroll assistance</p>
+        <div class="industry-meta"><span class="agent-count">9 agents</span><span class="prompt-count">· 3,500 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=logistics" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#FFF7ED"><i class="fa-solid fa-truck"></i></div>
+        <h3>Logistics</h3>
+        <p>Supply chain optimization, freight analysis, route planning, vendor management</p>
+        <div class="industry-meta"><span class="agent-count">8 agents</span><span class="prompt-count">· 2,800 prompts</span></div>
+      </a>
+      <a href="industry-detail.html?i=manufacturing" class="industry-card fade-in">
+        <div class="industry-icon" style="background:#F8FAFC"><i class="fa-solid fa-gears"></i></div>
+        <h3>Manufacturing</h3>
+        <p>Quality control, procurement analysis, maintenance planning, lean operations</p>
+        <div class="industry-meta"><span class="agent-count">9 agents</span><span class="prompt-count">· 2,600 prompts</span></div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<div class="stats-band">
+  <div class="stats-inner">
+    <div class="fade-in"><div class="stat-num">60K+</div><div class="stat-label">Curated AI Prompts</div></div>
+    <div class="fade-in"><div class="stat-num">9</div><div class="stat-label">Industry Verticals</div></div>
+    <div class="fade-in"><div class="stat-num">104</div><div class="stat-label">Specialized Agents</div></div>
+    <div class="fade-in"><div class="stat-num">6</div><div class="stat-label">Sprint Delivery Method</div></div>
+  </div>
+</div>
+
+<section class="section">
+  <div class="section-inner">
+    <div class="fade-in" style="text-align:center;max-width:600px;margin:0 auto 60px">
+      <div class="section-label">Platform</div>
+      <h2 class="section-title">Everything you need to go AI-first</h2>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+        <h3>Specialized AI Agents</h3>
+        <p>104 purpose-built agents designed for specific tasks within your industry. Not generic chatbots — actual workflow tools.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fa-solid fa-book-open"></i></div>
+        <h3>60,000+ Prompt Library</h3>
+        <p>Curated, tested prompts organized by industry and use case. Save to collections, use directly in agents, or contribute your own.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fa-solid fa-bullseye"></i></div>
+        <h3>6-Sprint Consulting</h3>
+        <p>Structured AI implementation methodology from discovery through optimization. With expert consultants who know your industry.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h3>Workshops & Events</h3>
+        <p>Live sessions, summits, and masterclasses. Learn from practitioners who've implemented AI across 40+ industries.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <h3>AI Tool Directory</h3>
+        <p>Curated directory of the best AI tools for your industry. Community ratings, honest reviews, pricing breakdowns.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+        <h3>AI Courses</h3>
+        <p>Role-specific AI training for your team. AI-assisted course creation means fresh, relevant content always.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="cta-band">
+  <h2>Ready to make AI work<br>for your business?</h2>
+  <p>Start free. No credit card required. Get your first AI agent running in minutes.</p>
+  <a href="register.html" class="btn btn-white btn-lg">Get started — it's free</a>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo" style="color:#fff;text-decoration:none;display:flex;align-items:center;gap:8px;font-family:'DM Serif Display',serif;font-size:20px">
+          <div style="width:8px;height:8px;background:var(--teal);border-radius:50%"></div>AI KONIK
+        </div>
+        <p>Enterprise-level AI made accessible for small and medium-sized businesses. Helping SMBs compete with the big players.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <a href="agents.html">AI Agents</a>
+        <a href="prompts.html">Prompts Library</a>
+        <a href="tools.html">Tool Directory</a>
+        <a href="courses.html">Courses</a>
+      </div>
+      <div class="footer-col">
+        <h4>Industries</h4>
+        <a href="industries.html">All Industries</a>
+        <a href="industry-detail.html?i=legal">Legal</a>
+        <a href="industry-detail.html?i=healthcare">Healthcare</a>
+        <a href="industry-detail.html?i=finance">Finance</a>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Consulting</a>
+        <a href="events.html">Events</a>
+        <a href="#">Contact</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 AI KONIK. All rights reserved.</span>
+      <span>Privacy Policy · Terms of Service</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');io.unobserve(e.target)}})
+},{threshold:.1});
+document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

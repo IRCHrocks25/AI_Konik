@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+body{background:var(--bg);display:flex;min-height:100vh}
+.auth-left{width:380px;flex-shrink:0;background:var(--navy);padding:48px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
+.auth-left::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(13,124,102,.3) 0%,transparent 70%)}
+.auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px}
+.auth-form-wrap{width:100%;max-width:400px}
+.auth-form-wrap h1{font-family:'DM Serif Display',serif;font-size:30px;color:var(--navy);margin-bottom:6px}
+.auth-form-wrap .subtitle{font-size:14px;color:var(--slate);margin-bottom:32px}
+.forgot{font-size:12px;color:var(--teal);text-decoration:none;float:right;margin-top:4px}
+.divider-or{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:12px;color:var(--slate2)}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
+.auth-footer{margin-top:24px;text-align:center;font-size:13px;color:var(--slate)}
+.auth-footer a{color:var(--teal);text-decoration:none;font-weight:500}
+.error-banner{background:var(--red-bg);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px;display:none}
+</style>
+</head>
+<body>
+<div class="auth-left">
+  <div style="position:relative;z-index:1">
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:48px">
+      <div style="width:8px;height:8px;background:var(--teal);border-radius:50%"></div>AI KONIK
+    </div>
+    <div style="font-family:'DM Serif Display',serif;font-size:28px;color:#fff;line-height:1.3;margin-bottom:16px">Welcome back to your AI platform</div>
+    <p style="font-size:14px;color:rgba(255,255,255,.6);line-height:1.7">Your agents, prompts, and sessions are all waiting for you.</p>
+  </div>
+</div>
+<div class="auth-right">
+  <div class="auth-form-wrap">
+    <h1>Sign in</h1>
+    <p class="subtitle">Good to have you back</p>
+    <div class="error-banner" id="err-banner">Incorrect email or password. Please try again.</div>
+    <div class="form-group">
+      <label class="form-label">Email</label>
+      <input class="form-input" type="email" placeholder="sarah@yourcompany.com" id="email">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password <a href="#" class="forgot">Forgot password?</a></label>
+      <input class="form-input" type="password" placeholder="Your password" id="password">
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:24px">
+      <input type="checkbox" id="remember" style="width:14px;height:14px;accent-color:var(--teal)">
+      <label for="remember" style="font-size:13px;color:var(--slate);cursor:pointer">Keep me signed in for 30 days</label>
+    </div>
+    <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="doLogin()" id="login-btn">Sign in</button>
+    <div class="divider-or">or</div>
+    <button class="btn btn-ghost btn-lg" style="width:100%;justify-content:center">Continue with Google</button>
+    <div class="auth-footer">Don't have an account? <a href="register.html">Sign up free</a></div>
+  </div>
+</div>
+<script>
+function doLogin(){
+  const btn=document.getElementById('login-btn');
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  const errBanner=document.getElementById('err-banner');
+  errBanner.style.display='none';
+  btn.innerHTML='<div class="spinner"></div> Signing in...';
+  btn.disabled=true;
+  fetch('/api/auth/login',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'same-origin',
+    body:JSON.stringify({email,password})
+  })
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({ok,data})=>{
+    if(!ok){throw new Error(data.error||'Login failed');}
+    window.location.href='dashboard.html';
+  })
+  .catch(err=>{
+    errBanner.textContent=err.message||'Incorrect email or password. Please try again.';
+    errBanner.style.display='block';
+  })
+  .finally(()=>{
+    btn.innerHTML='Sign in';
+    btn.disabled=false;
+  });
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+fetch('/api/auth/me',{credentials:'same-origin'})
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({data})=>{if(data.authenticated){window.location.href='dashboard.html';}});
+</script>
+</body>
+</html>

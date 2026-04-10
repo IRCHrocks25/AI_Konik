@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Bulk Import — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.import-wrap{max-width:980px;margin:0 auto;padding:96px 24px 40px}
+.import-card{background:#fff;border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow)}
+.import-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+.dropzone{border:2px dashed var(--border2);border-radius:12px;padding:28px;text-align:center;cursor:pointer;background:var(--bg2);transition:border-color .2s,background .2s}
+.dropzone:hover{border-color:var(--teal);background:var(--teal-light)}
+.dropzone.drag-active{border-color:var(--teal);background:var(--teal-light)}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.result-box{background:var(--bg2);border-radius:10px;padding:14px}
+.result-box .label{font-size:12px;color:var(--slate2)}
+.result-box .value{font-size:22px;font-weight:700;color:var(--navy)}
+.errors{margin-top:16px;max-height:240px;overflow:auto;border:1px solid var(--border);border-radius:10px;padding:12px;background:#fff}
+.errors li{font-size:12px;color:var(--red);margin-bottom:6px}
+.sample-cols{font-size:12px;color:var(--slate)}
+</style>
+</head>
+<body class="preload-active">
+<div class="page-preloader" id="page-preloader">
+  <div class="preloader-spinner"></div>
+  <div class="preloader-text">Loading import dashboard...</div>
+</div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links">
+      <a href="dashboard.html">Dashboard</a>
+      <a href="prompts.html">Prompts</a>
+      <a href="prompt-import.html" class="active">Bulk Import</a>
+    </div>
+    <div class="nav-cta">
+      <a href="prompts.html" class="btn btn-ghost btn-sm">Back to Prompts</a>
+    </div>
+  </div>
+</nav>
+
+<div class="import-wrap">
+  <div class="section-label">Admin Tools</div>
+  <h1 class="section-title" style="font-size:36px">Bulk Prompt Import</h1>
+  <p style="color:var(--slate);margin-top:6px">Upload CSV/XLSX with 1000+ prompts at once. The importer will create or update prompts and show a summary.</p>
+
+  <div class="import-card">
+    <div class="sample-cols">
+      Required columns: <code>ID</code>, <code>Industry</code>, <code>Category</code>, <code>Sub-Category</code>, <code>Prompt Title</code>, <code>Prompt (Full Text)</code>, <code>Difficulty</code>, <code>Use Case Type</code>, <code>Estimated Time Saved</code>, <code>Tags</code>
+    </div>
+
+    <div class="import-grid">
+      <label class="dropzone" id="dropzone" for="sheet-file">
+        <i class="fa-solid fa-file-arrow-up" style="font-size:28px;color:var(--teal)"></i>
+        <div style="margin-top:8px;font-weight:600">Drop CSV/XLSX here or click to select</div>
+        <div style="font-size:12px;color:var(--slate2);margin-top:4px">Supports .csv, .xlsx</div>
+      </label>
+      <div style="background:var(--bg2);border-radius:12px;padding:16px">
+        <div style="font-size:12px;color:var(--slate2)">Selected file</div>
+        <div id="selected-file" style="font-weight:600;margin:6px 0 12px">None</div>
+        <button id="browse-btn" class="btn btn-ghost btn-sm" type="button" style="margin-bottom:8px">
+          <i class="fa-solid fa-folder-open"></i> Choose File
+        </button>
+        <br>
+        <button id="upload-btn" class="btn btn-teal" disabled>
+          <i class="fa-solid fa-upload"></i> Upload & Import
+        </button>
+      </div>
+    </div>
+
+    <input type="file" id="sheet-file" accept=".csv,.xlsx,.xlsm" style="display:none">
+
+    <div id="results" style="display:none">
+      <div class="result-grid">
+        <div class="result-box"><div class="label">Rows</div><div class="value" id="r-rows">0</div></div>
+        <div class="result-box"><div class="label">Created</div><div class="value" id="r-created">0</div></div>
+        <div class="result-box"><div class="label">Updated</div><div class="value" id="r-updated">0</div></div>
+        <div class="result-box"><div class="label">Skipped</div><div class="value" id="r-skipped">0</div></div>
+      </div>
+      <div class="errors" id="error-wrap" style="display:none">
+        <strong style="font-size:12px">Row issues</strong>
+        <ul id="error-list" style="margin-top:8px"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedFile = null;
+const fileInput = document.getElementById("sheet-file");
+const selectedFileEl = document.getElementById("selected-file");
+const uploadBtn = document.getElementById("upload-btn");
+const browseBtn = document.getElementById("browse-btn");
+const dropzone = document.getElementById("dropzone");
+function hidePreloader(){
+  document.body.classList.remove("preload-active");
+}
+
+function isAcceptedFile(file){
+  if(!file) return false;
+  const name = (file.name || "").toLowerCase();
+  return name.endsWith(".csv") || name.endsWith(".xlsx") || name.endsWith(".xlsm");
+}
+
+function setSelectedFile(file){
+  if(!isAcceptedFile(file)){
+    selectedFile = null;
+    selectedFileEl.textContent = "Invalid file type. Use CSV/XLSX.";
+    uploadBtn.disabled = true;
+    return;
+  }
+  selectedFile = file;
+  selectedFileEl.textContent = selectedFile.name;
+  uploadBtn.disabled = false;
+}
+
+fetch("/api/auth/me", { credentials: "same-origin" })
+  .then(async (r) => ({ ok: r.ok, data: await r.json() }))
+  .then(({ data }) => {
+    if (!data.authenticated) {
+      window.location.href = "login.html";
+      return;
+    }
+    if (!data.is_admin) {
+      window.location.href = "prompts.html";
+      return;
+    }
+    hidePreloader();
+  });
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0] || null;
+  if(!file){
+    selectedFile = null;
+    selectedFileEl.textContent = "None";
+    uploadBtn.disabled = true;
+    return;
+  }
+  setSelectedFile(file);
+});
+
+browseBtn.addEventListener("click", () => fileInput.click());
+
+["dragenter","dragover"].forEach((evt)=>{
+  dropzone.addEventListener(evt,(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.add("drag-active");
+  });
+});
+["dragleave","drop"].forEach((evt)=>{
+  dropzone.addEventListener(evt,(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    dropzone.classList.remove("drag-active");
+  });
+});
+dropzone.addEventListener("drop",(e)=>{
+  const file = (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]) || null;
+  if(!file) return;
+  setSelectedFile(file);
+  const dt = new DataTransfer();
+  dt.items.add(file);
+  fileInput.files = dt.files;
+});
+
+uploadBtn.addEventListener("click", () => {
+  if (!selectedFile) return;
+  const fd = new FormData();
+  fd.append("file", selectedFile);
+  uploadBtn.disabled = true;
+  uploadBtn.innerHTML = '<div class="spinner"></div> Importing...';
+
+  fetch("/api/admin/prompts/import", {
+    method: "POST",
+    credentials: "same-origin",
+    body: fd,
+  })
+    .then(async (r) => {
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); } catch { data = { error: text || "Import failed" }; }
+      return { ok: r.ok, data };
+    })
+    .then(({ ok, data }) => {
+      if (!ok) throw new Error(data.error || "Import failed");
+      document.getElementById("results").style.display = "block";
+      document.getElementById("r-rows").textContent = data.total_rows || 0;
+      document.getElementById("r-created").textContent = data.created || 0;
+      document.getElementById("r-updated").textContent = data.updated || 0;
+      document.getElementById("r-skipped").textContent = data.skipped || 0;
+
+      const errors = data.errors || [];
+      const errorWrap = document.getElementById("error-wrap");
+      const errorList = document.getElementById("error-list");
+      errorList.innerHTML = "";
+      if (errors.length) {
+        errorWrap.style.display = "block";
+        errors.forEach((e) => {
+          const li = document.createElement("li");
+          li.textContent = `Row ${e.row}: ${e.error}`;
+          errorList.appendChild(li);
+        });
+      } else {
+        errorWrap.style.display = "none";
+      }
+    })
+    .catch((err) => alert(err.message || "Import failed"))
+    .finally(() => {
+      uploadBtn.disabled = false;
+      uploadBtn.innerHTML = '<i class="fa-solid fa-upload"></i> Upload & Import';
+    });
+});
+</script>
+</body>
+</html>

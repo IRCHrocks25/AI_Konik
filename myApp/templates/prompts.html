@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompts Library — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.prompts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.prompt-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:all .2s;cursor:pointer}
+.prompt-card:hover{border-color:var(--teal);box-shadow:0 4px 20px rgba(13,124,102,.08)}
+.prompt-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.prompt-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;max-width:85%}
+.save-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--slate2);transition:color .2s;padding:0;line-height:1}
+.save-btn.saved{color:var(--teal)}
+.prompt-body{font-size:13px;color:var(--slate);line-height:1.5;margin-bottom:12px;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prompt-footer{display:flex;align-items:center;justify-content:space-between}
+.prompt-meta{display:flex;align-items:center;gap:6px}
+.prompt-uses{font-size:11px;color:var(--slate2)}
+.prompt-actions{display:flex;gap:6px}
+.hero-stats{display:flex;gap:32px;margin-top:12px}
+.hero-stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy)}
+.hero-stat-label{font-size:12px;color:var(--slate)}
+</style>
+</head>
+<body class="preload-active">
+<div class="page-preloader" id="page-preloader">
+  <div class="preloader-spinner"></div>
+  <div class="preloader-text">Loading prompts...</div>
+</div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links">
+      <a href="agents.html">Agents</a>
+      <a href="prompts.html" class="active">Prompts</a>
+      <a href="industries.html">Industries</a>
+      <a href="events.html">Events</a>
+      <a href="tools.html">Tools</a>
+    </div>
+    <div class="nav-cta">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div>
+    </div>
+  </div>
+</nav>
+<div class="page-shell">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div class="section-label">Prompts Library</div>
+      <h1 class="section-title" style="font-size:32px;margin-bottom:4px"><span id="hero-total-prompts-title">Curated AI Prompts</span></h1>
+      <p style="font-size:14px;color:var(--slate)">Industry-tested prompts for every workflow. Search, save, and use directly in your agents.</p>
+      <div class="hero-stats">
+        <div><div class="hero-stat-num" id="hero-total-prompts">0</div><div class="hero-stat-label">Total Prompts</div></div>
+        <div><div class="hero-stat-num" id="hero-total-industries">0</div><div class="hero-stat-label">Industries</div></div>
+        <div><div class="hero-stat-num" id="hero-total-categories">0</div><div class="hero-stat-label">Categories</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sidebar-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Industry</div>
+        <a class="sidebar-link industry-link active" href="#" onclick="filterP('all',this);return false">All Industries</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('legal',this);return false"><i class="fa-solid fa-scale-balanced"></i> Legal</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('healthcare',this);return false"><i class="fa-solid fa-hospital"></i> Healthcare</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('finance',this);return false"><i class="fa-solid fa-sack-dollar"></i> Finance</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('marketing',this);return false"><i class="fa-solid fa-bullhorn"></i> Marketing</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('technology',this);return false"><i class="fa-solid fa-laptop-code"></i> Technology</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('realestate',this);return false"><i class="fa-solid fa-house"></i> Real Estate</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('accounting',this);return false"><i class="fa-solid fa-chart-line"></i> Accounting</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('logistics',this);return false"><i class="fa-solid fa-truck"></i> Logistics</a>
+        <a class="sidebar-link industry-link" href="#" onclick="filterP('manufacturing',this);return false"><i class="fa-solid fa-gears"></i> Manufacturing</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">My Library</div>
+        <a href="#" class="sidebar-link library-link" onclick="filterLibrary('saved',this);return false"><span class="icon"><i class="fa-solid fa-bookmark"></i></span>Saved Prompts <span class="sidebar-badge" id="saved-prompts-badge">0</span></a>
+        <a href="#" class="sidebar-link library-link" onclick="filterLibrary('submitted',this);return false"><span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>My Submissions <span class="sidebar-badge" id="my-submissions-badge">0</span></a>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="filter-bar">
+        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search 60,000+ prompts..." oninput="searchP(this.value)"></div>
+        <select class="filter-select"><option>All Categories</option><option>Contracts</option><option>Compliance</option><option>M&A</option><option>Drafting</option></select>
+        <select class="filter-select"><option>Most Used</option><option>Newest</option><option>Top Rated</option></select>
+        <a href="prompt-import.html" class="btn btn-ghost btn-sm" id="bulk-import-btn" style="display:none"><i class="fa-solid fa-file-arrow-up"></i> Bulk import</a>
+        <button class="btn btn-teal btn-sm" onclick="showSubmitModal()">+ Submit prompt</button>
+      </div>
+      <div class="prompts-grid" id="prompts-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Submit modal -->
+<div id="submit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:20px;padding:32px;width:520px;max-width:90vw;box-shadow:var(--shadow2)">
+    <h2 style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--navy);margin-bottom:6px">Submit a prompt</h2>
+    <p style="font-size:13px;color:var(--slate);margin-bottom:24px">Share a prompt that's worked well for you. After review, it joins the community library.</p>
+    <div class="form-group"><label class="form-label">Title</label><input class="form-input" placeholder="e.g. Review this NDA for liability exposure" maxlength="120" id="submit-title"></div>
+    <div class="form-group"><label class="form-label">Prompt body</label><textarea class="form-input" rows="4" placeholder="Write your prompt here..." style="resize:vertical" id="submit-body"></textarea></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="form-group"><label class="form-label">Industry</label><select class="form-input form-select" id="submit-industry"><option>Legal</option><option>Healthcare</option><option>Finance</option><option>Marketing</option></select></div>
+      <div class="form-group"><label class="form-label">Category</label><select class="form-input form-select" id="submit-category"><option>Contracts</option><option>Compliance</option><option>Drafting</option></select></div>
+    </div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
+      <button class="btn btn-ghost" onclick="hideSubmitModal()">Cancel</button>
+      <button class="btn btn-teal" onclick="submitPrompt()">Submit for review</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let PROMPTS=[];
+
+let pIndustry='all',pSearch='',pLibrary='all';
+const DEFAULT_AGENT_BY_INDUSTRY = {
+  legal: "Contract Review Agent",
+  healthcare: "Patient Communication Agent",
+  finance: "Risk Analysis Agent",
+  marketing: "Content Strategy Agent",
+  technology: "Technical Documentation Agent",
+  realestate: "Property Analysis Agent",
+  accounting: "Tax Preparation Agent",
+  logistics: "Supply Chain Agent",
+  manufacturing: "QA Analysis Agent",
+};
+
+function renderPrompts(){
+  const filtered=PROMPTS.filter(p=>(pIndustry==='all'||p.industry===pIndustry)&&(!pSearch||p.title.toLowerCase().includes(pSearch)||p.body.toLowerCase().includes(pSearch)));
+  if(!filtered.length){
+    document.getElementById('prompts-grid').innerHTML = `
+      <div style="grid-column:1/-1;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;color:var(--slate)">
+        No prompts found for this selection yet.
+      </div>
+    `;
+    return;
+  }
+  document.getElementById('prompts-grid').innerHTML=filtered.map(p=>`
+    <div class="prompt-card">
+      <div class="prompt-card-top">
+        <div class="prompt-title">${p.title}</div>
+        <button class="save-btn ${p.saved?'saved':''}" onclick="toggleSave(${p.id},this)">${p.saved?'🔖':'🔖'}</button>
+      </div>
+      <div class="prompt-body">${p.body}</div>
+      <div class="prompt-footer">
+        <div class="prompt-meta">
+          <span class="badge badge-teal" style="font-size:10px">${p.industry.charAt(0).toUpperCase()+p.industry.slice(1)}</span>
+          <span class="badge badge-gray" style="font-size:10px">${p.category}</span>
+          <span class="prompt-uses">${p.uses} uses</span>
+        </div>
+        <div class="prompt-actions">
+          <button class="btn btn-ghost btn-sm" onclick="copyPrompt(${p.id},this)">Copy</button>
+          <button class="btn btn-teal btn-sm" onclick="usePrompt(${p.id})">Use <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterP(ind,el){
+  pIndustry=ind;
+  document.querySelectorAll('.industry-link').forEach(l=>l.classList.remove('active'));
+  el.classList.add('active');
+  loadPrompts();
+}
+function filterLibrary(view,el){
+  pLibrary=view;
+  document.querySelectorAll('.library-link').forEach(l=>l.classList.remove('active'));
+  el.classList.add('active');
+  loadPrompts();
+}
+function searchP(v){pSearch=v.toLowerCase();renderPrompts();}
+function toggleSave(id,btn){
+  const p=PROMPTS.find(x=>x.id===id);
+  const method=p.saved?'DELETE':'POST';
+  fetch(`/api/prompts/${id}/save`,{
+    method,
+    credentials:'same-origin'
+  })
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({ok,data})=>{
+    if(!ok){throw new Error(data.error||'Failed to save');}
+    p.saved=data.saved;
+    showToast(p.saved?'Saved to your collection':'Removed from collection',p.saved?'success':'');
+    renderPrompts();
+  })
+  .catch(err=>showToast(err.message||'Failed to save'));
+}
+function copyPrompt(id,btn){
+  const p=PROMPTS.find(x=>x.id===id);
+  navigator.clipboard.writeText(p.body).catch(()=>{});
+  btn.textContent='Copied';
+  setTimeout(()=>btn.textContent='Copy',2000);
+}
+function showSubmitModal(){document.getElementById('submit-modal').style.display='flex';}
+function hideSubmitModal(){document.getElementById('submit-modal').style.display='none';}
+function submitPrompt(){
+  const title=document.getElementById('submit-title').value.trim();
+  const body=document.getElementById('submit-body').value.trim();
+  const industry=document.getElementById('submit-industry').value.trim().toLowerCase();
+  const category=document.getElementById('submit-category').value.trim();
+  fetch('/api/prompts/submit',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    credentials:'same-origin',
+    body:JSON.stringify({title,body,industry,category})
+  })
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({ok,data})=>{
+    if(!ok){throw new Error(data.error||'Submit failed');}
+    hideSubmitModal();
+    showToast('Prompt submitted for review — we\'ll notify you when it\'s approved!','success');
+    loadPrompts();
+  })
+  .catch(err=>showToast(err.message||'Submit failed'));
+}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',3500);
+}
+function hidePreloader(){
+  document.body.classList.remove("preload-active");
+}
+function usePrompt(id){
+  const prompt = PROMPTS.find(x => x.id === id);
+  if(!prompt){
+    showToast('Prompt not found');
+    return;
+  }
+  const agent = DEFAULT_AGENT_BY_INDUSTRY[prompt.industry] || "Contract Review Agent";
+  const params = new URLSearchParams({
+    new: '1',
+    agent,
+    industry: prompt.industry || 'legal',
+    prompt: prompt.body || '',
+    promptTitle: prompt.title || '',
+  });
+  window.location.href = `agent-chat.html?${params.toString()}`;
+}
+function loadPrompts(){
+  const params=new URLSearchParams();
+  if(pIndustry!=='all')params.set('industry',pIndustry);
+  if(pSearch)params.set('q',pSearch);
+  if(pLibrary==='saved')params.set('saved','1');
+  if(pLibrary==='submitted')params.set('mine','1');
+  fetch(`/api/prompts?${params.toString()}`,{credentials:'same-origin'})
+    .then(async r=>({ok:r.ok,data:await r.json()}))
+    .then(({ok,data})=>{
+      if(!ok){throw new Error(data.error||'Failed to load prompts');}
+      const stats = data.stats || {};
+      const totalPrompts = Number(stats.total_prompts || 0);
+      const totalIndustries = Number(stats.total_industries || 0);
+      const totalCategories = Number(stats.total_categories || 0);
+      document.getElementById("hero-total-prompts").textContent = totalPrompts.toLocaleString();
+      document.getElementById("hero-total-industries").textContent = totalIndustries.toLocaleString();
+      document.getElementById("hero-total-categories").textContent = totalCategories.toLocaleString();
+      document.getElementById("hero-total-prompts-title").textContent = `${totalPrompts.toLocaleString()} Curated AI Prompts`;
+      const library = data.library || {};
+      document.getElementById("saved-prompts-badge").textContent = Number(library.saved_count || 0).toLocaleString();
+      document.getElementById("my-submissions-badge").textContent = Number(library.submissions_count || 0).toLocaleString();
+      PROMPTS=(data.items||[]).map(item=>({
+        id:item.id,
+        title:item.title,
+        body:item.body,
+        industry:item.industry,
+        category:item.category,
+        uses:item.uses,
+        saved:item.saved,
+        status:item.status
+      }));
+      renderPrompts();
+      hidePreloader();
+    })
+    .catch(err=>{
+      showToast(err.message||'Failed to load prompts');
+      hidePreloader();
+    });
+}
+fetch('/api/auth/me',{credentials:'same-origin'})
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({data})=>{
+    if(!data.authenticated){
+      window.location.href='login.html';
+      return;
+    }
+    if(data.is_admin){
+      document.getElementById('bulk-import-btn').style.display = 'inline-flex';
+    }
+    loadPrompts();
+  })
+  .catch(()=>hidePreloader());
+</script>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Industries — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.ind-hero-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:32px}
+.ind-hero-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;cursor:pointer;transition:all .25s;text-decoration:none;display:block}
+.ind-hero-card:hover{border-color:var(--teal);transform:translateY(-4px);box-shadow:var(--shadow2)}
+.ind-icon-lg{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:16px}
+.ind-hero-card h3{font-size:17px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.ind-hero-card p{font-size:13px;color:var(--slate);line-height:1.5;margin-bottom:16px}
+.ind-meta{display:flex;gap:8px;flex-wrap:wrap}
+.sub-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.sub-chip{padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:11px;color:var(--ink2);font-weight:500}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html" class="active">Industries</a><a href="events.html">Events</a><a href="tools.html">Tools</a></div>
+    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+  </div>
+</nav>
+<div class="page-shell">
+  <div class="page-header"><div class="page-header-inner">
+    <div class="section-label">Industries</div>
+    <h1 class="section-title" style="font-size:32px">9 Industries. One Platform.</h1>
+    <p style="font-size:14px;color:var(--slate)">Every agent, prompt, and workflow purpose-built for your sector's specific needs and compliance requirements.</p>
+  </div></div>
+  <div class="page-content">
+    <div class="ind-hero-grid">
+      <a href="industry-detail.html?i=legal" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#EEF2FF"><i class="fa-solid fa-scale-balanced"></i></div>
+        <h3>Legal</h3>
+        <p>Contract review, M&A due diligence, compliance monitoring, IP research, and litigation support.</p>
+        <div class="ind-meta"><span class="badge badge-teal">12 agents</span><span class="badge badge-gray">4,200 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">M&A</span><span class="sub-chip">Compliance</span><span class="sub-chip">IP</span><span class="sub-chip">Contracts</span></div>
+      </a>
+      <a href="industry-detail.html?i=healthcare" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#F0FDF4"><i class="fa-solid fa-hospital"></i></div>
+        <h3>Healthcare</h3>
+        <p>Clinical documentation, patient communication, medical billing, and regulatory compliance (HIPAA).</p>
+        <div class="ind-meta"><span class="badge badge-teal">15 agents</span><span class="badge badge-gray">5,800 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Clinics</span><span class="sub-chip">Telehealth</span><span class="sub-chip">Pharma</span><span class="sub-chip">Admin</span></div>
+      </a>
+      <a href="industry-detail.html?i=finance" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#FFFBEB"><i class="fa-solid fa-sack-dollar"></i></div>
+        <h3>Finance</h3>
+        <p>Risk analysis, portfolio management, regulatory filings, client communications, and FinTech workflows.</p>
+        <div class="ind-meta"><span class="badge badge-teal">11 agents</span><span class="badge badge-gray">3,900 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Investment</span><span class="sub-chip">Banking</span><span class="sub-chip">Insurance</span><span class="sub-chip">Risk</span></div>
+      </a>
+      <a href="industry-detail.html?i=marketing" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#FFF1F2"><i class="fa-solid fa-bullhorn"></i></div>
+        <h3>Marketing</h3>
+        <p>Content strategy, ad copy, SEO, brand voice management, and campaign analytics across all channels.</p>
+        <div class="ind-meta"><span class="badge badge-teal">14 agents</span><span class="badge badge-gray">7,200 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Content</span><span class="sub-chip">SEO</span><span class="sub-chip">Paid Ads</span><span class="sub-chip">Brand</span></div>
+      </a>
+      <a href="industry-detail.html?i=technology" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#F0F9FF"><i class="fa-solid fa-laptop-code"></i></div>
+        <h3>Technology</h3>
+        <p>Technical docs, code review, security audits, architecture planning, and DevOps automation.</p>
+        <div class="ind-meta"><span class="badge badge-teal">16 agents</span><span class="badge badge-gray">6,100 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">SaaS</span><span class="sub-chip">Security</span><span class="sub-chip">DevOps</span><span class="sub-chip">AI/ML</span></div>
+      </a>
+      <a href="industry-detail.html?i=realestate" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#F5F3FF"><i class="fa-solid fa-house"></i></div>
+        <h3>Real Estate</h3>
+        <p>Property analysis, lease review, market research, client communication, and investment modeling.</p>
+        <div class="ind-meta"><span class="badge badge-teal">10 agents</span><span class="badge badge-gray">3,200 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Residential</span><span class="sub-chip">Commercial</span><span class="sub-chip">REITs</span><span class="sub-chip">Leasing</span></div>
+      </a>
+      <a href="industry-detail.html?i=accounting" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#ECFDF5"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Accounting</h3>
+        <p>Tax preparation, audit support, bookkeeping automation, financial reporting, and payroll assistance.</p>
+        <div class="ind-meta"><span class="badge badge-teal">9 agents</span><span class="badge badge-gray">3,500 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Tax</span><span class="sub-chip">Audit</span><span class="sub-chip">Payroll</span><span class="sub-chip">Advisory</span></div>
+      </a>
+      <a href="industry-detail.html?i=logistics" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#FFF7ED"><i class="fa-solid fa-truck"></i></div>
+        <h3>Logistics</h3>
+        <p>Supply chain optimization, freight analysis, warehouse management, and last-mile delivery planning.</p>
+        <div class="ind-meta"><span class="badge badge-teal">8 agents</span><span class="badge badge-gray">2,800 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Supply Chain</span><span class="sub-chip">Freight</span><span class="sub-chip">Fleet</span></div>
+      </a>
+      <a href="industry-detail.html?i=manufacturing" class="ind-hero-card">
+        <div class="ind-icon-lg" style="background:#F8FAFC"><i class="fa-solid fa-gears"></i></div>
+        <h3>Manufacturing</h3>
+        <p>Quality control, procurement analysis, lean operations, ERP integration, and maintenance planning.</p>
+        <div class="ind-meta"><span class="badge badge-teal">9 agents</span><span class="badge badge-gray">2,600 prompts</span></div>
+        <div class="sub-chips"><span class="sub-chip">Lean Ops</span><span class="sub-chip">QA</span><span class="sub-chip">Procurement</span></div>
+      </a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

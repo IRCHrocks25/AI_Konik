@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+.metric-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px}
+.metric-label{font-size:12px;font-weight:600;color:var(--slate);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.metric-val{font-family:'DM Serif Display',serif;font-size:36px;color:var(--navy);line-height:1}
+.metric-sub{font-size:12px;color:var(--slate2);margin-top:4px}
+.metric-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:6px}
+.trend-up{background:var(--green-bg);color:var(--green)}
+.trend-new{background:var(--teal-light);color:var(--teal)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-header h2{font-size:17px;font-weight:600;color:var(--ink)}
+.agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:32px}
+.agent-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:all .2s;text-decoration:none}
+.agent-card:hover{border-color:var(--teal);box-shadow:0 4px 20px rgba(13,124,102,.1);transform:translateY(-2px)}
+.agent-emoji{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.agent-info h3{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.agent-info p{font-size:12px;color:var(--slate);line-height:1.4}
+.agent-info .meta{display:flex;align-items:center;gap:6px;margin-top:6px}
+.onboard-card{background:linear-gradient(135deg,#0D7C66 0%,#0B6A57 100%);border-radius:var(--radius2);padding:24px 28px;color:#fff;margin-bottom:24px}
+.onboard-card h3{font-family:'DM Serif Display',serif;font-size:20px;margin-bottom:6px}
+.onboard-card p{font-size:13px;opacity:.85;margin-bottom:16px}
+.checklist{display:flex;flex-direction:column;gap:8px}
+.check-item{display:flex;align-items:center;gap:10px;font-size:13px;background:rgba(255,255,255,.12);border-radius:8px;padding:8px 12px;cursor:pointer;transition:background .2s}
+.check-item:hover{background:rgba(255,255,255,.2)}
+.check-item.done{opacity:.6;text-decoration:line-through}
+.check-box{width:18px;height:18px;border-radius:4px;border:2px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
+.check-item.done .check-box{background:#fff;border-color:#fff;color:var(--teal)}
+.prompt-list{display:flex;flex-direction:column;gap:8px}
+.prompt-item{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;text-decoration:none;transition:all .2s}
+.prompt-item:hover{border-color:var(--teal);background:var(--teal-light)}
+.prompt-item-left h4{font-size:13px;font-weight:500;color:var(--ink);margin-bottom:2px}
+.prompt-item-left p{font-size:11px;color:var(--slate2)}
+.prompt-arrow{color:var(--slate2);font-size:16px}
+</style>
+</head>
+<body class="preload-active">
+<div class="page-preloader" id="page-preloader">
+  <div class="preloader-spinner"></div>
+  <div class="preloader-text">Loading dashboard...</div>
+</div>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links">
+      <a href="agents.html">Agents</a>
+      <a href="prompts.html">Prompts</a>
+      <a href="industries.html">Industries</a>
+      <a href="events.html">Events</a>
+      <a href="tools.html">Tools</a>
+    </div>
+    <div class="nav-cta">
+      <span style="font-size:13px;color:var(--slate)">Sarah Chen</span>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer">SC</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-shell">
+  <div style="display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 64px)">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Main</div>
+        <a href="dashboard.html" class="sidebar-link active"><span class="icon"><i class="fa-solid fa-table-cells-large"></i></span>Dashboard</a>
+        <a href="agents.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-robot"></i></span>Agents<span class="sidebar-badge">104</span></a>
+        <a href="prompts.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-book-open"></i></span>Prompts</a>
+        <a href="industries.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-industry"></i></span>Industries</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Tools</div>
+        <a href="tools.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></span>Tool Directory</a>
+        <a href="courses.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>Courses</a>
+        <a href="events.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span>Events</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Consulting</div>
+        <a href="consulting.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>My Engagements</a>
+        <a href="#" class="sidebar-link"><span class="icon"><i class="fa-solid fa-chart-line"></i></span>Reports</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Account</div>
+        <a href="billing.html" class="sidebar-link"><span class="icon"><i class="fa-regular fa-credit-card"></i></span>Billing</a>
+        <a href="#" class="sidebar-link"><span class="icon"><i class="fa-solid fa-gear"></i></span>Settings</a>
+        <a href="#" class="sidebar-link" id="sign-out-link"><span class="icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>Sign out</a>
+      </div>
+      <!-- quota -->
+      <div style="padding:16px 16px 0">
+        <div class="quota-bar">
+          <div class="quota-bar-label"><span style="font-size:12px;font-weight:500;color:var(--ink)">Sessions used</span><span style="font-size:12px;color:var(--teal);font-weight:600">12/50</span></div>
+          <div class="quota-bar-track"><div class="quota-bar-fill" style="width:24%"></div></div>
+          <div style="font-size:11px;color:var(--slate2);margin-top:4px">Free plan</div>
+        </div>
+        <a href="billing.html" class="btn btn-teal" style="width:100%;justify-content:center;font-size:12px">Upgrade to Pro</a>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-content">
+      <!-- Onboarding -->
+      <div class="onboard-card">
+        <h3>Welcome, Sarah! Let's get started.</h3>
+        <p>Complete these steps to unlock the full power of AI KONIK</p>
+        <div class="checklist">
+          <div class="check-item done" onclick="toggleCheck(this)"><div class="check-box"><i class="fa-solid fa-check"></i></div>Pick your industry (Legal)</div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div>Start your first agent session</div>
+          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div>Save your first prompt to a collection</div>
+        </div>
+      </div>
+
+      <!-- Metrics -->
+      <div class="dash-grid">
+        <div class="metric-card">
+          <div class="metric-label">Agent Sessions</div>
+          <div class="metric-val">12</div>
+          <div class="metric-trend trend-up">↑ 4 this week</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Saved Prompts</div>
+          <div class="metric-val">34</div>
+          <div class="metric-trend trend-new">3 new</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Courses Enrolled</div>
+          <div class="metric-val">2</div>
+          <div class="metric-sub">1 in progress</div>
+        </div>
+      </div>
+
+      <!-- Recommended Agents -->
+      <div class="section-header">
+        <h2>Your Legal Agents</h2>
+        <a href="agents.html" class="btn btn-ghost btn-sm">View all <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+      <div class="agent-grid">
+        <a href="agent-chat.html" class="agent-card">
+          <div class="agent-emoji" style="background:#EEF2FF"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div class="agent-info">
+            <h3>Contract Review Agent</h3>
+            <p>Analyze contracts for risk, unfavorable clauses, and missing protections</p>
+            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">M&A · Contracts</span></div>
+          </div>
+        </a>
+        <a href="agent-chat.html" class="agent-card">
+          <div class="agent-emoji" style="background:#F0FDF4"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <div class="agent-info">
+            <h3>Compliance Monitor</h3>
+            <p>Track regulatory changes and flag compliance risks in your documents</p>
+            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">Compliance</span></div>
+          </div>
+        </a>
+        <a href="agent-chat.html" class="agent-card">
+          <div class="agent-emoji" style="background:#FFF7ED"><i class="fa-solid fa-landmark"></i></div>
+          <div class="agent-info">
+            <h3>IP Research Agent</h3>
+            <p>Patent landscape analysis, trademark search, IP strategy guidance</p>
+            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">IP</span></div>
+          </div>
+        </a>
+        <a href="agent-chat.html" class="agent-card">
+          <div class="agent-emoji" style="background:#FFF1F2"><i class="fa-solid fa-file-signature"></i></div>
+          <div class="agent-info">
+            <h3>NDA Drafter</h3>
+            <p>Generate tailored NDAs with industry-standard protections in minutes</p>
+            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">Drafting</span></div>
+          </div>
+        </a>
+      </div>
+
+      <!-- Top Prompts -->
+      <div class="section-header">
+        <h2>Top Legal Prompts</h2>
+        <a href="prompts.html" class="btn btn-ghost btn-sm">Browse library <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+      <div class="prompt-list">
+        <a href="prompts.html" class="prompt-item">
+          <div class="prompt-item-left"><h4>Review this contract for unfavorable indemnification clauses</h4><p>Legal · Contracts · 2.1k uses</p></div>
+          <span class="prompt-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+        <a href="prompts.html" class="prompt-item">
+          <div class="prompt-item-left"><h4>Generate a mutual NDA between two parties for software development</h4><p>Legal · NDA · 1.8k uses</p></div>
+          <span class="prompt-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+        <a href="prompts.html" class="prompt-item">
+          <div class="prompt-item-left"><h4>Summarize the key risks in this M&A term sheet</h4><p>Legal · M&A · 1.4k uses</p></div>
+          <span class="prompt-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+function toggleCheck(el){
+  el.classList.toggle('done');
+  if(el.classList.contains('done'))el.querySelector('.check-box').innerHTML='<i class="fa-solid fa-check"></i>';
+  else el.querySelector('.check-box').innerHTML='';
+}
+function hidePreloader(){
+  document.body.classList.remove("preload-active");
+}
+function initDashboard(){
+  fetch('/api/auth/me',{credentials:'same-origin'})
+    .then(async r=>({ok:r.ok,data:await r.json()}))
+    .then(({data})=>{
+      if(!data.authenticated){
+        window.location.href='login.html';
+      }
+    });
+  fetch('/api/dashboard',{credentials:'same-origin'})
+    .then(async r=>({ok:r.ok,data:await r.json()}))
+    .then(({ok,data})=>{
+      if(!ok){return;}
+      const nameNodes=document.querySelectorAll('.nav-cta span, .onboard-card h3');
+      if(nameNodes.length){
+        const cleanName=data.user_name || 'User';
+        nameNodes[0].textContent=cleanName;
+        nameNodes[1].textContent=`Welcome, ${cleanName}! Let's get started.`;
+      }
+      const metricValues=document.querySelectorAll('.metric-val');
+      if(metricValues.length>=3){
+        metricValues[0].textContent=String(data.metrics.agent_sessions ?? 0);
+        metricValues[1].textContent=String(data.metrics.saved_prompts ?? 0);
+        metricValues[2].textContent=String(data.metrics.courses_enrolled ?? 0);
+      }
+    })
+    .finally(()=>hidePreloader());
+}
+document.getElementById('sign-out-link').addEventListener('click',function(e){
+  e.preventDefault();
+  fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
+    .finally(()=>{window.location.href='login.html';});
+});
+initDashboard();
+</script>
+</body>
+</html>

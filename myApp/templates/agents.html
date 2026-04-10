@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.agents-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.agent-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;cursor:pointer;transition:all .25s;text-decoration:none;display:flex;flex-direction:column}
+.agent-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 30px rgba(13,124,102,.12)}
+.agent-card-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.agent-emoji-lg{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.agent-name{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px}
+.agent-desc{font-size:13px;color:var(--slate);line-height:1.5;flex:1;margin-bottom:14px}
+.agent-footer{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);margin-top:auto}
+.agent-uses{font-size:11px;color:var(--slate2)}
+.featured-banner{background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);border-radius:var(--radius2);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;gap:24px}
+.featured-banner-text h2{font-family:'DM Serif Display',serif;font-size:24px;color:#fff;margin-bottom:6px}
+.featured-banner-text p{font-size:14px;color:rgba(255,255,255,.8)}
+.featured-banner-emoji{font-size:48px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links">
+      <a href="agents.html" class="active">Agents</a>
+      <a href="prompts.html">Prompts</a>
+      <a href="industries.html">Industries</a>
+      <a href="events.html">Events</a>
+      <a href="tools.html">Tools</a>
+    </div>
+    <div class="nav-cta">
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer">SC</div>
+    </div>
+  </div>
+</nav>
+
+<div class="page-shell">
+  <div class="sidebar-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigation</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-table-cells-large"></i></span>Dashboard</a>
+        <a href="agents.html" class="sidebar-link active"><span class="icon"><i class="fa-solid fa-robot"></i></span>All Agents</a>
+        <a href="prompts.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-book-open"></i></span>Prompts</a>
+        <a href="industries.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-industry"></i></span>Industries</a>
+        <a href="tools.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></span>Tools</a>
+        <a href="courses.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>Courses</a>
+        <a href="events.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span>Events</a>
+        <a href="consulting.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>Consulting</a>
+        <a href="billing.html" class="sidebar-link"><span class="icon"><i class="fa-regular fa-credit-card"></i></span>Billing</a>
+      </div>
+      <div style="padding:16px">
+        <div class="sidebar-label" style="padding:0 4px">Filter by industry</div>
+        <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px" id="ind-filters">
+          <button class="ind-filter active" onclick="filterInd('all',this)">All Industries</button>
+          <button class="ind-filter" onclick="filterInd('legal',this)"><i class="fa-solid fa-scale-balanced"></i> Legal</button>
+          <button class="ind-filter" onclick="filterInd('healthcare',this)"><i class="fa-solid fa-hospital"></i> Healthcare</button>
+          <button class="ind-filter" onclick="filterInd('finance',this)"><i class="fa-solid fa-sack-dollar"></i> Finance</button>
+          <button class="ind-filter" onclick="filterInd('marketing',this)"><i class="fa-solid fa-bullhorn"></i> Marketing</button>
+          <button class="ind-filter" onclick="filterInd('technology',this)"><i class="fa-solid fa-laptop-code"></i> Technology</button>
+          <button class="ind-filter" onclick="filterInd('realestate',this)"><i class="fa-solid fa-house"></i> Real Estate</button>
+          <button class="ind-filter" onclick="filterInd('accounting',this)"><i class="fa-solid fa-chart-line"></i> Accounting</button>
+          <button class="ind-filter" onclick="filterInd('logistics',this)"><i class="fa-solid fa-truck"></i> Logistics</button>
+          <button class="ind-filter" onclick="filterInd('manufacturing',this)"><i class="fa-solid fa-gears"></i> Manufacturing</button>
+        </div>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="filter-bar">
+        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search agents..." oninput="searchAgents(this.value)" id="search-input"></div>
+        <select class="filter-select" onchange="sortAgents(this.value)">
+          <option>Sort: Featured</option>
+          <option>Most Used</option>
+          <option>Newest</option>
+          <option>A–Z</option>
+        </select>
+      </div>
+      <div class="featured-banner">
+        <div class="featured-banner-emoji"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="featured-banner-text">
+          <h2>Contract Review Agent</h2>
+          <p>This week's featured agent — used by 1,200+ legal teams to catch risky clauses before signing</p>
+        </div>
+        <a href="agent-chat.html" class="btn btn-white" style="margin-left:auto;white-space:nowrap">Start chat <i class="fa-solid fa-arrow-right"></i></a>
+      </div>
+      <div class="agents-grid" id="agents-grid"></div>
+    </div>
+  </div>
+</div>
+
+<style>
+.ind-filter{width:100%;text-align:left;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink2);background:transparent;cursor:pointer;transition:all .15s}
+.ind-filter:hover{background:var(--bg2)}
+.ind-filter.active{background:var(--teal-light);color:var(--teal);border-color:var(--teal);font-weight:500}
+</style>
+<script>
+const AGENTS=[
+  {id:1,name:'Contract Review Agent',desc:'Analyze contracts for risks, unfavorable clauses, and missing protections automatically.',emoji:'<i class="fa-solid fa-scale-balanced"></i>',bg:'#EEF2FF',industry:'legal',tag:'M&A · Contracts',uses:'12.4k',featured:true},
+  {id:2,name:'Compliance Monitor',desc:'Track regulatory changes and automatically flag compliance risks in your documents.',emoji:'<i class="fa-solid fa-magnifying-glass"></i>',bg:'#F0FDF4',industry:'legal',tag:'Compliance',uses:'8.1k',featured:true},
+  {id:3,name:'NDA Drafter',desc:'Generate tailored NDAs with industry-standard protections in minutes.',emoji:'<i class="fa-solid fa-file-signature"></i>',bg:'#FFF1F2',industry:'legal',tag:'Drafting',uses:'6.7k',featured:false},
+  {id:4,name:'IP Research Agent',desc:'Patent landscape analysis, trademark search, and IP strategy guidance.',emoji:'<i class="fa-solid fa-landmark"></i>',bg:'#FFF7ED',industry:'legal',tag:'IP',uses:'4.2k',featured:false},
+  {id:5,name:'Clinical Documentation Agent',desc:'Streamline clinical notes, SOAP notes, and medical documentation with AI.',emoji:'<i class="fa-solid fa-hospital"></i>',bg:'#F0FDF4',industry:'healthcare',tag:'Documentation',uses:'9.8k',featured:true},
+  {id:6,name:'Patient Communication Agent',desc:'Generate clear, empathetic patient communications and follow-up messages.',emoji:'<i class="fa-solid fa-comments"></i>',bg:'#EEF2FF',industry:'healthcare',tag:'Communication',uses:'7.3k',featured:false},
+  {id:7,name:'Medical Billing Agent',desc:'Optimize coding accuracy, reduce claim denials, and automate billing workflows.',emoji:'<i class="fa-solid fa-prescription-bottle-medical"></i>',bg:'#FFF7ED',industry:'healthcare',tag:'Billing',uses:'5.9k',featured:false},
+  {id:8,name:'Risk Analysis Agent',desc:'Comprehensive financial risk assessment and portfolio analysis reports.',emoji:'<i class="fa-solid fa-chart-line"></i>',bg:'#FFFBEB',industry:'finance',tag:'Risk',uses:'11.2k',featured:true},
+  {id:9,name:'Regulatory Filing Agent',desc:'Automate SEC filings, compliance reports, and regulatory documentation.',emoji:'<i class="fa-solid fa-clipboard-list"></i>',bg:'#EEF2FF',industry:'finance',tag:'Regulatory',uses:'6.8k',featured:false},
+  {id:10,name:'Content Strategy Agent',desc:'Build complete content strategies with SEO-optimized briefs and editorial calendars.',emoji:'<i class="fa-solid fa-bullhorn"></i>',bg:'#FFF1F2',industry:'marketing',tag:'Content · SEO',uses:'18.5k',featured:true},
+  {id:11,name:'Ad Copy Agent',desc:'Generate high-converting ad copy for Google, Meta, LinkedIn, and more.',emoji:'<i class="fa-solid fa-bullseye"></i>',bg:'#FFF7ED',industry:'marketing',tag:'Paid Ads',uses:'14.2k',featured:false},
+  {id:12,name:'Brand Voice Agent',desc:'Maintain consistent brand voice across all content — checks and rewrites for alignment.',emoji:'<i class="fa-solid fa-palette"></i>',bg:'#F5F3FF',industry:'marketing',tag:'Brand',uses:'9.1k',featured:false},
+  {id:13,name:'Technical Documentation Agent',desc:'Generate API docs, developer guides, and technical specs from code and requirements.',emoji:'<i class="fa-solid fa-laptop-code"></i>',bg:'#F0F9FF',industry:'technology',tag:'Documentation',uses:'16.3k',featured:true},
+  {id:14,name:'Code Review Agent',desc:'Automated code review with security, performance, and best practice checks.',emoji:'<i class="fa-solid fa-shield-halved"></i>',bg:'#F5F3FF',industry:'technology',tag:'Code Review',uses:'12.7k',featured:false},
+  {id:15,name:'Property Analysis Agent',desc:'Comprehensive property valuation, market analysis, and investment potential reports.',emoji:'<i class="fa-solid fa-house"></i>',bg:'#F5F3FF',industry:'realestate',tag:'Valuation',uses:'5.4k',featured:true},
+  {id:16,name:'Lease Review Agent',desc:'Analyze commercial and residential leases for risks and unfavorable terms.',emoji:'<i class="fa-solid fa-file-lines"></i>',bg:'#EEF2FF',industry:'realestate',tag:'Lease Review',uses:'4.1k',featured:false},
+  {id:17,name:'Tax Preparation Agent',desc:'Streamline tax prep with automated data extraction and filing guidance.',emoji:'<i class="fa-solid fa-chart-line"></i>',bg:'#ECFDF5',industry:'accounting',tag:'Tax',uses:'7.8k',featured:true},
+  {id:18,name:'Audit Support Agent',desc:'Automate audit workpapers, sampling selection, and evidence documentation.',emoji:'<i class="fa-solid fa-magnifying-glass-chart"></i>',bg:'#F0FDF4',industry:'accounting',tag:'Audit',uses:'5.2k',featured:false},
+  {id:19,name:'Supply Chain Agent',desc:'Optimize supply chain operations with demand forecasting and vendor analysis.',emoji:'<i class="fa-solid fa-truck"></i>',bg:'#FFF7ED',industry:'logistics',tag:'Supply Chain',uses:'6.3k',featured:true},
+  {id:20,name:'QA Analysis Agent',desc:'Automated quality control checklists, defect analysis, and compliance reporting.',emoji:'<i class="fa-solid fa-gears"></i>',bg:'#F8FAFC',industry:'manufacturing',tag:'Quality Control',uses:'4.8k',featured:true},
+];
+
+let currentIndustry='all';
+let currentSearch='';
+
+function renderAgents(){
+  let filtered=AGENTS.filter(a=>{
+    const indMatch=currentIndustry==='all'||a.industry===currentIndustry;
+    const searchMatch=!currentSearch||a.name.toLowerCase().includes(currentSearch)||a.desc.toLowerCase().includes(currentSearch);
+    return indMatch&&searchMatch;
+  });
+  const grid=document.getElementById('agents-grid');
+  grid.innerHTML=filtered.map(a=>`
+    <a href="agent-chat.html?new=1&agent=${encodeURIComponent(a.name)}&industry=${encodeURIComponent(a.industry)}" class="agent-card">
+      <div class="agent-card-top">
+        <div class="agent-emoji-lg" style="background:${a.bg}">${a.emoji}</div>
+        <div>
+          <div class="agent-name">${a.name}${a.featured?'<span class="badge badge-teal" style="margin-left:6px;font-size:10px">Featured</span>':''}</div>
+          <span class="badge badge-gray">${a.tag}</span>
+        </div>
+      </div>
+      <div class="agent-desc">${a.desc}</div>
+      <div class="agent-footer">
+        <span class="agent-uses">${a.uses} uses</span>
+        <span class="btn btn-teal btn-sm">Start chat <i class="fa-solid fa-arrow-right"></i></span>
+      </div>
+    </a>
+  `).join('');
+}
+
+function filterInd(ind,btn){
+  currentIndustry=ind;
+  document.querySelectorAll('.ind-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAgents();
+}
+function searchAgents(v){currentSearch=v.toLowerCase();renderAgents();}
+function sortAgents(v){renderAgents();}
+renderAgents();
+</script>
+</body>
+</html>

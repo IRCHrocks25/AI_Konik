@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Consulting — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.eng-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;margin-bottom:16px}
+.eng-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.eng-client{font-size:17px;font-weight:600;color:var(--ink)}
+.eng-sub{font-size:13px;color:var(--slate);margin-top:2px}
+.sprint-track{display:flex;gap:0;align-items:center;margin-bottom:20px}
+.sprint-pip{width:32px;height:32px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--slate2);flex-shrink:0;transition:all .3s;cursor:default;position:relative}
+.sprint-pip.done{background:var(--teal);border-color:var(--teal);color:#fff}
+.sprint-pip.active{background:var(--amber-bg);border-color:var(--amber);color:var(--amber);animation:pipPulse 2s infinite}
+@keyframes pipPulse{0%,100%{box-shadow:0 0 0 0 rgba(180,83,9,.3)}50%{box-shadow:0 0 0 6px rgba(180,83,9,0)}}
+.sprint-line{flex:1;height:2px;background:var(--border)}
+.sprint-line.done{background:var(--teal)}
+.sprint-detail{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.sprint-card{border:1px solid var(--border);border-radius:var(--radius);padding:12px;font-size:12px;cursor:pointer;transition:all .2s}
+.sprint-card:hover{border-color:var(--teal);background:var(--teal-light)}
+.sprint-card.active-sprint{border-color:var(--amber);background:var(--amber-bg)}
+.sprint-card.done-sprint{border-color:var(--teal);background:var(--teal-light)}
+.sprint-card-num{font-size:10px;font-weight:700;color:var(--slate2);margin-bottom:4px}
+.sprint-card-name{font-weight:600;color:var(--ink);margin-bottom:4px;font-size:11px}
+.sprint-status-select{width:100%;border:none;background:none;font-size:11px;color:var(--slate);font-family:inherit;outline:none;cursor:pointer}
+.vd-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:16px}
+.vd-item{background:var(--bg2);border-radius:var(--radius);padding:12px 14px}
+.vd-name{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.vd-slider-wrap{display:flex;align-items:center;gap:8px}
+.vd-slider{flex:1;accent-color:var(--teal)}
+.vd-score{font-size:13px;font-weight:700;color:var(--teal);min-width:20px;text-align:right}
+.section-toggle{background:none;border:none;font-size:14px;font-weight:600;color:var(--teal);cursor:pointer;font-family:inherit;padding:0;display:flex;align-items:center;gap:4px}
+.deliverable-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;font-size:13px;color:var(--slate2);cursor:pointer;transition:all .2s;margin-top:12px}
+.deliverable-zone:hover{border-color:var(--teal);background:var(--teal-light);color:var(--teal)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html">Events</a><a href="tools.html">Tools</a></div>
+    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+  </div>
+</nav>
+<div class="page-shell">
+  <div class="page-header"><div class="page-header-inner">
+    <div class="section-label">Consulting</div>
+    <h1 class="section-title" style="font-size:32px">Client Engagements</h1>
+    <p style="font-size:14px;color:var(--slate)">Track your 6-sprint AI implementation methodology across all active clients.</p>
+  </div></div>
+  <div class="sidebar-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigation</div>
+        <a href="dashboard.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-table-cells-large"></i></span>Dashboard</a>
+        <a href="consulting.html" class="sidebar-link active"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>Engagements<span class="sidebar-badge">3</span></a>
+        <a href="agents.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-robot"></i></span>Agents</a>
+        <a href="prompts.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-book-open"></i></span>Prompts</a>
+        <a href="events.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span>Events</a>
+        <a href="billing.html" class="sidebar-link"><span class="icon"><i class="fa-regular fa-credit-card"></i></span>Billing</a>
+      </div>
+    </div>
+    <div class="main-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <h2 style="font-size:16px;font-weight:600;color:var(--ink)">Active Engagements (3)</h2>
+        <button class="btn btn-teal btn-sm" onclick="showNewEng()">+ New Engagement</button>
+      </div>
+
+      <!-- Engagement 1 -->
+      <div class="eng-card">
+        <div class="eng-header">
+          <div>
+            <div class="eng-client">Meridian Legal Partners</div>
+            <div class="eng-sub">Legal · $18,500 · Started Feb 12, 2026</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="badge badge-amber">Sprint 3 — Active</span>
+            <span class="badge badge-green">On track</span>
+          </div>
+        </div>
+        <!-- Sprint progress pips -->
+        <div class="sprint-track">
+          <div class="sprint-pip done" title="Discovery">1</div>
+          <div class="sprint-line done"></div>
+          <div class="sprint-pip done" title="Assessment">2</div>
+          <div class="sprint-line done"></div>
+          <div class="sprint-pip active" title="Refinement">3</div>
+          <div class="sprint-line"></div>
+          <div class="sprint-pip" title="Design">4</div>
+          <div class="sprint-line"></div>
+          <div class="sprint-pip" title="Implementation">5</div>
+          <div class="sprint-line"></div>
+          <div class="sprint-pip" title="Optimization">6</div>
+        </div>
+        <div class="sprint-detail">
+          <div class="sprint-card done-sprint"><div class="sprint-card-num">Sprint 1</div><div class="sprint-card-name">Discovery</div><span class="badge badge-green" style="font-size:9px">Complete</span></div>
+          <div class="sprint-card done-sprint"><div class="sprint-card-num">Sprint 2</div><div class="sprint-card-name">Assessment</div><span class="badge badge-green" style="font-size:9px">Complete</span></div>
+          <div class="sprint-card active-sprint"><div class="sprint-card-num">Sprint 3</div><div class="sprint-card-name">Refinement</div><select class="sprint-status-select" onchange="updateStatus(this)"><option value="active" selected>In Progress</option><option value="complete">Complete</option><option value="blocked">Blocked</option></select></div>
+          <div class="sprint-card"><div class="sprint-card-num">Sprint 4</div><div class="sprint-card-name">Design</div><span style="font-size:10px;color:var(--slate2)">Pending</span></div>
+          <div class="sprint-card"><div class="sprint-card-num">Sprint 5</div><div class="sprint-card-name">Implementation</div><span style="font-size:10px;color:var(--slate2)">Pending</span></div>
+          <div class="sprint-card"><div class="sprint-card-num">Sprint 6</div><div class="sprint-card-name">Optimization</div><span style="font-size:10px;color:var(--slate2)">Pending</span></div>
+        </div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);display:flex;gap:10px">
+          <button class="section-toggle" onclick="toggleSection('vd1')">▸ 8 Value Drivers Assessment</button>
+          <button class="section-toggle" onclick="toggleSection('del1')" style="margin-left:auto">▸ Deliverables (2)</button>
+        </div>
+        <div id="vd1" style="display:none">
+          <div class="vd-grid">
+            <div class="vd-item"><div class="vd-name">Financial Impact</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="8" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">8</span></div></div>
+            <div class="vd-item"><div class="vd-name">Customer Engagement</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="7" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">7</span></div></div>
+            <div class="vd-item"><div class="vd-name">Operational Efficiency</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="9" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">9</span></div></div>
+            <div class="vd-item"><div class="vd-name">Strategic Advantage</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="6" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">6</span></div></div>
+            <div class="vd-item"><div class="vd-name">Brand Amplification</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="7" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">7</span></div></div>
+            <div class="vd-item"><div class="vd-name">Talent Optimization</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">5</span></div></div>
+            <div class="vd-item"><div class="vd-name">Innovation Pipeline</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="8" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">8</span></div></div>
+            <div class="vd-item"><div class="vd-name">Risk Reduction</div><div class="vd-slider-wrap"><input type="range" class="vd-slider" min="1" max="10" value="9" oninput="this.nextElementSibling.textContent=this.value"><span class="vd-score">9</span></div></div>
+          </div>
+          <button class="btn btn-teal btn-sm" style="margin-top:12px" onclick="showToast('Assessment saved','success')">Save Assessment</button>
+        </div>
+        <div id="del1" style="display:none">
+          <div style="margin-top:12px;display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-radius:8px;font-size:13px">
+              <span><i class="fa-regular fa-file-pdf"></i> Sprint1_Discovery_Report.pdf</span><span style="color:var(--slate2);font-size:11px">Feb 28 · 2.4 MB</span><a href="#" style="color:var(--teal);font-size:12px;text-decoration:none"><i class="fa-solid fa-download"></i> Download</a>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2);border-radius:8px;font-size:13px">
+              <span><i class="fa-regular fa-file-powerpoint"></i> Sprint2_Assessment_Deck.pptx</span><span style="color:var(--slate2);font-size:11px">Mar 15 · 4.1 MB</span><a href="#" style="color:var(--teal);font-size:12px;text-decoration:none"><i class="fa-solid fa-download"></i> Download</a>
+            </div>
+          </div>
+          <div class="deliverable-zone" onclick="showToast('File upload dialog would open here','')">
+            <i class="fa-regular fa-folder-open"></i> Drop files here or click to upload<br><span style="font-size:11px">PDF, DOCX, PPTX, XLSX · Max 50MB</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Engagement 2 -->
+      <div class="eng-card">
+        <div class="eng-header">
+          <div>
+            <div class="eng-client">Apex Financial Group</div>
+            <div class="eng-sub">Finance · $24,000 · Started Mar 3, 2026</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <span class="badge badge-navy">Sprint 1 — Active</span>
+          </div>
+        </div>
+        <div class="sprint-track">
+          <div class="sprint-pip active">1</div>
+          <div class="sprint-line"></div>
+          <div class="sprint-pip">2</div><div class="sprint-line"></div>
+          <div class="sprint-pip">3</div><div class="sprint-line"></div>
+          <div class="sprint-pip">4</div><div class="sprint-line"></div>
+          <div class="sprint-pip">5</div><div class="sprint-line"></div>
+          <div class="sprint-pip">6</div>
+        </div>
+        <div style="font-size:13px;color:var(--slate)">Discovery sprint in progress — stakeholder interviews scheduled for Apr 18.</div>
+      </div>
+
+      <!-- Engagement 3 -->
+      <div class="eng-card">
+        <div class="eng-header">
+          <div>
+            <div class="eng-client">BrightPath Marketing Co.</div>
+            <div class="eng-sub">Marketing · $14,500 · Completed Mar 30, 2026</div>
+          </div>
+          <div><span class="badge badge-green"><i class="fa-solid fa-check"></i> Complete</span></div>
+        </div>
+        <div class="sprint-track">
+          <div class="sprint-pip done">1</div><div class="sprint-line done"></div>
+          <div class="sprint-pip done">2</div><div class="sprint-line done"></div>
+          <div class="sprint-pip done">3</div><div class="sprint-line done"></div>
+          <div class="sprint-pip done">4</div><div class="sprint-line done"></div>
+          <div class="sprint-pip done">5</div><div class="sprint-line done"></div>
+          <div class="sprint-pip done">6</div>
+        </div>
+        <div style="font-size:13px;color:var(--teal);font-weight:500">All 6 sprints completed. ROI achieved: 3.2x content output increase.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function toggleSection(id){
+  const el=document.getElementById(id);
+  el.style.display=el.style.display==='none'?'block':'none';
+}
+function updateStatus(sel){
+  if(sel.value==='complete'){
+    showToast('Sprint marked complete — Sprint 4 is now active!','success');
+  } else if(sel.value==='blocked'){
+    showToast('Sprint marked as blocked. Please add a block reason.','');
+  }
+}
+function showNewEng(){showToast('New engagement form would open here','');}
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',3500);
+}
+</script>
+</body>
+</html>

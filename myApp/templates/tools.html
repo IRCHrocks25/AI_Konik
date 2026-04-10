@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Tool Directory — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.tool-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:20px;transition:all .2s;cursor:pointer}
+.tool-card:hover{border-color:var(--teal);box-shadow:var(--shadow)}
+.tool-card.featured{border:2px solid var(--navy)}
+.tool-logo{width:48px;height:48px;border-radius:12px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:12px}
+.tool-name{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:4px}
+.tool-desc{font-size:12px;color:var(--slate);line-height:1.5;margin-bottom:12px}
+.stars{color:#F59E0B;font-size:13px;letter-spacing:1px}
+.tool-meta{display:flex;align-items:center;justify-content:space-between;padding-top:12px;border-top:1px solid var(--border)}
+.rating-wrap{display:flex;align-items:center;gap:4px}
+.rating-score{font-size:13px;font-weight:600;color:var(--ink)}
+.review-count{font-size:11px;color:var(--slate2)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html">Events</a><a href="tools.html" class="active">Tools</a></div>
+    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+  </div>
+</nav>
+<div class="page-shell">
+  <div class="page-header"><div class="page-header-inner">
+    <div class="section-label">Tool Directory</div>
+    <h1 class="section-title" style="font-size:32px">The Best AI Tools for Your Industry</h1>
+    <p style="font-size:14px;color:var(--slate)">Curated, community-rated AI tools — with honest reviews from SMB users like you.</p>
+  </div></div>
+  <div class="sidebar-layout">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">Category</div>
+        <a class="sidebar-link active" href="#">All Tools</a>
+        <a class="sidebar-link" href="#">Writing & Content</a>
+        <a class="sidebar-link" href="#">Legal & Compliance</a>
+        <a class="sidebar-link" href="#">Finance & Accounting</a>
+        <a class="sidebar-link" href="#">Marketing & SEO</a>
+        <a class="sidebar-link" href="#">Data & Analytics</a>
+        <a class="sidebar-link" href="#">Customer Support</a>
+        <a class="sidebar-link" href="#">Code & Development</a>
+        <a class="sidebar-link" href="#">HR & People Ops</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Pricing</div>
+        <a class="sidebar-link" href="#">Free</a>
+        <a class="sidebar-link" href="#">Freemium</a>
+        <a class="sidebar-link" href="#">Paid</a>
+        <a class="sidebar-link" href="#">Enterprise</a>
+      </div>
+      <div style="padding:16px">
+        <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="showToast('Submission form opening...','')">+ Submit a tool</button>
+      </div>
+    </div>
+    <div class="main-content">
+      <div class="filter-bar">
+        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search tools..."></div>
+        <select class="filter-select"><option>All Pricing</option><option>Free</option><option>Freemium</option><option>Paid</option></select>
+        <select class="filter-select"><option>Top Rated</option><option>Most Reviewed</option><option>Newest</option></select>
+      </div>
+      <div class="tools-grid">
+        <div class="tool-card featured">
+          <div style="position:absolute;top:12px;right:12px" class="badge badge-navy" style="font-size:10px">Featured</div>
+          <div class="tool-logo"><i class="fa-solid fa-file-pen"></i></div>
+          <div class="tool-name">Claude (Anthropic)</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px"><span class="badge badge-teal">Writing</span><span class="badge badge-gray">Freemium</span></div>
+          <div class="tool-desc">The most capable AI assistant for legal, compliance, and complex reasoning tasks. Best-in-class for document analysis.</div>
+          <div class="tool-meta">
+            <div class="rating-wrap"><div class="stars">★★★★★</div><span class="rating-score">4.9</span><span class="review-count">(284 reviews)</span></div>
+            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <div class="tool-name">Perplexity AI</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px"><span class="badge badge-teal">Research</span><span class="badge badge-gray">Freemium</span></div>
+          <div class="tool-desc">AI-powered research engine. Ideal for competitive intelligence, market research, and due diligence.</div>
+          <div class="tool-meta">
+            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.6</span><span class="review-count">(142 reviews)</span></div>
+            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo"><i class="fa-solid fa-palette"></i></div>
+          <div class="tool-name">Midjourney</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px"><span class="badge badge-teal">Design</span><span class="badge badge-gray">Paid</span></div>
+          <div class="tool-desc">Best-in-class AI image generation. Used by marketing teams for brand visuals, ads, and creative content.</div>
+          <div class="tool-meta">
+            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.5</span><span class="review-count">(198 reviews)</span></div>
+            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="tool-name">Notion AI</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px"><span class="badge badge-teal">Productivity</span><span class="badge badge-gray">Freemium</span></div>
+          <div class="tool-desc">AI-powered workspace for teams. Excellent for SOPs, meeting notes, project documentation, and wikis.</div>
+          <div class="tool-meta">
+            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.4</span><span class="review-count">(167 reviews)</span></div>
+            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo"><i class="fa-solid fa-handshake"></i></div>
+          <div class="tool-name">HubSpot AI</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px"><span class="badge badge-teal">CRM</span><span class="badge badge-gray">Freemium</span></div>
+          <div class="tool-desc">AI-enhanced CRM for SMBs. Smart email generation, deal scoring, and automated follow-up sequences.</div>
+          <div class="tool-meta">
+            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.3</span><span class="review-count">(221 reviews)</span></div>
+            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+        <div class="tool-card">
+          <div class="tool-logo"><i class="fa-solid fa-video"></i></div>
+          <div class="tool-name">Descript</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px"><span class="badge badge-teal">Video</span><span class="badge badge-gray">Paid</span></div>
+          <div class="tool-desc">AI video editor with transcription, overdubbing, and automatic cut removal. Great for training and webinar content.</div>
+          <div class="tool-meta">
+            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.4</span><span class="review-count">(89 reviews)</span></div>
+            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(()=>t.className='toast',3500);}
+// make sidebar links work
+document.querySelectorAll('.sidebar-link').forEach(l=>l.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('.sidebar-link').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
+</script>
+</body>
+</html>
