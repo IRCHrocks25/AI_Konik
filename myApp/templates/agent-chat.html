@@ -7,19 +7,7 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-body{
-  overflow:hidden;
-  min-height:100vh;
-  padding-top:64px;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(120, 55, 220, .2), transparent 34%),
-    radial-gradient(circle at 84% 20%, rgba(0, 150, 170, .16), transparent 34%),
-    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
-}
-nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
-.logo{color:#fff}
-.nav-links a{color:rgba(255,255,255,.75)}
-.nav-links a:hover,.nav-links a.active{color:#fff}
+body{overflow:hidden;min-height:100vh;padding-top:64px}
 .back-agents-btn{
   border:1px solid rgba(196,181,253,.55) !important;
   background:linear-gradient(135deg, rgba(139,92,246,.24), rgba(79,70,229,.2));
@@ -203,9 +191,6 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
 .use-case:hover{background:rgba(255,255,255,.22)}
 .token-bar{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:12px;font-size:12px;color:rgba(255,255,255,.78)}
 .token-count{font-size:18px;font-weight:600;color:#fff;display:block;margin-bottom:2px}
-.badge-teal{background:rgba(139,92,246,.32);color:#fff}
-.badge-gray{background:rgba(255,255,255,.2);color:#fff}
-
 @media(max-width:1180px){
   .chat-shell{grid-template-columns:260px minmax(0,1fr)}
   .agent-info-panel{display:none}
@@ -219,7 +204,7 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
 }
 </style>
 </head>
-<body class="preload-active">
+<body class="preload-active dark-app">
 <div class="page-preloader" id="page-preloader">
   <div class="preloader-spinner"></div>
   <div class="preloader-text">Loading chat...</div>
