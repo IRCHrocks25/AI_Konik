@@ -7,22 +7,11 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-body{background:var(--bg);display:flex;min-height:100vh}
-.auth-left{width:380px;flex-shrink:0;background:var(--navy);padding:48px;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden}
-.auth-left::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;background:radial-gradient(circle,rgba(13,124,102,.3) 0%,transparent 70%)}
-.auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px}
-.auth-form-wrap{width:100%;max-width:400px}
-.auth-form-wrap h1{font-family:'DM Serif Display',serif;font-size:30px;color:var(--navy);margin-bottom:6px}
-.auth-form-wrap .subtitle{font-size:14px;color:var(--slate);margin-bottom:32px}
-.forgot{font-size:12px;color:var(--teal);text-decoration:none;float:right;margin-top:4px}
-.divider-or{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:12px;color:var(--slate2)}
-.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
-.auth-footer{margin-top:24px;text-align:center;font-size:13px;color:var(--slate)}
-.auth-footer a{color:var(--teal);text-decoration:none;font-weight:500}
-.error-banner{background:var(--red-bg);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:10px 14px;font-size:13px;color:var(--red);margin-bottom:16px;display:none}
+.auth-footer a{font-weight:500}
+.error-banner{padding:10px 14px;margin-bottom:16px}
 </style>
 </head>
-<body>
+<body class="auth-layout">
 <div class="auth-left">
   <div style="position:relative;z-index:1">
     <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;display:flex;align-items:center;gap:8px;margin-bottom:48px">
