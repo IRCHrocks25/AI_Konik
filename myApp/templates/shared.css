@@ -15,6 +15,12 @@
   --radius:12px;--radius2:20px;
   --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.06);
   --shadow2:0 8px 40px rgba(0,0,0,.12);
+  /* accent palette — dark-glass app + admin contexts */
+  --accent-purple:#8b5cf6;--accent-violet:#7c3aed;
+  --accent-teal:#0d9488;--accent-cyan:#0891b2;
+  --accent-indigo:#4f46e5;--accent-pink:#ec4899;
+  --accent-amber:#f59e0b;--accent-emerald:#10b981;
+  --accent-rose:#f43f5e;--icon-ink:#ffffff;
 }
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;overflow-x:hidden}
@@ -164,4 +170,173 @@ body.preload-active .page-shell,
 body.preload-active .chat-shell,
 body.preload-active .import-wrap{
   opacity:0;
+}
+
+/* ── DARK APP THEME ──────────────────────────────────────────────
+   Apply via <body class="dark-app"> on all authenticated app
+   pages. All rules below are scoped so light-theme pages (index,
+   prompt-import, login, register) are completely unaffected.
+──────────────────────────────────────────────────────────────── */
+
+body.dark-app{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 14% 10%, rgba(120,55,220,.2),  transparent 34%),
+    radial-gradient(circle at 84% 20%, rgba(0,150,170,.16),  transparent 34%),
+    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
+}
+
+body.dark-app nav{
+  background:rgba(13,15,35,.55);
+  border-bottom:1px solid rgba(255,255,255,.16);
+}
+body.dark-app .logo{color:#fff}
+body.dark-app .nav-links a{color:rgba(255,255,255,.75)}
+body.dark-app .nav-links a:hover,
+body.dark-app .nav-links a.active{color:#fff}
+
+/* Base glass card surface */
+.glass{
+  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 16px 38px rgba(0,0,0,.24);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border-radius:20px;
+}
+
+/* Full-width portal wrapper — replaces page-shell on non-sidebar pages */
+.portal-wrap{max-width:1200px;margin:0 auto;padding:110px 26px 48px}
+
+/* Profile nav / avatar / dropdown — shared across app pages */
+.profile-nav{position:relative}
+.sc-avatar{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,var(--accent-purple),var(--accent-indigo));
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:13px;font-weight:600;cursor:pointer;
+  flex-shrink:0;
+}
+.profile-menu{
+  position:absolute;top:46px;right:0;
+  background:#1e1b4b;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:14px;padding:8px;min-width:200px;
+  box-shadow:0 12px 36px rgba(0,0,0,.38);
+  opacity:0;visibility:hidden;transform:translateY(-8px);
+  transition:opacity .2s,visibility .2s,transform .2s;
+  z-index:50;
+}
+.profile-menu.open{opacity:1;visibility:visible;transform:none}
+.profile-menu a,
+.profile-menu button{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:8px;
+  color:rgba(255,255,255,.82);font-size:13px;
+  text-decoration:none;transition:background .15s;
+  width:100%;background:none;border:none;cursor:pointer;font-family:inherit;
+}
+.profile-menu a:hover,
+.profile-menu button:hover{background:rgba(255,255,255,.1);color:#fff}
+
+/* Back button — used on profile/settings instead of profile dropdown */
+.nav-back-btn{
+  padding:7px 14px;
+  border:1px solid rgba(255,255,255,.28);
+  border-radius:8px;
+  background:rgba(255,255,255,.1);
+  color:#fff;font-size:13px;
+  cursor:pointer;transition:background .18s;
+  text-decoration:none;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.nav-back-btn:hover{background:rgba(255,255,255,.2)}
+
+/* page-shell / page-header dark overrides */
+body.dark-app .page-shell{padding-top:64px}
+body.dark-app .page-header{
+  background:transparent;
+  border-bottom:none;
+  padding:28px 40px 18px;
+}
+body.dark-app .page-header .section-label{color:rgba(255,255,255,.7)}
+body.dark-app .page-header .section-title{color:#fff}
+body.dark-app .page-header p{color:rgba(255,255,255,.82)}
+
+/* Sidebar dark overrides — dashboard and prompts */
+body.dark-app .sidebar{
+  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  border-right:1px solid rgba(255,255,255,.22);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+}
+body.dark-app .sidebar-label{color:rgba(255,255,255,.62)}
+body.dark-app .sidebar-link{
+  color:rgba(255,255,255,.84);
+  border-left:none;
+  margin:2px 8px;
+  border-radius:10px;
+}
+body.dark-app .sidebar-link:hover{background:rgba(255,255,255,.12);color:#fff}
+body.dark-app .sidebar-link.active{
+  background:linear-gradient(135deg, rgba(147,51,234,.45), rgba(217,70,239,.42));
+  color:#fff;border-left:none;
+}
+body.dark-app .sidebar-link .icon{color:inherit}
+body.dark-app .main-content{background:transparent;padding:28px}
+
+/* Badge overrides for dark backgrounds */
+body.dark-app .badge-teal{background:rgba(139,92,246,.32);color:#fff}
+body.dark-app .badge-gray{background:rgba(255,255,255,.2);color:#fff}
+
+
+/* ── AUTH LAYOUT ─────────────────────────────────────────────────
+   Used by login.html and register.html (light split-pane).
+   Page-specific rules (step-indicator, industry-picker, etc.)
+   stay inline in each template.
+──────────────────────────────────────────────────────────────── */
+
+body.auth-layout{background:var(--bg);display:flex;min-height:100vh}
+
+.auth-left{
+  width:380px;flex-shrink:0;
+  background:var(--navy);
+  padding:48px;
+  display:flex;flex-direction:column;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.auth-left::before{
+  content:'';position:absolute;
+  top:-100px;right:-100px;
+  width:400px;height:400px;
+  background:radial-gradient(circle,rgba(13,124,102,.3) 0%,transparent 70%);
+  pointer-events:none;
+}
+.auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:48px}
+
+.auth-form-wrap{width:100%;max-width:400px}
+.auth-form-wrap h1{
+  font-family:'DM Serif Display',serif;
+  font-size:30px;color:var(--navy);margin-bottom:6px;
+}
+.auth-form-wrap .subtitle{font-size:14px;color:var(--slate);margin-bottom:32px}
+
+.forgot{font-size:12px;color:var(--teal);text-decoration:none;float:right;margin-top:4px}
+
+.divider-or{
+  display:flex;align-items:center;gap:12px;
+  color:var(--slate2);font-size:13px;margin:20px 0;
+}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.auth-footer{text-align:center;margin-top:24px;font-size:14px;color:var(--slate)}
+.auth-footer a{color:var(--teal);text-decoration:none}
+
+.error-banner{
+  background:var(--red-bg);
+  border:1px solid rgba(220,38,38,.2);
+  border-radius:8px;padding:12px 16px;
+  font-size:14px;color:var(--red);
+  margin-bottom:20px;display:none;
 }
