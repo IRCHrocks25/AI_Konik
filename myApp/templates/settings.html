@@ -7,17 +7,6 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-body{
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 14% 10%, rgba(120, 55, 220, .2), transparent 34%),
-    radial-gradient(circle at 84% 20%, rgba(0, 150, 170, .16), transparent 34%),
-    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
-}
-nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
-.logo{color:#fff}
-.nav-links a{color:rgba(255,255,255,.75)}
-.nav-links a:hover,.nav-links a.active{color:#fff}
 .nav-back-btn{
   display:inline-flex;
   align-items:center;
@@ -41,7 +30,6 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
   background:linear-gradient(150deg, rgba(255,255,255,.24), rgba(255,255,255,.1));
 }
 .wrap{max-width:980px;margin:0 auto;padding:96px 20px 30px}
-.glass{background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.2);border-radius:18px;box-shadow:0 16px 38px rgba(0,0,0,.24);backdrop-filter:blur(10px)}
 .hero{padding:24px 22px;margin-bottom:14px}
 .hero h1{font-family:'DM Serif Display',serif;font-size:42px;color:#fff;margin:0 0 6px}
 .hero p{color:rgba(255,255,255,.82);font-size:14px}
@@ -59,7 +47,7 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
 .actions .btn-ghost:hover{background:rgba(255,255,255,.14)}
 </style>
 </head>
-<body>
+<body class="dark-app">
 <nav>
   <div class="nav-inner">
     <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
