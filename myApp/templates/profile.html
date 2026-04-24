@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Profile — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 14% 10%, rgba(120, 55, 220, .2), transparent 34%),
+    radial-gradient(circle at 84% 20%, rgba(0, 150, 170, .16), transparent 34%),
+    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
+}
+nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
+.logo{color:#fff}
+.nav-links a{color:rgba(255,255,255,.75)}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+.nav-back-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:9px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.3);
+  background:linear-gradient(150deg, rgba(255,255,255,.18), rgba(255,255,255,.07));
+  color:#fff;
+  text-decoration:none;
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.01em;
+  box-shadow:0 10px 24px rgba(0,0,0,.2);
+  backdrop-filter:blur(8px);
+  transition:transform .15s ease, border-color .15s ease, background .15s ease;
+}
+.nav-back-btn:hover{
+  transform:translateY(-1px);
+  border-color:rgba(255,255,255,.5);
+  background:linear-gradient(150deg, rgba(255,255,255,.24), rgba(255,255,255,.1));
+}
+.wrap{max-width:980px;margin:0 auto;padding:96px 20px 30px}
+.glass{background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.2);border-radius:18px;box-shadow:0 16px 38px rgba(0,0,0,.24);backdrop-filter:blur(10px)}
+.hero{padding:24px 22px;margin-bottom:14px}
+.hero h1{font-family:'DM Serif Display',serif;font-size:42px;color:#fff;margin:0 0 6px}
+.hero p{color:rgba(255,255,255,.82);font-size:14px}
+.card{padding:22px}
+.card h2{font-size:16px;color:#fff;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lbl{display:block;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px}
+.inp{width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-family:inherit}
+.inp::placeholder{color:rgba(255,255,255,.6)}
+.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+.actions .btn-ghost{border:1px solid rgba(255,255,255,.32);color:#fff;background:rgba(255,255,255,.06)}
+.actions .btn-ghost:hover{background:rgba(255,255,255,.14)}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-inner">
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="{% url 'agents' %}">Agents</a><a href="{% url 'prompts' %}">Prompts</a><a href="{% url 'industries' %}">Industries</a><a href="{% url 'events' %}">Events</a><a href="{% url 'tools' %}">Tools</a></div>
+    <div class="nav-cta"><a href="{% url 'dashboard' %}" class="nav-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a></div>
+  </div>
+</nav>
+<div class="wrap">
+  <section class="hero glass">
+    <h1>Profile</h1>
+    <p>Manage your account identity and business details.</p>
+  </section>
+  <section class="card glass">
+    <h2>Personal Information</h2>
+    <div class="grid">
+      <div><label class="lbl">First name</label><input class="inp" placeholder="Sarah"></div>
+      <div><label class="lbl">Last name</label><input class="inp" placeholder="Chen"></div>
+      <div><label class="lbl">Email</label><input class="inp" placeholder="sarah@example.com"></div>
+      <div><label class="lbl">Company</label><input class="inp" placeholder="AI KONIK Client"></div>
+    </div>
+    <div class="actions">
+      <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
+      <button class="btn btn-teal" onclick="alert('Profile saved')">Save changes</button>
+    </div>
+  </section>
+</div>
+</body>
+</html>

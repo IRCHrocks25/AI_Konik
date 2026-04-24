@@ -11,6 +11,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
 from .auth_utils import (
@@ -20,8 +21,9 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
+from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
 from .openai_service import get_openai_reply
+from .seed_data import seed_agents_and_prompts
 
 try:
     from openpyxl import load_workbook
@@ -102,9 +104,12 @@ LEGACY_PATH_REDIRECTS = {
     "tools.html": "/tools/",
     "consulting.html": "/consulting/",
     "billing.html": "/billing/",
+    "profile.html": "/profile/",
+    "settings.html": "/settings/",
     "login.html": "/login/",
     "register.html": "/register/",
     "prompt-import.html": "/prompt-import/",
+    "agent-admin.html": "/agent-admin/",
 }
 
 
@@ -112,6 +117,10 @@ def ensure_seed_prompts():
     if Prompt.objects.exists():
         return
     Prompt.objects.bulk_create([Prompt(**prompt) for prompt in SEED_PROMPTS])
+
+
+def ensure_seed_agents():
+    seed_agents_and_prompts()
 
 
 def home(request):
@@ -152,6 +161,14 @@ def consulting(request):
 
 def billing(request):
     return render(request, "billing.html")
+
+
+def profile_page(request):
+    return render(request, "profile.html")
+
+
+def settings_page(request):
+    return render(request, "settings.html")
 
 
 def login(request):
@@ -197,6 +214,15 @@ def prompt_import_dashboard(request):
     if not _is_admin_user(user):
         return redirect("prompts")
     return render(request, "prompt-import.html")
+
+
+def agent_admin_dashboard(request):
+    user = get_current_user(request)
+    if not user:
+        return redirect("login")
+    if not _is_admin_user(user):
+        return redirect("agents")
+    return render(request, "agent-admin.html")
 
 
 @csrf_exempt
@@ -325,6 +351,163 @@ def api_me(request):
             "industry": user.industry,
         }
     )
+
+
+def _serialize_agent(agent, include_prompts=False):
+    data = {
+        "id": agent.id,
+        "name": agent.name,
+        "slug": agent.slug,
+        "industry": agent.industry,
+        "description": agent.description,
+        "icon_class": agent.icon_class,
+        "accent_bg": agent.accent_bg,
+        "tag": agent.tag,
+        "usage_count": agent.usage_count,
+        "is_featured": agent.is_featured,
+        "is_active": agent.is_active,
+        "sort_order": agent.sort_order,
+    }
+    if include_prompts:
+        prompts = list(agent.prompts.all().values("id", "prompt_type", "content", "sort_order"))
+        data["hints"] = [p["content"] for p in prompts if p["prompt_type"] == "hint"]
+        data["use_cases"] = [p["content"] for p in prompts if p["prompt_type"] == "use_case"]
+        data["prompts"] = prompts
+    return data
+
+
+def _to_non_negative_int(value, default=0):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
+    return max(parsed, 0)
+
+
+def api_agents(request):
+    ensure_seed_agents()
+    include_prompts = request.GET.get("include_prompts", "").strip() == "1"
+    industry = request.GET.get("industry", "").strip().lower()
+    queryset = Agent.objects.filter(is_active=True)
+    if industry and industry != "all":
+        queryset = queryset.filter(industry__iexact=industry)
+    return JsonResponse(
+        {
+            "items": [
+                _serialize_agent(agent, include_prompts=include_prompts)
+                for agent in queryset.prefetch_related("prompts")
+            ]
+        }
+    )
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_agents(request):
+    ensure_seed_agents()
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if request.method == "GET":
+        queryset = Agent.objects.all().prefetch_related("prompts")
+        return JsonResponse({"items": [_serialize_agent(agent, include_prompts=True) for agent in queryset]})
+
+    if request.method == "POST":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+        name = str(payload.get("name", "")).strip()
+        industry = str(payload.get("industry", "")).strip().lower()
+        description = str(payload.get("description", "")).strip()
+        if not name or not industry or not description:
+            return JsonResponse({"error": "name, industry, and description are required"}, status=400)
+        slug = slugify(name)
+        if not slug:
+            return JsonResponse({"error": "Invalid name"}, status=400)
+        if Agent.objects.filter(Q(name__iexact=name) | Q(slug=slug)).exists():
+            return JsonResponse({"error": "Agent already exists"}, status=409)
+        agent = Agent.objects.create(
+            name=name,
+            slug=slug,
+            industry=industry,
+            description=description,
+            icon_class=str(payload.get("icon_class", "fa-robot")).strip() or "fa-robot",
+            accent_bg=str(payload.get("accent_bg", "#EEF2FF")).strip() or "#EEF2FF",
+            tag=str(payload.get("tag", "")).strip(),
+            usage_count=_to_non_negative_int(payload.get("usage_count", 0), default=0),
+            is_featured=bool(payload.get("is_featured", False)),
+            is_active=bool(payload.get("is_active", True)),
+            sort_order=_to_non_negative_int(payload.get("sort_order", 100), default=100),
+        )
+        return JsonResponse(_serialize_agent(agent, include_prompts=True), status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_agent_detail(request, agent_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    agent = Agent.objects.filter(id=agent_id).first()
+    if not agent:
+        return JsonResponse({"error": "Agent not found"}, status=404)
+    if request.method == "DELETE":
+        agent.delete()
+        return JsonResponse({"deleted": True})
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_agent_prompts(request, agent_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    agent = Agent.objects.filter(id=agent_id).first()
+    if not agent:
+        return JsonResponse({"error": "Agent not found"}, status=404)
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+    prompt_type = str(payload.get("prompt_type", "hint")).strip().lower()
+    content = str(payload.get("content", "")).strip()
+    sort_order = _to_non_negative_int(payload.get("sort_order", 100), default=100)
+    if prompt_type not in {"hint", "use_case"}:
+        return JsonResponse({"error": "prompt_type must be hint or use_case"}, status=400)
+    if not content:
+        return JsonResponse({"error": "content is required"}, status=400)
+    prompt = AgentPrompt.objects.create(
+        agent=agent,
+        prompt_type=prompt_type,
+        content=content,
+        sort_order=sort_order,
+    )
+    return JsonResponse(
+        {
+            "id": prompt.id,
+            "agent_id": agent.id,
+            "prompt_type": prompt.prompt_type,
+            "content": prompt.content,
+            "sort_order": prompt.sort_order,
+        },
+        status=201,
+    )
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_agent_prompt_detail(request, prompt_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    prompt = AgentPrompt.objects.filter(id=prompt_id).first()
+    if not prompt:
+        return JsonResponse({"error": "Prompt not found"}, status=404)
+    if request.method == "DELETE":
+        prompt.delete()
+        return JsonResponse({"deleted": True})
+    return JsonResponse({"error": "Method not allowed"}, status=405)
 
 
 def _normalize_header(header):

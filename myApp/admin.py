@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
+from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
 
 
 @admin.register(CustomUser)
@@ -31,3 +31,17 @@ class ChatSessionAdmin(admin.ModelAdmin):
 class ChatMessageAdmin(admin.ModelAdmin):
     list_display = ("id", "session", "role", "token_count", "created_at")
     list_filter = ("role", "feedback")
+
+
+@admin.register(Agent)
+class AgentAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "industry", "is_featured", "is_active", "usage_count")
+    list_filter = ("industry", "is_featured", "is_active")
+    search_fields = ("name", "description", "tag")
+
+
+@admin.register(AgentPrompt)
+class AgentPromptAdmin(admin.ModelAdmin):
+    list_display = ("id", "agent", "prompt_type", "sort_order", "created_at")
+    list_filter = ("prompt_type",)
+    search_fields = ("agent__name", "content")

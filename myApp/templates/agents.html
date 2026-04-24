@@ -3,162 +3,751 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Agents — AI KONIK</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-.agents-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.agent-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:24px;cursor:pointer;transition:all .25s;text-decoration:none;display:flex;flex-direction:column}
-.agent-card:hover{border-color:var(--teal);transform:translateY(-3px);box-shadow:0 8px 30px rgba(13,124,102,.12)}
-.agent-card-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
-.agent-emoji-lg{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
-.agent-name{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:3px}
-.agent-desc{font-size:13px;color:var(--slate);line-height:1.5;flex:1;margin-bottom:14px}
-.agent-footer{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border);margin-top:auto}
-.agent-uses{font-size:11px;color:var(--slate2)}
-.featured-banner{background:linear-gradient(135deg,var(--teal) 0%,var(--teal2) 100%);border-radius:var(--radius2);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;gap:24px}
-.featured-banner-text h2{font-family:'DM Serif Display',serif;font-size:24px;color:#fff;margin-bottom:6px}
-.featured-banner-text p{font-size:14px;color:rgba(255,255,255,.8)}
-.featured-banner-emoji{font-size:48px}
+:root{
+  --accent-purple:#8b5cf6;
+  --accent-violet:#7c3aed;
+  --accent-teal:#0d9488;
+  --accent-cyan:#0891b2;
+  --accent-indigo:#4f46e5;
+  --accent-pink:#ec4899;
+  --accent-amber:#f59e0b;
+  --accent-emerald:#10b981;
+  --accent-rose:#f43f5e;
+  --icon-ink:#ffffff;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 10% 10%, rgba(120, 55, 220, .22), transparent 32%),
+    radial-gradient(circle at 82% 24%, rgba(0, 150, 170, .2), transparent 30%),
+    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #0f172a 100%);
+}
+nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
+.logo{color:#fff}
+.nav-links a{color:rgba(255,255,255,.75)}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+.portal-wrap{max-width:1200px;margin:0 auto;padding:110px 26px 48px}
+.glass{
+  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 16px 38px rgba(0,0,0,.24);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+}
+
+/* ============ HERO ============ */
+.hero{
+  text-align:center;
+  padding:28px 24px 24px;
+  margin-bottom:18px;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 50% 120%, rgba(139,92,246,.25), transparent 55%);
+  pointer-events:none;
+}
+.hero h1{
+  margin:0 0 10px;
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(30px,4.2vw,46px);
+  color:#fff;
+  letter-spacing:.01em;
+  position:relative;
+}
+.hero h1 span{color:#b1a4ff}
+.hero p{
+  margin:0 auto;
+  max-width:760px;
+  color:rgba(255,255,255,.88);
+  font-size:14px;
+  position:relative;
+}
+
+/* ============ PORTAL PILLS ============ */
+.portal-pills{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+  margin-bottom:18px;
+}
+.portal-pill{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:14px 16px;
+  font-size:13px;
+  color:#fff;
+  text-decoration:none;
+  font-weight:500;
+  transition:transform .2s, border-color .2s;
+}
+.portal-pill:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.4)}
+.portal-pill-left{display:flex;align-items:center;gap:11px}
+.pill-icon{
+  width:32px;
+  height:32px;
+  border-radius:10px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#fff;
+  font-size:13px;
+  flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.15);
+}
+.pill-icon.utilities{background:linear-gradient(135deg,var(--accent-cyan),var(--accent-teal))}
+.pill-icon.sandbox{background:linear-gradient(135deg,var(--accent-amber),var(--accent-rose))}
+.pill-icon.consultant{background:linear-gradient(135deg,var(--accent-violet),var(--accent-indigo))}
+.portal-pill .chev{opacity:.6;font-size:11px}
+
+/* ============ SPOTLIGHT ROW ============ */
+.spotlight-row{
+  display:grid;
+  grid-template-columns:2fr 1fr 1fr 1fr;
+  gap:12px;
+  margin-bottom:22px;
+}
+.featured-banner{
+  padding:20px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  min-height:138px;
+  position:relative;
+  overflow:hidden;
+  background:
+    linear-gradient(to top, rgba(0,0,0,.58), rgba(0,0,0,.25)),
+    radial-gradient(circle at 10% 10%, rgba(255,255,255,.2), transparent 32%),
+    linear-gradient(120deg, rgba(92,66,189,.55), rgba(13,124,102,.55));
+}
+.featured-banner::after{
+  content:"";
+  position:absolute;
+  top:-40px;right:-40px;
+  width:180px;height:180px;
+  background:radial-gradient(circle, rgba(255,255,255,.12), transparent 70%);
+  pointer-events:none;
+}
+.featured-banner-emoji{
+  width:58px;
+  height:58px;
+  border-radius:16px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  color:#fff;
+  background:linear-gradient(135deg,var(--accent-violet),var(--accent-indigo));
+  box-shadow:0 8px 20px rgba(76,29,149,.5), inset 0 1px 0 rgba(255,255,255,.25);
+  flex-shrink:0;
+  position:relative;
+  z-index:1;
+}
+.featured-banner-text{flex:1;min-width:0;position:relative;z-index:1}
+.featured-banner-text .kicker{
+  display:inline-block;
+  font-size:10px;
+  font-weight:700;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:#fde68a;
+  margin-bottom:4px;
+}
+.featured-banner-text h2{font-size:20px;line-height:1.2;color:#fff;margin:0 0 4px;font-weight:600}
+.featured-banner-text p{margin:0;color:rgba(255,255,255,.85);font-size:13px;line-height:1.5}
+.featured-banner .btn{white-space:nowrap;position:relative;z-index:1}
+
+/* ============ ACTION TILES ============ */
+.action-tile{
+  color:#fff;
+  min-height:138px;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  font-weight:600;
+  letter-spacing:.01em;
+  position:relative;
+  overflow:hidden;
+  transition:transform .2s;
+}
+.action-tile:hover{transform:translateY(-3px)}
+.action-tile .tile-icon{
+  width:48px;
+  height:48px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  background:rgba(0,0,0,.28);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18);
+}
+.action-tile span{font-size:14px}
+.action-tile.launch{background:linear-gradient(140deg, rgba(8,145,178,.6), rgba(30,64,175,.65))}
+.action-tile.build{background:linear-gradient(140deg, rgba(37,99,235,.62), rgba(14,116,144,.62))}
+.action-tile.grow{background:linear-gradient(140deg, rgba(124,58,237,.65), rgba(79,70,229,.65))}
+
+/* ============ CONTROLS ============ */
+.controls{
+  margin-bottom:14px;
+  display:grid;
+  grid-template-columns:1fr auto auto auto;
+  gap:10px;
+  align-items:center;
+}
+.controls .filter-search{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:12px;
+  padding:0 12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.controls .filter-search span{color:rgba(255,255,255,.65)}
+.controls .filter-search input{
+  color:#fff;
+  background:transparent;
+  border:none;
+  outline:none;
+  width:100%;
+  padding:10px 0;
+  font:inherit;
+}
+.controls .filter-search input::placeholder{color:rgba(255,255,255,.55)}
+.filter-select{
+  border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  padding:10px 12px;
+  border-radius:12px;
+  cursor:pointer;
+  font:inherit;
+}
+.filter-select option{color:#111827}
+.results-meta{font-size:12px;color:rgba(255,255,255,.7);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.results-meta::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--accent-emerald);box-shadow:0 0 8px var(--accent-emerald)}
+.clear-btn{
+  border:1px solid rgba(255,255,255,.28);
+  color:#fff;
+  background:rgba(255,255,255,.06);
+  padding:9px 14px;
+  border-radius:12px;
+  font-size:13px;
+  cursor:pointer;
+  transition:background .2s;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  text-decoration:none;
+}
+.clear-btn:hover{background:rgba(255,255,255,.16)}
+
+/* ============ INDUSTRY FILTERS ============ */
+.industry-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:22px;
+  padding-bottom:18px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.ind-filter{
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.8);
+  border-radius:999px;
+  padding:8px 14px;
+  font-size:12px;
+  font-weight:500;
+  cursor:pointer;
+  transition:all .2s;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.ind-filter i{font-size:11px;opacity:.85}
+.ind-filter:hover{background:rgba(255,255,255,.12);color:#fff}
+.ind-filter.active{
+  border-color:rgba(214,203,255,.6);
+  background:linear-gradient(120deg, rgba(168,85,247,.45), rgba(59,130,246,.35));
+  color:#fff;
+  box-shadow:0 4px 14px rgba(139,92,246,.25);
+}
+.ind-filter.active i{opacity:1}
+
+/* ============ AGENT CARDS ============ */
+.agents-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.agent-card{
+  text-decoration:none;
+  color:#fff;
+  border-radius:18px;
+  padding:18px;
+  display:flex;
+  flex-direction:column;
+  min-height:220px;
+  border:1px solid rgba(255,255,255,.18);
+  background:linear-gradient(150deg, rgba(255,255,255,.14), rgba(255,255,255,.04));
+  backdrop-filter:blur(6px);
+  box-shadow:0 10px 28px rgba(0,0,0,.22);
+  transition:transform .2s,border-color .2s,box-shadow .2s;
+  position:relative;
+  overflow:hidden;
+}
+.agent-card::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.3), transparent);
+}
+.agent-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(255,255,255,.4);
+  box-shadow:0 18px 40px rgba(0,0,0,.35);
+}
+.agent-card-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.agent-emoji-lg{
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  color:#fff;
+  flex-shrink:0;
+  box-shadow:0 6px 16px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.2);
+}
+.agent-card-header{flex:1;min-width:0}
+.agent-name{font-size:15px;font-weight:600;color:#fff;margin-bottom:5px;line-height:1.3}
+.agent-desc{font-size:13px;color:rgba(255,255,255,.78);line-height:1.5;flex:1}
+.agent-footer{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.14);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+.agent-uses{font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:5px}
+.agent-uses i{font-size:10px}
+.badge{
+  display:inline-block;
+  padding:3px 8px;
+  border-radius:6px;
+  font-size:10px;
+  font-weight:500;
+  letter-spacing:.02em;
+}
+.badge-gray{background:rgba(255,255,255,.14);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.1)}
+.badge-teal{background:linear-gradient(135deg,var(--accent-amber),var(--accent-rose));color:#fff;padding:2px 7px;border-radius:5px}
+.btn-teal{
+  background:rgba(255,255,255,.14);
+  color:#fff;
+  border:1px solid rgba(255,255,255,.2);
+  padding:5px 11px;
+  border-radius:8px;
+  font-size:12px;
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  transition:background .2s;
+}
+.agent-card:hover .btn-teal{background:rgba(255,255,255,.25)}
+
+@media(max-width:1080px){
+  .spotlight-row{grid-template-columns:1fr 1fr;grid-auto-rows:minmax(120px,auto)}
+  .spotlight-row .featured-banner{grid-column:1 / -1}
+}
+@media(max-width:900px){
+  .portal-pills{grid-template-columns:1fr}
+  .controls{grid-template-columns:1fr 1fr}
+  .agents-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:640px){
+  .portal-wrap{padding:96px 14px 28px}
+  .controls{grid-template-columns:1fr}
+  .agents-grid{grid-template-columns:1fr}
+  .featured-banner{flex-direction:column;align-items:flex-start}
+  .featured-banner .btn{align-self:stretch;justify-content:center;display:flex}
+}
+.profile-nav{position:relative}
+.sc-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 6px 16px rgba(13,124,102,.35);
+}
+.profile-menu{
+  position:absolute;top:44px;right:0;min-width:190px;border-radius:12px;
+  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 32px rgba(0,0,0,.35);
+  padding:8px;display:none;z-index:120;
+}
+.profile-menu.open{display:block}
+.profile-menu a,.profile-menu button{
+  width:100%;border:none;background:none;text-align:left;color:#fff;text-decoration:none;
+  padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.profile-menu a:hover,.profile-menu button:hover{background:rgba(255,255,255,.12)}
 </style>
 </head>
 <body>
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
     <div class="nav-links">
-      <a href="agents.html" class="active">Agents</a>
-      <a href="prompts.html">Prompts</a>
-      <a href="industries.html">Industries</a>
-      <a href="events.html">Events</a>
-      <a href="tools.html">Tools</a>
+      <a href="{% url 'agents' %}" class="active">Agents</a>
+      <a href="{% url 'prompts' %}">Prompts</a>
+      <a href="{% url 'industries' %}">Industries</a>
+      <a href="{% url 'events' %}">Events</a>
+      <a href="{% url 'tools' %}">Tools</a>
     </div>
-    <div class="nav-cta">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;cursor:pointer">SC</div>
+    <div class="nav-cta profile-nav">
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
+      <div class="profile-menu" id="profile-menu">
+        <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
+        <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
+        <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+        <button type="button" id="profile-signout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
     </div>
   </div>
 </nav>
 
-<div class="page-shell">
-  <div class="sidebar-layout">
-    <div class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Navigation</div>
-        <a href="dashboard.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-table-cells-large"></i></span>Dashboard</a>
-        <a href="agents.html" class="sidebar-link active"><span class="icon"><i class="fa-solid fa-robot"></i></span>All Agents</a>
-        <a href="prompts.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-book-open"></i></span>Prompts</a>
-        <a href="industries.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-industry"></i></span>Industries</a>
-        <a href="tools.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></span>Tools</a>
-        <a href="courses.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-graduation-cap"></i></span>Courses</a>
-        <a href="events.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span>Events</a>
-        <a href="consulting.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>Consulting</a>
-        <a href="billing.html" class="sidebar-link"><span class="icon"><i class="fa-regular fa-credit-card"></i></span>Billing</a>
+<div class="portal-wrap">
+  <section class="hero glass">
+    <h1>AI KONIK <span>|</span> Agent Portal</h1>
+    <p>Codify your judgment, decision-making, and creative instincts into AI agents that operate as you would so your business compounds without demanding more of you.</p>
+  </section>
+
+  <section class="portal-pills">
+    <a class="portal-pill glass" href="{% url 'tools' %}">
+      <span class="portal-pill-left">
+        <span class="pill-icon utilities"><i class="fa-solid fa-screwdriver-wrench"></i></span>
+        Utilities
+      </span>
+      <i class="fa-solid fa-chevron-right chev"></i>
+    </a>
+    <a class="portal-pill glass" href="{% url 'prompts' %}">
+      <span class="portal-pill-left">
+        <span class="pill-icon sandbox"><i class="fa-solid fa-flask"></i></span>
+        Sandbox Agents
+      </span>
+      <i class="fa-solid fa-chevron-right chev"></i>
+    </a>
+    <a class="portal-pill glass" href="{% url 'consulting' %}">
+      <span class="portal-pill-left">
+        <span class="pill-icon consultant"><i class="fa-solid fa-briefcase"></i></span>
+        Consultant's Toolbox
+      </span>
+      <i class="fa-solid fa-chevron-right chev"></i>
+    </a>
+  </section>
+
+  <section class="spotlight-row">
+    <div class="featured-banner glass">
+      <div class="featured-banner-emoji"><i class="fa-solid fa-scale-balanced"></i></div>
+      <div class="featured-banner-text">
+        <span class="kicker">★ Featured this week</span>
+        <h2>Contract Review Agent</h2>
+        <p>Used by legal teams to catch risky clauses before signing.</p>
       </div>
-      <div style="padding:16px">
-        <div class="sidebar-label" style="padding:0 4px">Filter by industry</div>
-        <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px" id="ind-filters">
-          <button class="ind-filter active" onclick="filterInd('all',this)">All Industries</button>
-          <button class="ind-filter" onclick="filterInd('legal',this)"><i class="fa-solid fa-scale-balanced"></i> Legal</button>
-          <button class="ind-filter" onclick="filterInd('healthcare',this)"><i class="fa-solid fa-hospital"></i> Healthcare</button>
-          <button class="ind-filter" onclick="filterInd('finance',this)"><i class="fa-solid fa-sack-dollar"></i> Finance</button>
-          <button class="ind-filter" onclick="filterInd('marketing',this)"><i class="fa-solid fa-bullhorn"></i> Marketing</button>
-          <button class="ind-filter" onclick="filterInd('technology',this)"><i class="fa-solid fa-laptop-code"></i> Technology</button>
-          <button class="ind-filter" onclick="filterInd('realestate',this)"><i class="fa-solid fa-house"></i> Real Estate</button>
-          <button class="ind-filter" onclick="filterInd('accounting',this)"><i class="fa-solid fa-chart-line"></i> Accounting</button>
-          <button class="ind-filter" onclick="filterInd('logistics',this)"><i class="fa-solid fa-truck"></i> Logistics</button>
-          <button class="ind-filter" onclick="filterInd('manufacturing',this)"><i class="fa-solid fa-gears"></i> Manufacturing</button>
-        </div>
-      </div>
+      <a href="{% url 'agent_chat' %}?new=1" class="btn btn-white">Start chat <i class="fa-solid fa-arrow-right"></i></a>
     </div>
-    <div class="main-content">
-      <div class="filter-bar">
-        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search agents..." oninput="searchAgents(this.value)" id="search-input"></div>
-        <select class="filter-select" onchange="sortAgents(this.value)">
-          <option>Sort: Featured</option>
-          <option>Most Used</option>
-          <option>Newest</option>
-          <option>A–Z</option>
-        </select>
-      </div>
-      <div class="featured-banner">
-        <div class="featured-banner-emoji"><i class="fa-solid fa-scale-balanced"></i></div>
-        <div class="featured-banner-text">
-          <h2>Contract Review Agent</h2>
-          <p>This week's featured agent — used by 1,200+ legal teams to catch risky clauses before signing</p>
-        </div>
-        <a href="agent-chat.html" class="btn btn-white" style="margin-left:auto;white-space:nowrap">Start chat <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-      <div class="agents-grid" id="agents-grid"></div>
-    </div>
-  </div>
+    <a class="action-tile glass launch" href="/agent-chat/?new=1">
+      <span class="tile-icon"><i class="fa-solid fa-rocket"></i></span>
+      <span>Launch</span>
+    </a>
+    <a class="action-tile glass build" href="{% url 'agent_admin_dashboard' %}">
+      <span class="tile-icon"><i class="fa-solid fa-gear"></i></span>
+      <span>Build</span>
+    </a>
+    <a class="action-tile glass grow" href="{% url 'courses_redirect' %}">
+      <span class="tile-icon"><i class="fa-solid fa-chart-line"></i></span>
+      <span>Grow</span>
+    </a>
+  </section>
+
+  <section class="controls">
+    <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search agents..." oninput="searchAgents(this.value)" id="search-input"></div>
+    <select class="filter-select" onchange="sortAgents(this.value)" id="sort-select">
+      <option value="featured">Sort: Featured</option>
+      <option value="most-used">Most Used</option>
+      <option value="newest">Newest</option>
+      <option value="az">A-Z</option>
+    </select>
+    <button type="button" class="clear-btn" onclick="clearAllFilters()"><i class="fa-solid fa-xmark"></i> Clear</button>
+    <a href="/agent-admin/" id="manage-agents-btn" class="clear-btn" style="display:none"><i class="fa-solid fa-gear"></i> Manage</a>
+  </section>
+
+  <div class="results-meta" id="results-count">0 agents found</div>
+
+  <section class="industry-row" id="ind-filters">
+    <button class="ind-filter active" onclick="filterInd('all',this)">All industries</button>
+    <button class="ind-filter" onclick="filterInd('legal',this)"><i class="fa-solid fa-scale-balanced"></i> Legal</button>
+    <button class="ind-filter" onclick="filterInd('healthcare',this)"><i class="fa-solid fa-hospital"></i> Healthcare</button>
+    <button class="ind-filter" onclick="filterInd('finance',this)"><i class="fa-solid fa-sack-dollar"></i> Finance</button>
+    <button class="ind-filter" onclick="filterInd('marketing',this)"><i class="fa-solid fa-bullhorn"></i> Marketing</button>
+    <button class="ind-filter" onclick="filterInd('technology',this)"><i class="fa-solid fa-laptop-code"></i> Technology</button>
+    <button class="ind-filter" onclick="filterInd('realestate',this)"><i class="fa-solid fa-house"></i> Real Estate</button>
+    <button class="ind-filter" onclick="filterInd('accounting',this)"><i class="fa-solid fa-chart-line"></i> Accounting</button>
+    <button class="ind-filter" onclick="filterInd('logistics',this)"><i class="fa-solid fa-truck"></i> Logistics</button>
+    <button class="ind-filter" onclick="filterInd('manufacturing',this)"><i class="fa-solid fa-gears"></i> Manufacturing</button>
+  </section>
+
+  <div class="agents-grid" id="agents-grid"></div>
 </div>
-
-<style>
-.ind-filter{width:100%;text-align:left;padding:7px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;color:var(--ink2);background:transparent;cursor:pointer;transition:all .15s}
-.ind-filter:hover{background:var(--bg2)}
-.ind-filter.active{background:var(--teal-light);color:var(--teal);border-color:var(--teal);font-weight:500}
-</style>
 <script>
-const AGENTS=[
-  {id:1,name:'Contract Review Agent',desc:'Analyze contracts for risks, unfavorable clauses, and missing protections automatically.',emoji:'<i class="fa-solid fa-scale-balanced"></i>',bg:'#EEF2FF',industry:'legal',tag:'M&A · Contracts',uses:'12.4k',featured:true},
-  {id:2,name:'Compliance Monitor',desc:'Track regulatory changes and automatically flag compliance risks in your documents.',emoji:'<i class="fa-solid fa-magnifying-glass"></i>',bg:'#F0FDF4',industry:'legal',tag:'Compliance',uses:'8.1k',featured:true},
-  {id:3,name:'NDA Drafter',desc:'Generate tailored NDAs with industry-standard protections in minutes.',emoji:'<i class="fa-solid fa-file-signature"></i>',bg:'#FFF1F2',industry:'legal',tag:'Drafting',uses:'6.7k',featured:false},
-  {id:4,name:'IP Research Agent',desc:'Patent landscape analysis, trademark search, and IP strategy guidance.',emoji:'<i class="fa-solid fa-landmark"></i>',bg:'#FFF7ED',industry:'legal',tag:'IP',uses:'4.2k',featured:false},
-  {id:5,name:'Clinical Documentation Agent',desc:'Streamline clinical notes, SOAP notes, and medical documentation with AI.',emoji:'<i class="fa-solid fa-hospital"></i>',bg:'#F0FDF4',industry:'healthcare',tag:'Documentation',uses:'9.8k',featured:true},
-  {id:6,name:'Patient Communication Agent',desc:'Generate clear, empathetic patient communications and follow-up messages.',emoji:'<i class="fa-solid fa-comments"></i>',bg:'#EEF2FF',industry:'healthcare',tag:'Communication',uses:'7.3k',featured:false},
-  {id:7,name:'Medical Billing Agent',desc:'Optimize coding accuracy, reduce claim denials, and automate billing workflows.',emoji:'<i class="fa-solid fa-prescription-bottle-medical"></i>',bg:'#FFF7ED',industry:'healthcare',tag:'Billing',uses:'5.9k',featured:false},
-  {id:8,name:'Risk Analysis Agent',desc:'Comprehensive financial risk assessment and portfolio analysis reports.',emoji:'<i class="fa-solid fa-chart-line"></i>',bg:'#FFFBEB',industry:'finance',tag:'Risk',uses:'11.2k',featured:true},
-  {id:9,name:'Regulatory Filing Agent',desc:'Automate SEC filings, compliance reports, and regulatory documentation.',emoji:'<i class="fa-solid fa-clipboard-list"></i>',bg:'#EEF2FF',industry:'finance',tag:'Regulatory',uses:'6.8k',featured:false},
-  {id:10,name:'Content Strategy Agent',desc:'Build complete content strategies with SEO-optimized briefs and editorial calendars.',emoji:'<i class="fa-solid fa-bullhorn"></i>',bg:'#FFF1F2',industry:'marketing',tag:'Content · SEO',uses:'18.5k',featured:true},
-  {id:11,name:'Ad Copy Agent',desc:'Generate high-converting ad copy for Google, Meta, LinkedIn, and more.',emoji:'<i class="fa-solid fa-bullseye"></i>',bg:'#FFF7ED',industry:'marketing',tag:'Paid Ads',uses:'14.2k',featured:false},
-  {id:12,name:'Brand Voice Agent',desc:'Maintain consistent brand voice across all content — checks and rewrites for alignment.',emoji:'<i class="fa-solid fa-palette"></i>',bg:'#F5F3FF',industry:'marketing',tag:'Brand',uses:'9.1k',featured:false},
-  {id:13,name:'Technical Documentation Agent',desc:'Generate API docs, developer guides, and technical specs from code and requirements.',emoji:'<i class="fa-solid fa-laptop-code"></i>',bg:'#F0F9FF',industry:'technology',tag:'Documentation',uses:'16.3k',featured:true},
-  {id:14,name:'Code Review Agent',desc:'Automated code review with security, performance, and best practice checks.',emoji:'<i class="fa-solid fa-shield-halved"></i>',bg:'#F5F3FF',industry:'technology',tag:'Code Review',uses:'12.7k',featured:false},
-  {id:15,name:'Property Analysis Agent',desc:'Comprehensive property valuation, market analysis, and investment potential reports.',emoji:'<i class="fa-solid fa-house"></i>',bg:'#F5F3FF',industry:'realestate',tag:'Valuation',uses:'5.4k',featured:true},
-  {id:16,name:'Lease Review Agent',desc:'Analyze commercial and residential leases for risks and unfavorable terms.',emoji:'<i class="fa-solid fa-file-lines"></i>',bg:'#EEF2FF',industry:'realestate',tag:'Lease Review',uses:'4.1k',featured:false},
-  {id:17,name:'Tax Preparation Agent',desc:'Streamline tax prep with automated data extraction and filing guidance.',emoji:'<i class="fa-solid fa-chart-line"></i>',bg:'#ECFDF5',industry:'accounting',tag:'Tax',uses:'7.8k',featured:true},
-  {id:18,name:'Audit Support Agent',desc:'Automate audit workpapers, sampling selection, and evidence documentation.',emoji:'<i class="fa-solid fa-magnifying-glass-chart"></i>',bg:'#F0FDF4',industry:'accounting',tag:'Audit',uses:'5.2k',featured:false},
-  {id:19,name:'Supply Chain Agent',desc:'Optimize supply chain operations with demand forecasting and vendor analysis.',emoji:'<i class="fa-solid fa-truck"></i>',bg:'#FFF7ED',industry:'logistics',tag:'Supply Chain',uses:'6.3k',featured:true},
-  {id:20,name:'QA Analysis Agent',desc:'Automated quality control checklists, defect analysis, and compliance reporting.',emoji:'<i class="fa-solid fa-gears"></i>',bg:'#F8FAFC',industry:'manufacturing',tag:'Quality Control',uses:'4.8k',featured:true},
-];
-
+let AGENTS=[];
 let currentIndustry='all';
 let currentSearch='';
+let currentSort='featured';
+
+// Saturated accent palette for agent card icons — cycled deterministically by industry/id
+// so icons are always high-contrast against the card background.
+const ICON_GRADIENTS = {
+  legal:        'linear-gradient(135deg,#8b5cf6,#6366f1)',
+  healthcare:   'linear-gradient(135deg,#f43f5e,#ec4899)',
+  finance:      'linear-gradient(135deg,#10b981,#059669)',
+  marketing:    'linear-gradient(135deg,#f59e0b,#ef4444)',
+  technology:   'linear-gradient(135deg,#0891b2,#0d9488)',
+  realestate:   'linear-gradient(135deg,#6366f1,#8b5cf6)',
+  accounting:   'linear-gradient(135deg,#059669,#0891b2)',
+  logistics:    'linear-gradient(135deg,#d97706,#b45309)',
+  manufacturing:'linear-gradient(135deg,#475569,#334155)'
+};
+const FALLBACK_GRADIENTS = [
+  'linear-gradient(135deg,#8b5cf6,#6366f1)',
+  'linear-gradient(135deg,#0891b2,#0d9488)',
+  'linear-gradient(135deg,#f59e0b,#ef4444)',
+  'linear-gradient(135deg,#10b981,#059669)',
+  'linear-gradient(135deg,#ec4899,#f43f5e)',
+  'linear-gradient(135deg,#6366f1,#ec4899)'
+];
+
+function iconBg(a){
+  if(a.accent_bg && !isLightColor(a.accent_bg)){
+    return a.accent_bg;
+  }
+  if(a.industry && ICON_GRADIENTS[a.industry]) return ICON_GRADIENTS[a.industry];
+  const idx = Math.abs(Number(a.id||0) + (a.name||'').length) % FALLBACK_GRADIENTS.length;
+  return FALLBACK_GRADIENTS[idx];
+}
+
+function parseColorToken(token){
+  const t = (token || '').trim().toLowerCase();
+  if(!t) return null;
+  if(t === 'white') return [255,255,255];
+  if(t === 'black') return [0,0,0];
+
+  if(t.startsWith('#')){
+    const hex = t.slice(1);
+    if(hex.length === 3){
+      return [0,1,2].map(i => parseInt(hex[i] + hex[i], 16));
+    }
+    if(hex.length >= 6){
+      return [
+        parseInt(hex.slice(0,2), 16),
+        parseInt(hex.slice(2,4), 16),
+        parseInt(hex.slice(4,6), 16)
+      ];
+    }
+  }
+
+  const rgb = t.match(/rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)/);
+  if(rgb){
+    return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  }
+  return null;
+}
+
+function luminance(rgb){
+  return (0.299 * rgb[0]) + (0.587 * rgb[1]) + (0.114 * rgb[2]);
+}
+
+function isLightColor(value){
+  const raw = (value || '').toString().trim();
+  if(!raw) return false;
+
+  const gradientTokens = raw.match(/#([0-9a-fA-F]{3,8})|rgba?\([^)]+\)|\bwhite\b|\bblack\b/g);
+  if(gradientTokens && gradientTokens.length){
+    const points = gradientTokens.map(parseColorToken).filter(Boolean);
+    if(!points.length) return false;
+    const avg = points.reduce((sum, rgb)=>sum + luminance(rgb), 0) / points.length;
+    return avg >= 180;
+  }
+
+  const parsed = parseColorToken(raw);
+  return parsed ? luminance(parsed) >= 180 : false;
+}
+
+function iconColorFor(bg){
+  return isLightColor(bg) ? '#0f172a' : '#ffffff';
+}
+
+function formatUses(n){
+  const value = Number(n||0);
+  if(value>=1000){ return `${(value/1000).toFixed(1)}k`; }
+  return `${value}`;
+}
+
+function bySort(list){
+  const sorted = [...list];
+  if(currentSort === 'most-used'){
+    return sorted.sort((a,b)=>Number(b.usage_count||0)-Number(a.usage_count||0));
+  }
+  if(currentSort === 'az'){
+    return sorted.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  }
+  if(currentSort === 'newest'){
+    return sorted.sort((a,b)=>Number(b.id||0)-Number(a.id||0));
+  }
+  return sorted.sort((a,b)=>Number(b.is_featured||0)-Number(a.is_featured||0));
+}
+
+function updateCount(count){
+  const el = document.getElementById('results-count');
+  if(el) el.textContent = `${count} agent${count===1?'':'s'} found`;
+}
 
 function renderAgents(){
-  let filtered=AGENTS.filter(a=>{
-    const indMatch=currentIndustry==='all'||a.industry===currentIndustry;
-    const searchMatch=!currentSearch||a.name.toLowerCase().includes(currentSearch)||a.desc.toLowerCase().includes(currentSearch);
-    return indMatch&&searchMatch;
+  const filtered = AGENTS.filter(a=>{
+    const indMatch = currentIndustry==='all' || a.industry===currentIndustry;
+    const searchMatch = !currentSearch || (a.name||'').toLowerCase().includes(currentSearch) || (a.description||'').toLowerCase().includes(currentSearch);
+    return indMatch && searchMatch;
   });
-  const grid=document.getElementById('agents-grid');
-  grid.innerHTML=filtered.map(a=>`
-    <a href="agent-chat.html?new=1&agent=${encodeURIComponent(a.name)}&industry=${encodeURIComponent(a.industry)}" class="agent-card">
+  const sorted = bySort(filtered);
+  const grid = document.getElementById('agents-grid');
+  updateCount(sorted.length);
+  if(!sorted.length){
+    grid.innerHTML = `<div class="glass" style="grid-column:1/-1;padding:22px;color:#fff">No agents found for this filter.</div>`;
+    return;
+  }
+  grid.innerHTML = sorted.map(a=>`
+    <a href="/agent-chat/?new=1&agent=${encodeURIComponent(a.name)}&industry=${encodeURIComponent(a.industry)}" class="agent-card">
       <div class="agent-card-top">
-        <div class="agent-emoji-lg" style="background:${a.bg}">${a.emoji}</div>
-        <div>
-          <div class="agent-name">${a.name}${a.featured?'<span class="badge badge-teal" style="margin-left:6px;font-size:10px">Featured</span>':''}</div>
-          <span class="badge badge-gray">${a.tag}</span>
+        <div class="agent-emoji-lg" style="background:${iconBg(a)};color:${iconColorFor(iconBg(a))}"><i class="fa-solid ${a.icon_class || 'fa-robot'}"></i></div>
+        <div class="agent-card-header">
+          <div class="agent-name">${a.name}${a.is_featured?' <span class="badge badge-teal">★ Featured</span>':''}</div>
+          <span class="badge badge-gray">${a.tag || 'General'}</span>
         </div>
       </div>
-      <div class="agent-desc">${a.desc}</div>
+      <div class="agent-desc">${a.description || 'No description provided yet.'}</div>
       <div class="agent-footer">
-        <span class="agent-uses">${a.uses} uses</span>
-        <span class="btn btn-teal btn-sm">Start chat <i class="fa-solid fa-arrow-right"></i></span>
+        <span class="agent-uses"><i class="fa-solid fa-chart-simple"></i> ${formatUses(a.usage_count)} uses</span>
+        <span class="btn-teal">Start chat <i class="fa-solid fa-arrow-right"></i></span>
       </div>
     </a>
   `).join('');
 }
 
 function filterInd(ind,btn){
-  currentIndustry=ind;
+  currentIndustry = ind;
   document.querySelectorAll('.ind-filter').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderAgents();
 }
-function searchAgents(v){currentSearch=v.toLowerCase();renderAgents();}
-function sortAgents(v){renderAgents();}
-renderAgents();
+
+function clearAllFilters(){
+  currentIndustry = 'all';
+  currentSearch = '';
+  currentSort = 'featured';
+  const searchInput = document.getElementById('search-input');
+  if(searchInput) searchInput.value = '';
+  const sortSelect = document.getElementById('sort-select');
+  if(sortSelect) sortSelect.value = 'featured';
+  const allButton = document.querySelector('.ind-filter');
+  document.querySelectorAll('.ind-filter').forEach(b=>b.classList.remove('active'));
+  if(allButton) allButton.classList.add('active');
+  renderAgents();
+}
+
+function searchAgents(v){
+  currentSearch = (v || '').toLowerCase();
+  renderAgents();
+}
+
+function sortAgents(v){
+  currentSort = v || 'featured';
+  renderAgents();
+}
+
+function renderFeatured(){
+  const featured = AGENTS.find(a=>a.is_featured) || AGENTS[0];
+  if(!featured) return;
+  const bannerIcon = document.querySelector('.featured-banner-emoji');
+  const bannerTitle = document.querySelector('.featured-banner-text h2');
+  const bannerDesc = document.querySelector('.featured-banner-text p');
+  const bannerLink = document.querySelector('.featured-banner a');
+  if(bannerIcon){
+    const bg = iconBg(featured);
+    bannerIcon.innerHTML = `<i class="fa-solid ${featured.icon_class || 'fa-robot'}"></i>`;
+    bannerIcon.style.background = bg;
+    bannerIcon.style.color = iconColorFor(bg);
+  }
+  if(bannerTitle) bannerTitle.textContent = featured.name;
+  if(bannerDesc) bannerDesc.textContent = `${featured.description || 'Featured AI specialist.'} Used by ${formatUses(featured.usage_count)}+ teams.`;
+  if(bannerLink) bannerLink.href = `/agent-chat/?new=1&agent=${encodeURIComponent(featured.name)}&industry=${encodeURIComponent(featured.industry)}`;
+}
+
+fetch('/api/agents',{credentials:'same-origin'})
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({ok,data})=>{
+    if(!ok){ throw new Error(data.error || 'Failed to load agents'); }
+    AGENTS = data.items || [];
+    renderFeatured();
+    renderAgents();
+  })
+  .catch(()=>{
+    document.getElementById('agents-grid').innerHTML = `<div class="glass" style="grid-column:1/-1;padding:22px;color:#fff">Unable to load agents right now.</div>`;
+    updateCount(0);
+  });
+
+fetch('/api/auth/me',{credentials:'same-origin'})
+  .then(async r=>({ok:r.ok,data:await r.json()}))
+  .then(({data})=>{
+    if(data.is_admin){
+      document.getElementById('manage-agents-btn').style.display='inline-flex';
+    }
+  })
+  .catch(()=>{});
+
+const pmToggle = document.getElementById('profile-menu-toggle');
+const profileMenu = document.getElementById('profile-menu');
+if(pmToggle && profileMenu){
+  pmToggle.addEventListener('click', ()=>{
+    const open = profileMenu.classList.toggle('open');
+    pmToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!profileMenu.contains(e.target) && !pmToggle.contains(e.target)){
+      profileMenu.classList.remove('open');
+      pmToggle.setAttribute('aria-expanded','false');
+    }
+  });
+}
+const signoutBtn = document.getElementById('profile-signout-btn');
+if(signoutBtn){
+  signoutBtn.addEventListener('click', ()=>{
+    fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
+      .finally(()=>{window.location.href="{% url 'login' %}";});
+  });
+}
 </script>
 </body>
 </html>

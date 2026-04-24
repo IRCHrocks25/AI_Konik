@@ -72,3 +72,44 @@ class ChatMessage(models.Model):
     token_count = models.PositiveIntegerField(default=0)
     feedback = models.CharField(max_length=10, choices=FEEDBACK_CHOICES, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Agent(models.Model):
+    name = models.CharField(max_length=160, unique=True)
+    slug = models.SlugField(max_length=180, unique=True)
+    industry = models.CharField(max_length=100, db_index=True)
+    description = models.TextField()
+    icon_class = models.CharField(max_length=80, default="fa-robot")
+    accent_bg = models.CharField(max_length=20, default="#EEF2FF")
+    tag = models.CharField(max_length=120, blank=True)
+    usage_count = models.PositiveIntegerField(default=0)
+    is_featured = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    sort_order = models.PositiveIntegerField(default=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["sort_order", "-usage_count", "name"]
+
+    def __str__(self):
+        return self.name
+
+
+class AgentPrompt(models.Model):
+    TYPE_CHOICES = [
+        ("hint", "Hint"),
+        ("use_case", "Use Case"),
+    ]
+
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, related_name="prompts")
+    prompt_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default="hint")
+    content = models.TextField()
+    sort_order = models.PositiveIntegerField(default=100)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["prompt_type", "sort_order", "id"]
+
+    def __str__(self):
+        return f"{self.agent.name} [{self.prompt_type}]"

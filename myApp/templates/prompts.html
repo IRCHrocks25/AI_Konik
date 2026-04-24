@@ -7,21 +7,314 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-.prompts-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
-.prompt-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;transition:all .2s;cursor:pointer}
-.prompt-card:hover{border-color:var(--teal);box-shadow:0 4px 20px rgba(13,124,102,.08)}
-.prompt-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
-.prompt-title{font-size:14px;font-weight:600;color:var(--ink);line-height:1.4;max-width:85%}
-.save-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--slate2);transition:color .2s;padding:0;line-height:1}
-.save-btn.saved{color:var(--teal)}
-.prompt-body{font-size:13px;color:var(--slate);line-height:1.5;margin-bottom:12px;display:-webkit-box;line-clamp:2;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.prompt-footer{display:flex;align-items:center;justify-content:space-between}
-.prompt-meta{display:flex;align-items:center;gap:6px}
-.prompt-uses{font-size:11px;color:var(--slate2)}
-.prompt-actions{display:flex;gap:6px}
-.hero-stats{display:flex;gap:32px;margin-top:12px}
-.hero-stat-num{font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy)}
-.hero-stat-label{font-size:12px;color:var(--slate)}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(120, 55, 220, .2), transparent 35%),
+    radial-gradient(circle at 85% 22%, rgba(0, 150, 170, .16), transparent 34%),
+    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
+}
+nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
+.logo{color:#fff}
+.nav-links a{color:rgba(255,255,255,.75)}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+
+.portal-wrap{max-width:1400px;margin:0 auto;padding:100px 20px 38px}
+.glass{
+  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 16px 38px rgba(0,0,0,.24);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+}
+
+.prompts-app{
+  display:grid;
+  grid-template-columns:280px minmax(0,1fr);
+  gap:18px;
+  align-items:start;
+}
+
+.prompts-sidebar{
+  position:sticky;
+  top:84px;
+  padding:14px;
+}
+.side-brand{
+  background:linear-gradient(135deg,#9333ea,#d946ef);
+  color:#fff;
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:14px;
+}
+.side-user{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  padding:10px 6px 14px;
+  border-bottom:1px solid rgba(255,255,255,.18);
+  margin-bottom:10px;
+}
+.side-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,#9333ea,#ec4899);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+.side-user-name{font-size:13px}
+.side-title{
+  font-size:10px;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:rgba(255,255,255,.65);
+  margin:10px 6px 6px;
+  font-weight:700;
+}
+.side-link{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  text-decoration:none;
+  color:rgba(255,255,255,.86);
+  font-size:14px;
+  padding:10px 10px;
+  border-radius:10px;
+  margin-bottom:4px;
+}
+.side-link:hover{background:rgba(255,255,255,.1)}
+.side-link.active{
+  background:linear-gradient(135deg, rgba(147,51,234,.45), rgba(217,70,239,.42));
+  color:#fff;
+  font-weight:600;
+}
+.side-link-left{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.side-link .sidebar-badge{
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  border-radius:999px;
+  padding:1px 7px;
+  font-size:10px;
+  font-weight:700;
+}
+
+.prompts-main{
+  min-width:0;
+}
+.hero{
+  text-align:center;
+  padding:26px 24px 22px;
+  margin-bottom:14px;
+}
+.hero h1{
+  margin:0 0 8px;
+  font-family:'DM Serif Display',serif;
+  color:#fff;
+  font-size:clamp(34px,4vw,50px);
+}
+.hero p{margin:0 auto;max-width:780px;color:rgba(255,255,255,.86);font-size:18px}
+.hero-stats{
+  margin-top:16px;
+  display:flex;
+  justify-content:center;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.hero-stats > div{
+  min-width:160px;
+  border:1px solid rgba(255,255,255,.22);
+  background:rgba(255,255,255,.1);
+  border-radius:14px;
+  padding:12px 14px;
+}
+.hero-stat-num{font-family:'DM Serif Display',serif;font-size:34px;color:#fff;line-height:1}
+.hero-stat-label{font-size:12px;color:rgba(255,255,255,.76);margin-top:7px;text-transform:uppercase;letter-spacing:.07em}
+
+.controls{
+  margin-bottom:18px;
+  display:grid;
+  grid-template-columns:1fr 220px 220px auto auto;
+  gap:12px;
+  align-items:center;
+}
+.controls .filter-search{
+  background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:16px;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.controls .filter-search span{color:rgba(255,255,255,.7);font-size:16px}
+.controls .filter-search input{
+  color:#fff;background:transparent;border:none;outline:none;width:100%;padding:14px 0;font-size:16px;
+}
+.controls .filter-search input::placeholder{color:rgba(255,255,255,.55)}
+.filter-select{
+  border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  padding:13px 14px;
+  border-radius:14px;
+  cursor:pointer;
+  font-size:14px;
+}
+.filter-select option{color:#111827}
+.ghost-btn{
+  border:1px solid rgba(255,255,255,.28);
+  color:#fff;
+  background:rgba(255,255,255,.06);
+  padding:12px 16px;
+  border-radius:14px;
+  font-size:14px;
+  text-decoration:none;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+}
+.ghost-btn:hover{background:rgba(255,255,255,.16)}
+.submit-btn{
+  border:1px solid rgba(196,181,253,.48);
+  background:linear-gradient(135deg, rgba(139,92,246,.58), rgba(79,70,229,.54));
+  color:#fff;
+  padding:12px 16px;
+  border-radius:14px;
+  font-size:14px;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  font-weight:600;
+  box-shadow:0 10px 24px rgba(49,46,129,.34);
+  transition:transform .15s ease, filter .15s ease, box-shadow .15s ease;
+}
+.submit-btn:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.08);
+  box-shadow:0 14px 30px rgba(49,46,129,.42);
+}
+
+.prompts-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.prompt-card{
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:20px;
+  padding:22px;
+  transition:all .2s;
+  background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
+  box-shadow:0 10px 28px rgba(0,0,0,.22);
+  backdrop-filter:blur(6px);
+  min-height:230px;
+}
+.prompt-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(255,255,255,.45);
+  box-shadow:0 14px 35px rgba(0,0,0,.3);
+}
+.prompt-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;gap:12px}
+.prompt-title{font-size:26px;font-weight:600;color:#fff;line-height:1.3;max-width:86%}
+.save-btn{
+  border:none;
+  cursor:pointer;
+  color:rgba(255,255,255,.7);
+  background:rgba(255,255,255,.12);
+  border-radius:11px;
+  width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:16px;
+}
+.save-btn.saved{color:#fde68a;background:rgba(245,158,11,.22)}
+.prompt-body{
+  font-size:16px;
+  color:rgba(255,255,255,.82);
+  line-height:1.7;
+  margin-bottom:18px;
+  display:-webkit-box;
+  line-clamp:3;
+  -webkit-line-clamp:3;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.prompt-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto}
+.prompt-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.prompt-uses{font-size:13px;color:rgba(255,255,255,.8)}
+.prompt-actions{display:flex;gap:8px}
+.prompt-actions .btn{
+  border:1px solid rgba(255,255,255,.26);
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  padding:8px 12px;
+  font-size:13px;
+  border-radius:9px;
+}
+.prompt-actions .btn:hover{background:rgba(255,255,255,.2)}
+.badge-teal{background:rgba(139,92,246,.3);color:#fff;padding:5px 10px;font-size:11px}
+.badge-gray{background:rgba(255,255,255,.2);color:#fff;padding:5px 10px;font-size:11px}
+
+#submit-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(4,8,24,.6);
+  z-index:200;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+#submit-modal .modal-card{
+  background:#fff;
+  border-radius:20px;
+  padding:26px;
+  width:540px;
+  max-width:96vw;
+  box-shadow:var(--shadow2);
+}
+.profile-nav{position:relative}
+.sc-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 6px 16px rgba(13,124,102,.35);
+}
+.profile-menu{
+  position:absolute;top:44px;right:0;min-width:190px;border-radius:12px;
+  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 32px rgba(0,0,0,.35);
+  padding:8px;display:none;z-index:120;
+}
+.profile-menu.open{display:block}
+.profile-menu a,.profile-menu button{
+  width:100%;border:none;background:none;text-align:left;color:#fff;text-decoration:none;
+  padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.profile-menu a:hover,.profile-menu button:hover{background:rgba(255,255,255,.12)}
+
+@media(max-width:980px){
+  .prompts-app{grid-template-columns:1fr}
+  .prompts-sidebar{position:static}
+  .controls{grid-template-columns:1fr 1fr}
+  .prompts-grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .portal-wrap{padding:96px 14px 28px}
+  .controls{grid-template-columns:1fr}
+  .prompt-title{font-size:22px}
+  .hero p{font-size:16px}
+}
 </style>
 </head>
 <body class="preload-active">
@@ -31,69 +324,89 @@
 </div>
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
     <div class="nav-links">
-      <a href="agents.html">Agents</a>
-      <a href="prompts.html" class="active">Prompts</a>
-      <a href="industries.html">Industries</a>
-      <a href="events.html">Events</a>
-      <a href="tools.html">Tools</a>
+      <a href="{% url 'agents' %}">Agents</a>
+      <a href="{% url 'prompts' %}" class="active">Prompts</a>
+      <a href="{% url 'industries' %}">Industries</a>
+      <a href="{% url 'events' %}">Events</a>
+      <a href="{% url 'tools' %}">Tools</a>
     </div>
-    <div class="nav-cta">
-      <div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div>
+    <div class="nav-cta profile-nav">
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
+      <div class="profile-menu" id="profile-menu">
+        <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
+        <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
+        <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+        <button type="button" id="profile-signout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
     </div>
   </div>
 </nav>
-<div class="page-shell">
-  <div class="page-header">
-    <div class="page-header-inner">
-      <div class="section-label">Prompts Library</div>
-      <h1 class="section-title" style="font-size:32px;margin-bottom:4px"><span id="hero-total-prompts-title">Curated AI Prompts</span></h1>
-      <p style="font-size:14px;color:var(--slate)">Industry-tested prompts for every workflow. Search, save, and use directly in your agents.</p>
-      <div class="hero-stats">
-        <div><div class="hero-stat-num" id="hero-total-prompts">0</div><div class="hero-stat-label">Total Prompts</div></div>
-        <div><div class="hero-stat-num" id="hero-total-industries">0</div><div class="hero-stat-label">Industries</div></div>
-        <div><div class="hero-stat-num" id="hero-total-categories">0</div><div class="hero-stat-label">Categories</div></div>
+<div class="page-shell portal-wrap">
+  <div class="prompts-app">
+    <aside class="prompts-sidebar glass">
+      <div class="side-brand"><i class="fa-solid fa-robot"></i> <span id="side-library-title">Prompts Library</span></div>
+      <div class="side-user">
+        <div class="side-avatar" id="side-user-avatar">U</div>
+        <div class="side-user-name" id="side-user-name">User</div>
       </div>
-    </div>
-  </div>
-  <div class="sidebar-layout">
-    <div class="sidebar">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Industry</div>
-        <a class="sidebar-link industry-link active" href="#" onclick="filterP('all',this);return false">All Industries</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('legal',this);return false"><i class="fa-solid fa-scale-balanced"></i> Legal</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('healthcare',this);return false"><i class="fa-solid fa-hospital"></i> Healthcare</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('finance',this);return false"><i class="fa-solid fa-sack-dollar"></i> Finance</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('marketing',this);return false"><i class="fa-solid fa-bullhorn"></i> Marketing</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('technology',this);return false"><i class="fa-solid fa-laptop-code"></i> Technology</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('realestate',this);return false"><i class="fa-solid fa-house"></i> Real Estate</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('accounting',this);return false"><i class="fa-solid fa-chart-line"></i> Accounting</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('logistics',this);return false"><i class="fa-solid fa-truck"></i> Logistics</a>
-        <a class="sidebar-link industry-link" href="#" onclick="filterP('manufacturing',this);return false"><i class="fa-solid fa-gears"></i> Manufacturing</a>
-      </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">My Library</div>
-        <a href="#" class="sidebar-link library-link" onclick="filterLibrary('saved',this);return false"><span class="icon"><i class="fa-solid fa-bookmark"></i></span>Saved Prompts <span class="sidebar-badge" id="saved-prompts-badge">0</span></a>
-        <a href="#" class="sidebar-link library-link" onclick="filterLibrary('submitted',this);return false"><span class="icon"><i class="fa-solid fa-pen-to-square"></i></span>My Submissions <span class="sidebar-badge" id="my-submissions-badge">0</span></a>
-      </div>
-    </div>
-    <div class="main-content">
-      <div class="filter-bar">
-        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search 60,000+ prompts..." oninput="searchP(this.value)"></div>
+
+      <div class="side-title">Main</div>
+      <a class="side-link industry-link active" href="#" onclick="filterP('all',this);return false">
+        <span class="side-link-left"><i class="fa-solid fa-house"></i> All Prompts</span>
+      </a>
+      <a href="#" class="side-link library-link" onclick="filterLibrary('saved',this);return false">
+        <span class="side-link-left"><i class="fa-solid fa-bookmark"></i> Saved Prompts</span>
+        <span class="sidebar-badge" id="saved-prompts-badge">0</span>
+      </a>
+      <a href="#" class="side-link library-link" onclick="filterLibrary('submitted',this);return false">
+        <span class="side-link-left"><i class="fa-solid fa-pen-to-square"></i> My Submissions</span>
+        <span class="sidebar-badge" id="my-submissions-badge">0</span>
+      </a>
+
+      <div class="side-title">Industries</div>
+      <a class="side-link industry-link" href="#" onclick="filterP('legal',this);return false"><span class="side-link-left"><i class="fa-solid fa-scale-balanced"></i> Legal</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('healthcare',this);return false"><span class="side-link-left"><i class="fa-solid fa-hospital"></i> Healthcare</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('finance',this);return false"><span class="side-link-left"><i class="fa-solid fa-sack-dollar"></i> Finance</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('marketing',this);return false"><span class="side-link-left"><i class="fa-solid fa-bullhorn"></i> Marketing</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('technology',this);return false"><span class="side-link-left"><i class="fa-solid fa-laptop-code"></i> Technology</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('realestate',this);return false"><span class="side-link-left"><i class="fa-solid fa-house"></i> Real Estate</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('accounting',this);return false"><span class="side-link-left"><i class="fa-solid fa-chart-line"></i> Accounting</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('logistics',this);return false"><span class="side-link-left"><i class="fa-solid fa-truck"></i> Logistics</span></a>
+      <a class="side-link industry-link" href="#" onclick="filterP('manufacturing',this);return false"><span class="side-link-left"><i class="fa-solid fa-gears"></i> Manufacturing</span></a>
+
+      <div class="side-title">Create</div>
+      <a href="#" class="side-link" onclick="showSubmitModal();return false"><span class="side-link-left"><i class="fa-solid fa-wand-magic-sparkles"></i> Craft your own prompt</span></a>
+    </aside>
+
+    <main class="prompts-main">
+      <section class="hero glass">
+        <h1><span id="hero-total-prompts-title">All Prompts</span></h1>
+        <p>Explore production-ready prompts from the studios.</p>
+        <div class="hero-stats">
+          <div><div class="hero-stat-num" id="hero-total-prompts">0</div><div class="hero-stat-label">Total Prompts</div></div>
+          <div><div class="hero-stat-num" id="hero-total-industries">0</div><div class="hero-stat-label">Industries</div></div>
+          <div><div class="hero-stat-num" id="hero-total-categories">0</div><div class="hero-stat-label">Categories</div></div>
+        </div>
+      </section>
+
+      <section class="controls">
+        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search prompts..." oninput="searchP(this.value)"></div>
         <select class="filter-select"><option>All Categories</option><option>Contracts</option><option>Compliance</option><option>M&A</option><option>Drafting</option></select>
-        <select class="filter-select"><option>Most Used</option><option>Newest</option><option>Top Rated</option></select>
-        <a href="prompt-import.html" class="btn btn-ghost btn-sm" id="bulk-import-btn" style="display:none"><i class="fa-solid fa-file-arrow-up"></i> Bulk import</a>
-        <button class="btn btn-teal btn-sm" onclick="showSubmitModal()">+ Submit prompt</button>
-      </div>
+        <select class="filter-select"><option>Newest</option><option>Most Used</option><option>Top Rated</option></select>
+        <button class="ghost-btn" onclick="loadPrompts()"><i class="fa-solid fa-rotate"></i> Refresh</button>
+        <button class="submit-btn" onclick="showSubmitModal()"><i class="fa-solid fa-plus"></i> Submit Prompt</button>
+      </section>
+
       <div class="prompts-grid" id="prompts-grid"></div>
-    </div>
+    </main>
   </div>
 </div>
 
 <!-- Submit modal -->
-<div id="submit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:none;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:20px;padding:32px;width:520px;max-width:90vw;box-shadow:var(--shadow2)">
+<div id="submit-modal">
+  <div class="modal-card">
     <h2 style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--navy);margin-bottom:6px">Submit a prompt</h2>
     <p style="font-size:13px;color:var(--slate);margin-bottom:24px">Share a prompt that's worked well for you. After review, it joins the community library.</p>
     <div class="form-group"><label class="form-label">Title</label><input class="form-input" placeholder="e.g. Review this NDA for liability exposure" maxlength="120" id="submit-title"></div>
@@ -115,6 +428,7 @@
 let PROMPTS=[];
 
 let pIndustry='all',pSearch='',pLibrary='all';
+let authProfile = {};
 const DEFAULT_AGENT_BY_INDUSTRY = {
   legal: "Contract Review Agent",
   healthcare: "Patient Communication Agent",
@@ -127,11 +441,47 @@ const DEFAULT_AGENT_BY_INDUSTRY = {
   manufacturing: "QA Analysis Agent",
 };
 
+function compactNum(n){
+  const value = Number(n || 0);
+  if(value >= 1000000) return `${(value/1000000).toFixed(1).replace('.0','')}M+`;
+  if(value >= 1000) return `${(value/1000).toFixed(1).replace('.0','')}k+`;
+  return `${value}`;
+}
+
+function deriveDisplayName(data){
+  return (
+    data?.name ||
+    data?.full_name ||
+    data?.display_name ||
+    data?.user?.name ||
+    data?.user?.full_name ||
+    data?.email?.split('@')?.[0] ||
+    data?.user?.email?.split('@')?.[0] ||
+    'User'
+  );
+}
+
+function renderUserIdentity(data){
+  const displayName = deriveDisplayName(data);
+  const initial = (displayName.trim().charAt(0) || 'U').toUpperCase();
+  const nameEl = document.getElementById('side-user-name');
+  const avatarEl = document.getElementById('side-user-avatar');
+  if(nameEl) nameEl.textContent = displayName;
+  if(avatarEl) avatarEl.textContent = initial;
+}
+
+function updateLibraryTitle(totalPrompts){
+  const sideTitle = document.getElementById('side-library-title');
+  if(sideTitle){
+    sideTitle.textContent = `${compactNum(totalPrompts)} Prompts Library`;
+  }
+}
+
 function renderPrompts(){
   const filtered=PROMPTS.filter(p=>(pIndustry==='all'||p.industry===pIndustry)&&(!pSearch||p.title.toLowerCase().includes(pSearch)||p.body.toLowerCase().includes(pSearch)));
   if(!filtered.length){
     document.getElementById('prompts-grid').innerHTML = `
-      <div style="grid-column:1/-1;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:24px;color:var(--slate)">
+      <div class="glass" style="grid-column:1/-1;padding:24px;color:rgba(255,255,255,.88)">
         No prompts found for this selection yet.
       </div>
     `;
@@ -141,7 +491,9 @@ function renderPrompts(){
     <div class="prompt-card">
       <div class="prompt-card-top">
         <div class="prompt-title">${p.title}</div>
-        <button class="save-btn ${p.saved?'saved':''}" onclick="toggleSave(${p.id},this)">${p.saved?'🔖':'🔖'}</button>
+        <button class="save-btn ${p.saved?'saved':''}" onclick="toggleSave(${p.id},this)" aria-label="Save prompt">
+          <i class="fa-${p.saved?'solid':'regular'} fa-bookmark"></i>
+        </button>
       </div>
       <div class="prompt-body">${p.body}</div>
       <div class="prompt-footer">
@@ -238,7 +590,7 @@ function usePrompt(id){
     prompt: prompt.body || '',
     promptTitle: prompt.title || '',
   });
-  window.location.href = `agent-chat.html?${params.toString()}`;
+  window.location.href = `{% url 'agent_chat' %}?new=1?${params.toString()}`;
 }
 function loadPrompts(){
   const params=new URLSearchParams();
@@ -254,6 +606,7 @@ function loadPrompts(){
       const totalPrompts = Number(stats.total_prompts || 0);
       const totalIndustries = Number(stats.total_industries || 0);
       const totalCategories = Number(stats.total_categories || 0);
+      updateLibraryTitle(totalPrompts);
       document.getElementById("hero-total-prompts").textContent = totalPrompts.toLocaleString();
       document.getElementById("hero-total-industries").textContent = totalIndustries.toLocaleString();
       document.getElementById("hero-total-categories").textContent = totalCategories.toLocaleString();
@@ -283,15 +636,39 @@ fetch('/api/auth/me',{credentials:'same-origin'})
   .then(async r=>({ok:r.ok,data:await r.json()}))
   .then(({data})=>{
     if(!data.authenticated){
-      window.location.href='login.html';
+      window.location.href='{% url 'login' %}';
       return;
     }
-    if(data.is_admin){
-      document.getElementById('bulk-import-btn').style.display = 'inline-flex';
-    }
+    authProfile = data || {};
+    renderUserIdentity(authProfile);
     loadPrompts();
   })
-  .catch(()=>hidePreloader());
+  .catch(()=>{
+    renderUserIdentity(authProfile);
+    hidePreloader();
+  });
+
+const pmToggle = document.getElementById('profile-menu-toggle');
+const profileMenu = document.getElementById('profile-menu');
+if(pmToggle && profileMenu){
+  pmToggle.addEventListener('click', ()=>{
+    const open = profileMenu.classList.toggle('open');
+    pmToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!profileMenu.contains(e.target) && !pmToggle.contains(e.target)){
+      profileMenu.classList.remove('open');
+      pmToggle.setAttribute('aria-expanded','false');
+    }
+  });
+}
+const signoutBtn = document.getElementById('profile-signout-btn');
+if(signoutBtn){
+  signoutBtn.addEventListener('click', ()=>{
+    fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
+      .finally(()=>{window.location.href="{% url 'login' %}";});
+  });
+}
 </script>
 </body>
 </html>

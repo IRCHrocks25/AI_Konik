@@ -34,14 +34,64 @@
 .section-toggle{background:none;border:none;font-size:14px;font-weight:600;color:var(--teal);cursor:pointer;font-family:inherit;padding:0;display:flex;align-items:center;gap:4px}
 .deliverable-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:24px;text-align:center;font-size:13px;color:var(--slate2);cursor:pointer;transition:all .2s;margin-top:12px}
 .deliverable-zone:hover{border-color:var(--teal);background:var(--teal-light);color:var(--teal)}
+.profile-nav{position:relative}
+.sc-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 6px 16px rgba(13,124,102,.35);
+}
+.profile-menu{
+  position:absolute;top:44px;right:0;min-width:190px;border-radius:12px;
+  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 32px rgba(0,0,0,.35);
+  padding:8px;display:none;z-index:120;
+}
+.profile-menu.open{display:block}
+.profile-menu a,.profile-menu button{
+  width:100%;border:none;background:none;text-align:left;color:#fff;text-decoration:none;
+  padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.profile-menu a:hover,.profile-menu button:hover{background:rgba(255,255,255,.12)}
+.new-engagement-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:40px;
+  border:1px solid rgba(196,181,253,.48);
+  background:linear-gradient(135deg, rgba(139,92,246,.58), rgba(79,70,229,.54));
+  color:#fff;
+  border-radius:12px;
+  padding:10px 14px;
+  font-size:13px;
+  font-weight:600;
+  font-family:inherit;
+  cursor:pointer;
+  box-shadow:0 10px 24px rgba(49,46,129,.34);
+  transition:transform .15s ease, filter .15s ease, box-shadow .15s ease;
+}
+.new-engagement-btn:hover{
+  transform:translateY(-1px);
+  filter:brightness(1.08);
+  box-shadow:0 14px 30px rgba(49,46,129,.42);
+}
 </style>
 </head>
 <body>
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
-    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html">Events</a><a href="tools.html">Tools</a></div>
-    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="{% url 'agents' %}">Agents</a><a href="{% url 'prompts' %}">Prompts</a><a href="{% url 'industries' %}">Industries</a><a href="{% url 'events' %}">Events</a><a href="{% url 'tools' %}">Tools</a></div>
+    <div class="nav-cta profile-nav">
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
+      <div class="profile-menu" id="profile-menu">
+        <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
+        <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
+        <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+        <button type="button" id="profile-signout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
+    </div>
   </div>
 </nav>
 <div class="page-shell">
@@ -54,18 +104,18 @@
     <div class="sidebar">
       <div class="sidebar-section">
         <div class="sidebar-label">Navigation</div>
-        <a href="dashboard.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-table-cells-large"></i></span>Dashboard</a>
-        <a href="consulting.html" class="sidebar-link active"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>Engagements<span class="sidebar-badge">3</span></a>
-        <a href="agents.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-robot"></i></span>Agents</a>
-        <a href="prompts.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-book-open"></i></span>Prompts</a>
-        <a href="events.html" class="sidebar-link"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span>Events</a>
-        <a href="billing.html" class="sidebar-link"><span class="icon"><i class="fa-regular fa-credit-card"></i></span>Billing</a>
+        <a href="{% url 'dashboard' %}" class="sidebar-link"><span class="icon"><i class="fa-solid fa-table-cells-large"></i></span>Dashboard</a>
+        <a href="{% url 'consulting' %}" class="sidebar-link active"><span class="icon"><i class="fa-solid fa-clipboard-list"></i></span>Engagements<span class="sidebar-badge">3</span></a>
+        <a href="{% url 'agents' %}" class="sidebar-link"><span class="icon"><i class="fa-solid fa-robot"></i></span>Agents</a>
+        <a href="{% url 'prompts' %}" class="sidebar-link"><span class="icon"><i class="fa-solid fa-book-open"></i></span>Prompts</a>
+        <a href="{% url 'events' %}" class="sidebar-link"><span class="icon"><i class="fa-solid fa-calendar-days"></i></span>Events</a>
+        <a href="{% url 'billing' %}" class="sidebar-link"><span class="icon"><i class="fa-regular fa-credit-card"></i></span>Billing</a>
       </div>
     </div>
     <div class="main-content">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
         <h2 style="font-size:16px;font-weight:600;color:var(--ink)">Active Engagements (3)</h2>
-        <button class="btn btn-teal btn-sm" onclick="showNewEng()">+ New Engagement</button>
+        <button class="new-engagement-btn" onclick="showNewEng()"><i class="fa-solid fa-plus"></i> New Engagement</button>
       </div>
 
       <!-- Engagement 1 -->
@@ -197,6 +247,27 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast show '+(type||'');
   setTimeout(()=>t.className='toast',3500);
+}
+const pmToggle = document.getElementById('profile-menu-toggle');
+const profileMenu = document.getElementById('profile-menu');
+if(pmToggle && profileMenu){
+  pmToggle.addEventListener('click', ()=>{
+    const open = profileMenu.classList.toggle('open');
+    pmToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!profileMenu.contains(e.target) && !pmToggle.contains(e.target)){
+      profileMenu.classList.remove('open');
+      pmToggle.setAttribute('aria-expanded','false');
+    }
+  });
+}
+const signoutBtn = document.getElementById('profile-signout-btn');
+if(signoutBtn){
+  signoutBtn.addEventListener('click', ()=>{
+    fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
+      .finally(()=>{window.location.href="{% url 'login' %}";});
+  });
 }
 </script>
 </body>

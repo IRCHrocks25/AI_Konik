@@ -140,20 +140,20 @@ footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
 
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo">
+    <a href="{% url 'index' %}" class="logo">
       <div class="logo-dot"></div>
       AI KONIK
     </a>
     <div class="nav-links">
-      <a href="agents.html">Agents</a>
-      <a href="prompts.html">Prompts</a>
-      <a href="industries.html">Industries</a>
-      <a href="events.html">Events</a>
-      <a href="tools.html">Tools</a>
+      <a href="{% url 'agents' %}">Agents</a>
+      <a href="{% url 'prompts' %}">Prompts</a>
+      <a href="{% url 'industries' %}">Industries</a>
+      <a href="{% url 'events' %}">Events</a>
+      <a href="{% url 'tools' %}">Tools</a>
     </div>
     <div class="nav-cta">
-      <a href="login.html" class="btn btn-ghost">Sign in</a>
-      <a href="register.html" class="btn btn-primary">Get started free</a>
+      <a href="{% url 'login' %}" class="btn btn-ghost">Sign in</a>
+      <a href="{% url 'register' %}" class="btn btn-primary">Get started free</a>
     </div>
   </div>
 </nav>
@@ -165,8 +165,8 @@ footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
       <h1>Enterprise AI,<br>built for <em>your</em><br>business</h1>
       <p class="hero-sub">Specialized AI agents, 60,000+ prompts, and expert consulting — all in one platform designed for companies with $1M–$20M in revenue.</p>
       <div class="hero-actions">
-        <a href="register.html" class="btn btn-teal btn-lg">Start free today</a>
-        <a href="agents.html" class="btn btn-ghost btn-lg">Explore agents <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="{% url 'register' %}" class="btn btn-teal btn-lg">Start free today</a>
+        <a href="{% url 'agents' %}" class="btn btn-ghost btn-lg">Explore agents <i class="fa-solid fa-arrow-right"></i></a>
       </div>
       <div class="hero-trust">
         <span class="trust-label">Compliance ready</span>
@@ -217,55 +217,55 @@ footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
       <p class="section-sub">Every agent, every prompt, every workflow — purpose-built for your industry's specific challenges and compliance requirements.</p>
     </div>
     <div class="industry-grid">
-      <a href="industry-detail.html?i=legal" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=legal" class="industry-card fade-in">
         <div class="industry-icon" style="background:#EEF2FF"><i class="fa-solid fa-scale-balanced"></i></div>
         <h3>Legal</h3>
         <p>Contract review, M&A due diligence, compliance monitoring, IP research</p>
         <div class="industry-meta"><span class="agent-count">12 agents</span><span class="prompt-count">· 4,200 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=healthcare" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=healthcare" class="industry-card fade-in">
         <div class="industry-icon" style="background:#F0FDF4"><i class="fa-solid fa-hospital"></i></div>
         <h3>Healthcare</h3>
         <p>Clinical documentation, patient communication, billing automation, compliance</p>
         <div class="industry-meta"><span class="agent-count">15 agents</span><span class="prompt-count">· 5,800 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=finance" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=finance" class="industry-card fade-in">
         <div class="industry-icon" style="background:#FFFBEB"><i class="fa-solid fa-sack-dollar"></i></div>
         <h3>Finance</h3>
         <p>Risk analysis, portfolio reporting, regulatory filings, client communications</p>
         <div class="industry-meta"><span class="agent-count">11 agents</span><span class="prompt-count">· 3,900 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=marketing" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=marketing" class="industry-card fade-in">
         <div class="industry-icon" style="background:#FFF1F2"><i class="fa-solid fa-bullhorn"></i></div>
         <h3>Marketing</h3>
         <p>Content creation, SEO strategy, campaign copy, brand voice management</p>
         <div class="industry-meta"><span class="agent-count">14 agents</span><span class="prompt-count">· 7,200 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=technology" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=technology" class="industry-card fade-in">
         <div class="industry-icon" style="background:#F0F9FF"><i class="fa-solid fa-laptop-code"></i></div>
         <h3>Technology</h3>
         <p>Technical documentation, code review, architecture planning, security audits</p>
         <div class="industry-meta"><span class="agent-count">16 agents</span><span class="prompt-count">· 6,100 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=realestate" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=realestate" class="industry-card fade-in">
         <div class="industry-icon" style="background:#F5F3FF"><i class="fa-solid fa-house"></i></div>
         <h3>Real Estate</h3>
         <p>Property analysis, lease review, market research, client communications</p>
         <div class="industry-meta"><span class="agent-count">10 agents</span><span class="prompt-count">· 3,200 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=accounting" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=accounting" class="industry-card fade-in">
         <div class="industry-icon" style="background:#ECFDF5"><i class="fa-solid fa-chart-line"></i></div>
         <h3>Accounting</h3>
         <p>Tax preparation, audit support, financial reporting, payroll assistance</p>
         <div class="industry-meta"><span class="agent-count">9 agents</span><span class="prompt-count">· 3,500 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=logistics" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=logistics" class="industry-card fade-in">
         <div class="industry-icon" style="background:#FFF7ED"><i class="fa-solid fa-truck"></i></div>
         <h3>Logistics</h3>
         <p>Supply chain optimization, freight analysis, route planning, vendor management</p>
         <div class="industry-meta"><span class="agent-count">8 agents</span><span class="prompt-count">· 2,800 prompts</span></div>
       </a>
-      <a href="industry-detail.html?i=manufacturing" class="industry-card fade-in">
+      <a href="{% url 'industries' %}?i=manufacturing" class="industry-card fade-in">
         <div class="industry-icon" style="background:#F8FAFC"><i class="fa-solid fa-gears"></i></div>
         <h3>Manufacturing</h3>
         <p>Quality control, procurement analysis, maintenance planning, lean operations</p>
@@ -328,7 +328,7 @@ footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
 <div class="cta-band">
   <h2>Ready to make AI work<br>for your business?</h2>
   <p>Start free. No credit card required. Get your first AI agent running in minutes.</p>
-  <a href="register.html" class="btn btn-white btn-lg">Get started — it's free</a>
+  <a href="{% url 'register' %}" class="btn btn-white btn-lg">Get started — it's free</a>
 </div>
 
 <footer>
@@ -342,23 +342,23 @@ footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
       </div>
       <div class="footer-col">
         <h4>Platform</h4>
-        <a href="agents.html">AI Agents</a>
-        <a href="prompts.html">Prompts Library</a>
-        <a href="tools.html">Tool Directory</a>
-        <a href="courses.html">Courses</a>
+        <a href="{% url 'agents' %}">AI Agents</a>
+        <a href="{% url 'prompts' %}">Prompts Library</a>
+        <a href="{% url 'tools' %}">Tool Directory</a>
+        <a href="{% url 'courses_redirect' %}">Courses</a>
       </div>
       <div class="footer-col">
         <h4>Industries</h4>
-        <a href="industries.html">All Industries</a>
-        <a href="industry-detail.html?i=legal">Legal</a>
-        <a href="industry-detail.html?i=healthcare">Healthcare</a>
-        <a href="industry-detail.html?i=finance">Finance</a>
+        <a href="{% url 'industries' %}">All Industries</a>
+        <a href="{% url 'industries' %}?i=legal">Legal</a>
+        <a href="{% url 'industries' %}?i=healthcare">Healthcare</a>
+        <a href="{% url 'industries' %}?i=finance">Finance</a>
       </div>
       <div class="footer-col">
         <h4>Company</h4>
         <a href="#">About</a>
         <a href="#">Consulting</a>
-        <a href="events.html">Events</a>
+        <a href="{% url 'events' %}">Events</a>
         <a href="#">Contact</a>
       </div>
     </div>

@@ -6,20 +6,154 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:40px}
-.plan-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:28px;position:relative;transition:all .2s}
-.plan-card.current{border:2px solid var(--teal)}
-.plan-card.popular{border:2px solid var(--navy)}
-.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap}
-.plan-name{font-size:14px;font-weight:600;color:var(--slate);margin-bottom:4px}
-.plan-price{font-family:'DM Serif Display',serif;font-size:40px;color:var(--navy);line-height:1}
-.plan-period{font-size:13px;color:var(--slate);margin-top:4px;margin-bottom:20px}
-.plan-feature{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink2);margin-bottom:8px}
-.plan-feature-check{color:var(--teal);font-weight:700;flex-shrink:0}
-.plan-feature-x{color:var(--slate2);flex-shrink:0}
-.invoice-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);font-size:14px}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 14% 10%, rgba(120, 55, 220, .2), transparent 34%),
+    radial-gradient(circle at 84% 20%, rgba(0, 150, 170, .16), transparent 34%),
+    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
+}
+nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
+.logo{color:#fff}
+.nav-links a{color:rgba(255,255,255,.75)}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+.sc-avatar{
+  width:34px;
+  height:34px;
+  border-radius:50%;
+  background:var(--teal);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:600;
+  text-decoration:none;
+  box-shadow:0 6px 16px rgba(13,124,102,.35);
+  transition:transform .15s ease, filter .15s ease;
+}
+.sc-avatar:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.nav-cta{position:relative}
+.profile-menu{
+  position:absolute;
+  top:44px;
+  right:0;
+  min-width:190px;
+  border-radius:12px;
+  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 14px 32px rgba(0,0,0,.35);
+  padding:8px;
+  display:none;
+  z-index:120;
+}
+.profile-menu.open{display:block}
+.profile-menu a,
+.profile-menu button{
+  width:100%;
+  border:none;
+  background:none;
+  text-align:left;
+  color:#fff;
+  text-decoration:none;
+  padding:9px 10px;
+  border-radius:8px;
+  font-size:13px;
+  font-family:inherit;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.profile-menu a:hover,
+.profile-menu button:hover{background:rgba(255,255,255,.12)}
+.page-shell{padding-top:64px}
+.page-header{background:transparent;border-bottom:none;padding:28px 40px 18px}
+.page-header .section-label{color:rgba(255,255,255,.7)}
+.page-header .section-title{color:#fff}
+.page-header p{color:rgba(255,255,255,.82)!important}
+
+.page-content{max-width:1200px}
+.plan-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:30px}
+.plan-card{
+  background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:20px;
+  padding:26px;
+  position:relative;
+  transition:all .2s;
+  box-shadow:0 10px 26px rgba(0,0,0,.22);
+  backdrop-filter:blur(8px);
+}
+.plan-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.45)}
+.plan-card.current{border-color:rgba(16,185,129,.75);box-shadow:0 0 0 1px rgba(16,185,129,.3),0 14px 28px rgba(6,95,70,.2)}
+.plan-card.popular{border-color:rgba(196,181,253,.75);box-shadow:0 0 0 1px rgba(196,181,253,.28),0 14px 30px rgba(76,29,149,.24)}
+.plan-badge{
+  position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(135deg,#8b5cf6,#4f46e5);
+  color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;white-space:nowrap;
+}
+.plan-name{font-size:13px;font-weight:600;color:rgba(255,255,255,.72);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em}
+.plan-price{font-family:'DM Serif Display',serif;font-size:40px;color:#fff;line-height:1}
+.plan-period{font-size:13px;color:rgba(255,255,255,.72);margin-top:5px;margin-bottom:18px}
+.plan-feature{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,.9);margin-bottom:8px}
+.plan-feature-check{color:#6ee7b7;font-weight:700;flex-shrink:0}
+.plan-feature-x{color:rgba(255,255,255,.5);flex-shrink:0}
+.plan-card .btn{
+  min-height:40px;
+  font-weight:600;
+}
+.plan-card .btn-ghost{
+  color:#f8fafc;
+  border:1px solid rgba(255,255,255,.45);
+  background:rgba(255,255,255,.08);
+}
+.plan-card .btn-ghost:hover{
+  background:rgba(255,255,255,.2);
+  color:#fff;
+}
+.plan-card .btn-primary{
+  color:#fff;
+  background:linear-gradient(135deg,#8b5cf6,#4f46e5);
+  border:1px solid rgba(196,181,253,.5);
+}
+.plan-card .btn-primary:hover{
+  filter:brightness(1.08);
+}
+.plan-card .btn[disabled]{
+  color:rgba(255,255,255,.85);
+  border-color:rgba(255,255,255,.38);
+  background:rgba(255,255,255,.06);
+  opacity:1;
+  cursor:not-allowed;
+}
+
+.current-plan-banner{
+  background:linear-gradient(135deg, rgba(139,92,246,.36), rgba(79,70,229,.34));
+  border:1px solid rgba(196,181,253,.45);
+  border-radius:14px;
+  padding:16px 20px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:28px;
+  color:#fff;
+}
+.current-plan-banner .small{font-size:12px;color:rgba(255,255,255,.8)}
+
+.invoice-card{
+  background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:20px;
+  padding:24px;
+  box-shadow:0 10px 26px rgba(0,0,0,.22);
+  backdrop-filter:blur(8px);
+}
+.invoice-card h2{font-size:16px;font-weight:600;color:#fff;margin-bottom:20px}
+.invoice-card .empty{font-size:13px;color:rgba(255,255,255,.78);padding:40px 0;text-align:center}
+.invoice-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.18);font-size:14px}
 .invoice-row:last-child{border-bottom:none}
-.invoice-amount{font-weight:600;color:var(--ink)}
+.invoice-amount{font-weight:600;color:#fff}
 .upgrade-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
 .upgrade-modal.open{display:flex}
 .upgrade-box{background:#fff;border-radius:20px;padding:36px;width:480px;max-width:90vw;box-shadow:var(--shadow2)}
@@ -27,14 +161,29 @@
 .step-dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background .3s}
 .step-dot.active{background:var(--teal);width:24px;border-radius:4px}
 .step-dot.done{background:var(--teal)}
+@media(max-width:980px){.plan-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:700px){
+  .page-header{padding:20px 16px 10px}
+  .page-content{padding:16px !important}
+  .plan-grid{grid-template-columns:1fr}
+  .current-plan-banner{flex-wrap:wrap}
+}
 </style>
 </head>
 <body>
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
-    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html">Events</a><a href="tools.html">Tools</a></div>
-    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="{% url 'agents' %}">Agents</a><a href="{% url 'prompts' %}">Prompts</a><a href="{% url 'industries' %}">Industries</a><a href="{% url 'events' %}">Events</a><a href="{% url 'tools' %}">Tools</a></div>
+    <div class="nav-cta">
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" title="Open profile menu" aria-haspopup="true" aria-expanded="false">SC</button>
+      <div class="profile-menu" id="profile-menu">
+        <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
+        <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
+        <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+        <button type="button" id="profile-signout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
+    </div>
   </div>
 </nav>
 <div class="page-shell">
@@ -46,11 +195,11 @@
   <div class="page-content">
 
     <!-- Current plan banner -->
-    <div style="background:var(--teal-light);border:1px solid rgba(13,124,102,.2);border-radius:var(--radius);padding:16px 20px;display:flex;align-items:center;gap:12px;margin-bottom:32px">
+    <div class="current-plan-banner">
       <span style="font-size:20px"><i class="fa-solid fa-box-open"></i></span>
       <div>
-        <div style="font-size:14px;font-weight:600;color:var(--teal)">You're on the Free plan</div>
-        <div style="font-size:12px;color:var(--teal)">12 of 50 sessions used this month · Resets May 1, 2026</div>
+        <div style="font-size:14px;font-weight:600">You're on the Free plan</div>
+        <div class="small">12 of 50 sessions used this month · Resets May 1, 2026</div>
       </div>
       <button class="btn btn-teal btn-sm" style="margin-left:auto" onclick="openUpgrade()">Upgrade to Pro <i class="fa-solid fa-arrow-right"></i></button>
     </div>
@@ -98,9 +247,9 @@
     </div>
 
     <!-- Invoice history -->
-    <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);padding:24px">
-      <h2 style="font-size:16px;font-weight:600;color:var(--ink);margin-bottom:20px">Invoice History</h2>
-      <div style="font-size:13px;color:var(--slate);padding:40px 0;text-align:center">
+    <div class="invoice-card">
+      <h2>Invoice History</h2>
+      <div class="empty">
         No invoices yet — you're on the free plan.<br>Upgrade to Pro to see payment history here.
       </div>
     </div>
@@ -148,7 +297,7 @@
       <div style="font-size:52px;margin-bottom:16px"><i class="fa-solid fa-party-horn"></i></div>
       <h2 style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--navy);margin-bottom:8px">Welcome to Pro!</h2>
       <p style="font-size:14px;color:var(--slate);margin-bottom:24px">Your account has been upgraded. All 500 sessions and 104 agents are now available.</p>
-      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="closeUpgrade();window.location.href='agents.html'">Explore all agents <i class="fa-solid fa-arrow-right"></i></button>
+      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="exploreAgents()">Explore all agents <i class="fa-solid fa-arrow-right"></i></button>
     </div>
   </div>
 </div>
@@ -156,6 +305,7 @@
 <script>
 function openUpgrade(){document.getElementById('upgrade-modal').classList.add('open');}
 function closeUpgrade(){document.getElementById('upgrade-modal').classList.remove('open');goUpStep(1);}
+function exploreAgents(){closeUpgrade();window.location.href="{% url 'agents' %}";}
 function goUpStep(n){
   [1,2,3].forEach(i=>{
     document.getElementById('up-step'+i).style.display=i===n?'block':'none';
@@ -172,6 +322,29 @@ function goUpStep(n){
       document.getElementById('up-step3').style.display='block';
     },1500);
   }
+}
+
+const menuToggle = document.getElementById('profile-menu-toggle');
+const profileMenu = document.getElementById('profile-menu');
+if(menuToggle && profileMenu){
+  menuToggle.addEventListener('click', ()=>{
+    const isOpen = profileMenu.classList.toggle('open');
+    menuToggle.setAttribute('aria-expanded', String(isOpen));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!profileMenu.contains(e.target) && !menuToggle.contains(e.target)){
+      profileMenu.classList.remove('open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+const signoutBtn = document.getElementById('profile-signout-btn');
+if(signoutBtn){
+  signoutBtn.addEventListener('click', ()=>{
+    fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
+      .finally(()=>{window.location.href="{% url 'login' %}";});
+  });
 }
 </script>
 </body>

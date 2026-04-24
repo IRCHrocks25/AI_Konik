@@ -97,7 +97,7 @@ body{background:var(--bg);display:flex;min-height:100vh}
       <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="goStep(2)" id="step1-btn">Continue <i class="fa-solid fa-arrow-right"></i></button>
       <div class="divider-or">or</div>
       <button class="btn btn-ghost btn-lg" style="width:100%;justify-content:center">Continue with Google</button>
-      <div class="auth-footer">Already have an account? <a href="login.html">Sign in</a></div>
+      <div class="auth-footer">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
     </div>
 
     <!-- STEP 2 -->
@@ -131,7 +131,7 @@ body{background:var(--bg);display:flex;min-height:100vh}
         <div style="width:72px;height:72px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 24px"><i class="fa-solid fa-party-horn"></i></div>
         <h1 style="margin-bottom:8px">You're all set!</h1>
         <p class="subtitle" style="margin-bottom:32px">Welcome to AI KONIK. Your personalized dashboard is ready.</p>
-        <a href="dashboard.html" class="btn btn-teal btn-lg" style="width:100%;justify-content:center">Go to my dashboard <i class="fa-solid fa-arrow-right"></i></a>
+        <a href="{% url 'dashboard' %}" class="btn btn-teal btn-lg" style="width:100%;justify-content:center">Go to my dashboard <i class="fa-solid fa-arrow-right"></i></a>
       </div>
     </div>
   </div>
@@ -203,7 +203,7 @@ document.getElementById('ind-btn').addEventListener('click',function(e){
 });
 fetch('/api/auth/me',{credentials:'same-origin'})
   .then(async r=>({ok:r.ok,data:await r.json()}))
-  .then(({data})=>{if(data.authenticated){window.location.href='dashboard.html';}});
+  .then(({data})=>{if(data.authenticated){window.location.href='{% url 'dashboard' %}';}});
 </script>
 </body>
 </html>

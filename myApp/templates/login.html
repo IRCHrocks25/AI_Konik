@@ -52,7 +52,7 @@ body{background:var(--bg);display:flex;min-height:100vh}
     <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="doLogin()" id="login-btn">Sign in</button>
     <div class="divider-or">or</div>
     <button class="btn btn-ghost btn-lg" style="width:100%;justify-content:center">Continue with Google</button>
-    <div class="auth-footer">Don't have an account? <a href="register.html">Sign up free</a></div>
+    <div class="auth-footer">Don't have an account? <a href="{% url 'register' %}">Sign up free</a></div>
   </div>
 </div>
 <script>
@@ -73,7 +73,7 @@ function doLogin(){
   .then(async r=>({ok:r.ok,data:await r.json()}))
   .then(({ok,data})=>{
     if(!ok){throw new Error(data.error||'Login failed');}
-    window.location.href='dashboard.html';
+    window.location.href="{% url 'dashboard' %}";
   })
   .catch(err=>{
     errBanner.textContent=err.message||'Incorrect email or password. Please try again.';
@@ -87,7 +87,7 @@ function doLogin(){
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 fetch('/api/auth/me',{credentials:'same-origin'})
   .then(async r=>({ok:r.ok,data:await r.json()}))
-  .then(({data})=>{if(data.authenticated){window.location.href='dashboard.html';}});
+  .then(({data})=>{if(data.authenticated){window.location.href="{% url 'dashboard' %}";}});
 </script>
 </body>
 </html>

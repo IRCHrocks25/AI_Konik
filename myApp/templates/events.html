@@ -7,41 +7,177 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-.events-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.event-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden;transition:all .2s}
-.event-card:hover{border-color:var(--teal);box-shadow:var(--shadow2)}
-.event-banner{height:80px;display:flex;align-items:center;padding:0 24px;font-size:36px;position:relative}
-.event-body{padding:20px 24px}
-.event-title{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:6px}
-.event-meta{display:flex;gap:12px;font-size:12px;color:var(--slate);margin-bottom:12px;flex-wrap:wrap}
-.event-desc{font-size:13px;color:var(--slate);line-height:1.5;margin-bottom:16px}
-.event-footer{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid var(--border)}
-.event-price{font-size:18px;font-weight:700;color:var(--navy)}
-.seats-badge{font-size:11px;padding:3px 8px;background:var(--amber-bg);color:var(--amber);border-radius:20px;font-weight:600}
-.reg-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(120, 55, 220, .2), transparent 34%),
+    radial-gradient(circle at 84% 18%, rgba(0, 150, 170, .16), transparent 34%),
+    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
+}
+nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
+.logo{color:#fff}
+.nav-links a{color:rgba(255,255,255,.75)}
+.nav-links a:hover,.nav-links a.active{color:#fff}
+
+.portal-wrap{max-width:1360px;margin:0 auto;padding:102px 20px 38px}
+.glass{
+  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 16px 38px rgba(0,0,0,.24);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+}
+.hero{
+  text-align:center;
+  padding:28px 24px 24px;
+  margin-bottom:16px;
+}
+.hero h1{
+  margin:0 0 8px;
+  font-family:'DM Serif Display',serif;
+  color:#fff;
+  font-size:clamp(34px,4vw,50px);
+}
+.hero p{
+  margin:0 auto;
+  max-width:900px;
+  color:rgba(255,255,255,.86);
+  font-size:18px;
+  line-height:1.6;
+}
+
+.controls{
+  margin-bottom:16px;
+  display:grid;
+  grid-template-columns:repeat(3, minmax(180px, 220px)) 1fr;
+  gap:12px;
+  align-items:center;
+}
+.filter-select{
+  border:1px solid rgba(255,255,255,.24);
+  background:rgba(255,255,255,.12);
+  color:#fff;
+  padding:13px 14px;
+  border-radius:14px;
+  cursor:pointer;
+  font-size:14px;
+}
+.filter-select option{color:#111827}
+.results-hint{
+  justify-self:end;
+  color:rgba(255,255,255,.72);
+  font-size:13px;
+}
+
+.events-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.event-card{
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:20px;
+  overflow:hidden;
+  transition:all .2s;
+  background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
+  box-shadow:0 10px 28px rgba(0,0,0,.22);
+  backdrop-filter:blur(6px);
+}
+.event-card:hover{
+  transform:translateY(-3px);
+  border-color:rgba(255,255,255,.45);
+  box-shadow:0 14px 35px rgba(0,0,0,.3);
+}
+.event-banner{
+  height:92px;
+  display:flex;
+  align-items:center;
+  padding:0 24px;
+  font-size:34px;
+  position:relative;
+}
+.event-body{padding:22px}
+.event-title{font-size:24px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:10px}
+.event-meta{display:flex;gap:12px;font-size:13px;color:rgba(255,255,255,.76);margin-bottom:14px;flex-wrap:wrap}
+.event-desc{font-size:15px;color:rgba(255,255,255,.86);line-height:1.7;margin-bottom:18px}
+.event-footer{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding-top:16px;
+  border-top:1px solid rgba(255,255,255,.18);
+}
+.event-price{font-size:22px;font-weight:700;color:#fff}
+.seats-badge{
+  font-size:11px;
+  padding:3px 8px;
+  background:rgba(251,191,36,.24);
+  color:#fde68a;
+  border-radius:20px;
+  font-weight:600;
+  margin-top:4px;
+  display:inline-block;
+}
+.badge-navy{background:rgba(79,70,229,.28);color:#fff}
+.badge-gray{background:rgba(255,255,255,.2);color:#fff}
+.reg-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center}
 .reg-modal.open{display:flex}
 .reg-modal-box{background:#fff;border-radius:20px;padding:32px;width:440px;max-width:90vw;box-shadow:var(--shadow2)}
+.profile-nav{position:relative}
+.sc-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;
+  box-shadow:0 6px 16px rgba(13,124,102,.35);
+}
+.profile-menu{
+  position:absolute;top:44px;right:0;min-width:190px;border-radius:12px;
+  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
+  border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 32px rgba(0,0,0,.35);
+  padding:8px;display:none;z-index:120;
+}
+.profile-menu.open{display:block}
+.profile-menu a,.profile-menu button{
+  width:100%;border:none;background:none;text-align:left;color:#fff;text-decoration:none;
+  padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
+  display:flex;align-items:center;gap:8px;
+}
+.profile-menu a:hover,.profile-menu button:hover{background:rgba(255,255,255,.12)}
+@media(max-width:980px){
+  .controls{grid-template-columns:1fr 1fr}
+  .results-hint{justify-self:start}
+  .events-grid{grid-template-columns:1fr}
+}
+@media(max-width:680px){
+  .portal-wrap{padding:96px 14px 28px}
+  .controls{grid-template-columns:1fr}
+  .hero p{font-size:16px}
+}
 </style>
 </head>
 <body>
 <nav>
   <div class="nav-inner">
-    <a href="index.html" class="logo"><div class="logo-dot"></div>AI KONIK</a>
-    <div class="nav-links"><a href="agents.html">Agents</a><a href="prompts.html">Prompts</a><a href="industries.html">Industries</a><a href="events.html" class="active">Events</a><a href="tools.html">Tools</a></div>
-    <div class="nav-cta"><div style="width:34px;height:34px;border-radius:50%;background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600">SC</div></div>
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links"><a href="{% url 'agents' %}">Agents</a><a href="{% url 'prompts' %}">Prompts</a><a href="{% url 'industries' %}">Industries</a><a href="{% url 'events' %}" class="active">Events</a><a href="{% url 'tools' %}">Tools</a></div>
+    <div class="nav-cta profile-nav">
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
+      <div class="profile-menu" id="profile-menu">
+        <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
+        <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
+        <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+        <button type="button" id="profile-signout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
+    </div>
   </div>
 </nav>
-<div class="page-shell">
-  <div class="page-header"><div class="page-header-inner">
-    <div class="section-label">Events</div>
-    <h1 class="section-title" style="font-size:32px">Workshops, Summits & Masterclasses</h1>
-    <p style="font-size:14px;color:var(--slate)">Learn directly from AI practitioners who've implemented AI across 40+ industries.</p>
-  </div></div>
-  <div class="page-content">
-    <div class="filter-bar" style="margin-bottom:24px">
+<div class="page-shell portal-wrap">
+  <section class="hero glass">
+    <h1>Workshops, Summits & Masterclasses</h1>
+    <p>Learn directly from AI practitioners who've implemented AI across 40+ industries.</p>
+  </section>
+  <div>
+    <div class="controls">
       <select class="filter-select"><option>All Types</option><option>Workshop</option><option>Summit</option><option>Webinar</option><option>Masterclass</option></select>
       <select class="filter-select"><option>All Industries</option><option>Legal</option><option>Healthcare</option><option>Finance</option><option>Marketing</option></select>
       <select class="filter-select"><option>Upcoming</option><option>This Week</option><option>This Month</option></select>
+      <div class="results-hint" id="results-hint">0 events available</div>
     </div>
     <div class="events-grid" id="events-grid"></div>
   </div>
@@ -72,7 +208,7 @@
 <script>
 const EVENTS=[
   {id:1,emoji:'<i class="fa-solid fa-scale-balanced"></i>',bg:'#EEF2FF',title:'AI for Legal Teams: Contract Automation Workshop',type:'Workshop',date:'Apr 22, 2026',time:'2:00 PM EST',duration:'2 hours',industry:'Legal',desc:'Learn how to deploy AI contract review in your firm. Live demo with real NDA analysis and redline generation.',price:0,seats:8,cap:30,registered:false},
-  {id:2,emoji:'<i class="fa-solid fa-rocket"></i>',bg:'linear-gradient(135deg,#0D7C66,#0A0F2C)',title:'AI District Summit 2026 — Annual Flagship Event',type:'Summit',date:'May 15–16, 2026',time:'9:00 AM EST',duration:'2 days',industry:'All',desc:'Two days of keynotes, workshops, and networking with 500+ SMB leaders pioneering AI adoption.',price:297,seats:42,cap:500,registered:false},
+  {id:2,emoji:'<i class="fa-solid fa-rocket"></i>',bg:'linear-gradient(135deg,#0D7C66,#0A0F2C)',title:'AI KONIK Summit 2026 — Annual Flagship Event',type:'Summit',date:'May 15–16, 2026',time:'9:00 AM EST',duration:'2 days',industry:'All',desc:'Two days of keynotes, workshops, and networking with 500+ SMB leaders pioneering AI adoption.',price:297,seats:42,cap:500,registered:false},
   {id:3,emoji:'<i class="fa-solid fa-hospital"></i>',bg:'#F0FDF4',title:'HIPAA-Compliant AI in Healthcare Practice',type:'Webinar',date:'Apr 29, 2026',time:'1:00 PM EST',duration:'90 min',industry:'Healthcare',desc:'Navigate AI implementation in a HIPAA-regulated environment. Practical guidance from a healthcare compliance expert.',price:0,seats:67,cap:200,registered:true},
   {id:4,emoji:'<i class="fa-solid fa-sack-dollar"></i>',bg:'#FFFBEB',title:'AI for CFOs: Finance Automation Masterclass',type:'Masterclass',date:'May 8, 2026',time:'11:00 AM EST',duration:'3 hours',industry:'Finance',desc:'From automated financial reporting to AI-powered risk analysis — a hands-on session for finance leaders.',price:149,seats:12,cap:40,registered:false},
   {id:5,emoji:'<i class="fa-solid fa-bullhorn"></i>',bg:'#FFF1F2',title:'Content Marketing at Scale with AI Agents',type:'Workshop',date:'May 3, 2026',time:'3:00 PM EST',duration:'2 hours',industry:'Marketing',desc:'Triple your content output without sacrificing quality. Live session building a content engine with AI agents.',price:0,seats:24,cap:100,registered:false},
@@ -81,13 +217,24 @@ const EVENTS=[
 
 let selectedEvent=null;
 
+function bannerIconColor(bg){
+  const val = (bg || '').toLowerCase();
+  if(val.includes('#0d7c66') || val.includes('#0a0f2c') || val.includes('#0f172a') || val.includes('#1f2937')){
+    return '#ffffff';
+  }
+  if(val.startsWith('linear-gradient')) return '#ffffff';
+  return '#111827';
+}
+
 function renderEvents(){
+  document.getElementById('results-hint').textContent = `${EVENTS.length} events available`;
   document.getElementById('events-grid').innerHTML=EVENTS.map(e=>{
     const seatsLeft=e.cap-e.seats;
     const seatsWarn=seatsLeft<15;
+    const iconColor = bannerIconColor(e.bg);
     return `
     <div class="event-card">
-      <div class="event-banner" style="background:${e.bg}">${e.emoji}
+      <div class="event-banner" style="background:${e.bg};color:${iconColor}">${e.emoji}
         ${e.registered?'<span class="badge badge-green" style="position:absolute;top:12px;right:12px"><i class="fa-solid fa-check"></i> Registered</span>':''}
       </div>
       <div class="event-body">
@@ -136,6 +283,27 @@ function showToast(msg,type=''){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast show '+(type||'');
   setTimeout(()=>t.className='toast',4000);
+}
+const pmToggle = document.getElementById('profile-menu-toggle');
+const profileMenu = document.getElementById('profile-menu');
+if(pmToggle && profileMenu){
+  pmToggle.addEventListener('click', ()=>{
+    const open = profileMenu.classList.toggle('open');
+    pmToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', (e)=>{
+    if(!profileMenu.contains(e.target) && !pmToggle.contains(e.target)){
+      profileMenu.classList.remove('open');
+      pmToggle.setAttribute('aria-expanded','false');
+    }
+  });
+}
+const signoutBtn = document.getElementById('profile-signout-btn');
+if(signoutBtn){
+  signoutBtn.addEventListener('click', ()=>{
+    fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
+      .finally(()=>{window.location.href="{% url 'login' %}";});
+  });
 }
 renderEvents();
 </script>
