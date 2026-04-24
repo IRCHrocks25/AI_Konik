@@ -73,7 +73,7 @@ function doLogin(){
   .then(async r=>({ok:r.ok,data:await r.json()}))
   .then(({ok,data})=>{
     if(!ok){throw new Error(data.error||'Login failed');}
-    window.location.href="{% url 'dashboard' %}";
+    window.location.href="{% url 'agents' %}";
   })
   .catch(err=>{
     errBanner.textContent=err.message||'Incorrect email or password. Please try again.';
@@ -87,7 +87,7 @@ function doLogin(){
 document.addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
 fetch('/api/auth/me',{credentials:'same-origin'})
   .then(async r=>({ok:r.ok,data:await r.json()}))
-  .then(({data})=>{if(data.authenticated){window.location.href="{% url 'dashboard' %}";}});
+  .then(({data})=>{if(data.authenticated){window.location.href="{% url 'agents' %}";}});
 </script>
 </body>
 </html>
