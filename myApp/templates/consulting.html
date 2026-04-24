@@ -6,26 +6,7 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-body{
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 12% 10%, rgba(120, 55, 220, .2), transparent 34%),
-    radial-gradient(circle at 84% 20%, rgba(0, 150, 170, .16), transparent 34%),
-    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
-}
-nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
-.logo{color:#fff}
-.nav-links a{color:rgba(255,255,255,.75)}
-.nav-links a:hover,.nav-links a.active{color:#fff}
-
 .portal-wrap{max-width:1380px;margin:0 auto;padding:102px 20px 36px}
-.glass{
-  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 16px 38px rgba(0,0,0,.24);
-  backdrop-filter:blur(10px);
-  border-radius:20px;
-}
 
 .hero{
   padding:28px 24px 22px;
@@ -320,27 +301,6 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
   font-weight:500;
 }
 
-.profile-nav{position:relative}
-.sc-avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;
-  box-shadow:0 6px 16px rgba(13,124,102,.35);
-}
-.profile-menu{
-  position:absolute;top:44px;right:0;min-width:190px;border-radius:12px;
-  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
-  border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 32px rgba(0,0,0,.35);
-  padding:8px;display:none;z-index:120;
-}
-.profile-menu.open{display:block}
-.profile-menu a,.profile-menu button{
-  width:100%;border:none;background:none;text-align:left;color:#fff;text-decoration:none;
-  padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
-  display:flex;align-items:center;gap:8px;
-}
-.profile-menu a:hover,.profile-menu button:hover{background:rgba(255,255,255,.12)}
-
 @media(max-width:1080px){
   .consulting-layout{grid-template-columns:1fr}
   .consulting-sidebar{position:static}
@@ -360,7 +320,7 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
 }
 </style>
 </head>
-<body>
+<body class="dark-app">
 <nav>
   <div class="nav-inner">
     <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
