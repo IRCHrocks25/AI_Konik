@@ -7,138 +7,29 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-body{
-  min-height:100vh;
-  background:
-    radial-gradient(circle at 16% 10%, rgba(120, 55, 220, .2), transparent 34%),
-    radial-gradient(circle at 84% 18%, rgba(0, 150, 170, .16), transparent 34%),
-    linear-gradient(145deg, #0f172a 0%, #1f2937 45%, #111827 100%);
-}
-nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
-.logo{color:#fff}
-.nav-links a{color:rgba(255,255,255,.75)}
-.nav-links a:hover,.nav-links a.active{color:#fff}
-
 .portal-wrap{max-width:1360px;margin:0 auto;padding:102px 20px 38px}
-.glass{
-  background:linear-gradient(120deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
-  border:1px solid rgba(255,255,255,.2);
-  box-shadow:0 16px 38px rgba(0,0,0,.24);
-  backdrop-filter:blur(10px);
-  border-radius:20px;
-}
-.hero{
-  text-align:center;
-  padding:28px 24px 24px;
-  margin-bottom:16px;
-}
-.hero h1{
-  margin:0 0 8px;
-  font-family:'DM Serif Display',serif;
-  color:#fff;
-  font-size:clamp(34px,4vw,50px);
-}
-.hero p{
-  margin:0 auto;
-  max-width:900px;
-  color:rgba(255,255,255,.86);
-  font-size:18px;
-  line-height:1.6;
-}
-
-.controls{
-  margin-bottom:16px;
-  display:grid;
-  grid-template-columns:repeat(3, minmax(180px, 220px)) 1fr;
-  gap:12px;
-  align-items:center;
-}
-.filter-select{
-  border:1px solid rgba(255,255,255,.24);
-  background:rgba(255,255,255,.12);
-  color:#fff;
-  padding:13px 14px;
-  border-radius:14px;
-  cursor:pointer;
-  font-size:14px;
-}
+.hero{text-align:center;padding:28px 24px 24px;margin-bottom:16px}
+.hero h1{margin:0 0 8px;font-family:'DM Serif Display',serif;color:#fff;font-size:clamp(34px,4vw,50px)}
+.hero p{margin:0 auto;max-width:900px;color:rgba(255,255,255,.86);font-size:18px;line-height:1.6}
+.controls{margin-bottom:16px;display:grid;grid-template-columns:repeat(3, minmax(180px, 220px)) 1fr;gap:12px;align-items:center}
+.filter-select{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;padding:13px 14px;border-radius:14px;cursor:pointer;font-size:14px}
 .filter-select option{color:#111827}
-.results-hint{
-  justify-self:end;
-  color:rgba(255,255,255,.72);
-  font-size:13px;
-}
-
+.results-hint{justify-self:end;color:rgba(255,255,255,.72);font-size:13px}
 .events-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
-.event-card{
-  border:1px solid rgba(255,255,255,.24);
-  border-radius:20px;
-  overflow:hidden;
-  transition:all .2s;
-  background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
-  box-shadow:0 10px 28px rgba(0,0,0,.22);
-  backdrop-filter:blur(6px);
-}
-.event-card:hover{
-  transform:translateY(-3px);
-  border-color:rgba(255,255,255,.45);
-  box-shadow:0 14px 35px rgba(0,0,0,.3);
-}
-.event-banner{
-  height:92px;
-  display:flex;
-  align-items:center;
-  padding:0 24px;
-  font-size:34px;
-  position:relative;
-}
+.event-card{border:1px solid rgba(255,255,255,.24);border-radius:20px;overflow:hidden;transition:all .2s;background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));box-shadow:0 10px 28px rgba(0,0,0,.22);backdrop-filter:blur(6px)}
+.event-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.45);box-shadow:0 14px 35px rgba(0,0,0,.3)}
+.event-banner{height:92px;display:flex;align-items:center;padding:0 24px;font-size:34px;position:relative}
 .event-body{padding:22px}
 .event-title{font-size:24px;font-weight:600;color:#fff;line-height:1.3;margin-bottom:10px}
 .event-meta{display:flex;gap:12px;font-size:13px;color:rgba(255,255,255,.76);margin-bottom:14px;flex-wrap:wrap}
 .event-desc{font-size:15px;color:rgba(255,255,255,.86);line-height:1.7;margin-bottom:18px}
-.event-footer{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding-top:16px;
-  border-top:1px solid rgba(255,255,255,.18);
-}
+.event-footer{display:flex;align-items:center;justify-content:space-between;padding-top:16px;border-top:1px solid rgba(255,255,255,.18)}
 .event-price{font-size:22px;font-weight:700;color:#fff}
-.seats-badge{
-  font-size:11px;
-  padding:3px 8px;
-  background:rgba(251,191,36,.24);
-  color:#fde68a;
-  border-radius:20px;
-  font-weight:600;
-  margin-top:4px;
-  display:inline-block;
-}
+.seats-badge{font-size:11px;padding:3px 8px;background:rgba(251,191,36,.24);color:#fde68a;border-radius:20px;font-weight:600;margin-top:4px;display:inline-block}
 .badge-navy{background:rgba(79,70,229,.28);color:#fff}
-.badge-gray{background:rgba(255,255,255,.2);color:#fff}
 .reg-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center}
 .reg-modal.open{display:flex}
 .reg-modal-box{background:#fff;border-radius:20px;padding:32px;width:440px;max-width:90vw;box-shadow:var(--shadow2)}
-.profile-nav{position:relative}
-.sc-avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:var(--teal);color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:13px;font-weight:600;text-decoration:none;border:none;cursor:pointer;
-  box-shadow:0 6px 16px rgba(13,124,102,.35);
-}
-.profile-menu{
-  position:absolute;top:44px;right:0;min-width:190px;border-radius:12px;
-  background:linear-gradient(150deg, rgba(30,41,59,.96), rgba(15,23,42,.96));
-  border:1px solid rgba(255,255,255,.18);box-shadow:0 14px 32px rgba(0,0,0,.35);
-  padding:8px;display:none;z-index:120;
-}
-.profile-menu.open{display:block}
-.profile-menu a,.profile-menu button{
-  width:100%;border:none;background:none;text-align:left;color:#fff;text-decoration:none;
-  padding:9px 10px;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;
-  display:flex;align-items:center;gap:8px;
-}
-.profile-menu a:hover,.profile-menu button:hover{background:rgba(255,255,255,.12)}
 @media(max-width:980px){
   .controls{grid-template-columns:1fr 1fr}
   .results-hint{justify-self:start}
@@ -151,7 +42,7 @@ nav{background:rgba(13,15,35,.55);border-bottom:1px solid rgba(255,255,255,.16)}
 }
 </style>
 </head>
-<body>
+<body class="dark-app">
 <nav>
   <div class="nav-inner">
     <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
