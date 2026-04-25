@@ -27,6 +27,7 @@ urlpatterns = [
     path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path("admin-dashboard/pulse/", views.admin_dashboard, name="admin_dashboard_pulse"),
     path("admin-dashboard/users/", views.admin_dashboard, name="admin_dashboard_users"),
+    path("admin-dashboard/users/<int:user_id>/", views.admin_dashboard, name="admin_dashboard_user_detail"),
     path("admin-dashboard/content/", views.admin_dashboard, name="admin_dashboard_content"),
     path("admin-dashboard/content/agents/", views.admin_dashboard, name="admin_dashboard_agents"),
     path("admin-dashboard/content/prompts/", views.admin_dashboard, name="admin_dashboard_prompts"),
@@ -101,4 +102,6 @@ urlpatterns = [
         name="api_admin_agent_prompt_detail",
     ),
     path("api/admin/prompts/import", views.api_admin_import_prompts, name="api_admin_import_prompts"),
+    path("api/admin/users", views.api_admin_users, name="api_admin_users"),
+    path("api/admin/users/export", views.api_admin_users_export, name="api_admin_users_export"),
 ]

@@ -5,19 +5,19 @@ import logging
 import os
 import re
 import uuid
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
 from django.db.models import Count, Q, Sum
-from django.http import Http404, JsonResponse
+from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone as dj_tz
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
-from .admin_audit import log_error
+from .admin_audit import log_error, record_admin_action
 from .auth_utils import (
     _is_admin_user,
     admin_required,
@@ -915,6 +915,235 @@ def api_pulse(request):
             "total": total_users,
         },
     })
+
+
+def _parse_active_after(value):
+    """Parse active_after param: relative '24h'/'7d' or ISO datetime string."""
+    now = dj_tz.now()
+    if value.endswith("h"):
+        try:
+            return now - timedelta(hours=int(value[:-1]))
+        except ValueError:
+            return None
+    if value.endswith("d"):
+        try:
+            return now - timedelta(days=int(value[:-1]))
+        except ValueError:
+            return None
+    try:
+        dt = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            from django.utils.timezone import make_aware
+            dt = make_aware(dt)
+        return dt
+    except ValueError:
+        return None
+
+
+def _build_user_queryset(params):
+    qs = CustomUser.objects.annotate(
+        message_count=Count(
+            "chat_sessions__messages",
+            filter=Q(chat_sessions__messages__role="user"),
+            distinct=True,
+        ),
+        session_count=Count("chat_sessions", distinct=True),
+    )
+
+    search = params.get("search", "").strip()
+    if search:
+        qs = qs.filter(
+            Q(email__icontains=search)
+            | Q(first_name__icontains=search)
+            | Q(last_name__icontains=search)
+            | Q(display_name__icontains=search)
+            | Q(role__icontains=search)
+        )
+
+    industry = params.get("industry", "").strip().lower()
+    if industry:
+        qs = qs.filter(industry__iexact=INDUSTRY_MAP.get(industry, industry))
+
+    has_profile = params.get("has_profile", "").strip().lower()
+    if has_profile == "true":
+        qs = qs.exclude(display_name="")
+    elif has_profile == "false":
+        qs = qs.filter(display_name="")
+
+    signup_after = params.get("signup_after", "").strip()
+    if signup_after:
+        try:
+            qs = qs.filter(created_at__date__gte=datetime.fromisoformat(signup_after).date())
+        except ValueError:
+            pass
+
+    signup_before = params.get("signup_before", "").strip()
+    if signup_before:
+        try:
+            qs = qs.filter(created_at__date__lte=datetime.fromisoformat(signup_before).date())
+        except ValueError:
+            pass
+
+    active_after = params.get("active_after", "").strip()
+    if active_after:
+        cutoff = _parse_active_after(active_after)
+        if cutoff:
+            qs = qs.filter(last_active_at__gte=cutoff)
+
+    is_suspended = params.get("is_suspended", "").strip().lower()
+    if is_suspended == "true":
+        qs = qs.filter(is_suspended=True)
+    elif is_suspended == "false":
+        qs = qs.filter(is_suspended=False)
+
+    is_admin_filter = params.get("is_admin", "").strip().lower()
+    if is_admin_filter in ("true", "false"):
+        # Django auth bridge lookup — one extra query; intentionally more expensive than other filters.
+        DjangoUser = get_user_model()
+        su_qs = DjangoUser.objects.filter(is_superuser=True)
+        admin_ids = {v.strip().lower() for v in su_qs.values_list("email", flat=True)}
+        admin_ids |= {v.strip().lower() for v in su_qs.values_list("username", flat=True)}
+        if is_admin_filter == "true":
+            qs = qs.filter(email__in=admin_ids)
+        else:
+            qs = qs.exclude(email__in=admin_ids)
+
+    sort_map = {
+        "signup_desc":   ["-created_at"],
+        "signup_asc":    ["created_at"],
+        "active_desc":   ["-last_active_at"],
+        "active_asc":    ["last_active_at"],
+        "messages_desc": ["-message_count"],
+        "name_asc":      ["first_name", "last_name"],
+    }
+    qs = qs.order_by(*sort_map.get(params.get("sort", "signup_desc").strip(), ["-created_at"]))
+    return qs
+
+
+def _serialize_user_item(user, superuser_emails, superuser_usernames):
+    email = (user.email or "").strip().lower()
+    is_admin = email in superuser_emails or email in superuser_usernames
+    if not is_admin and email.endswith("@local.user"):
+        is_admin = email.split("@", 1)[0] in superuser_usernames
+
+    def iso(dt):
+        return dt.isoformat().replace("+00:00", "Z") if dt else None
+
+    return {
+        "id": user.id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "display_name": user.display_name,
+        "role": user.role,
+        "industry": user.industry,
+        "date_joined": iso(user.created_at),
+        "last_active_at": iso(user.last_active_at),
+        "is_suspended": user.is_suspended,
+        "is_admin": is_admin,
+        "message_count": getattr(user, "message_count", 0) or 0,
+        "session_count": getattr(user, "session_count", 0) or 0,
+        "has_profile": bool(user.display_name),
+    }
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_users(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    qs = _build_user_queryset(request.GET)
+
+    try:
+        page = max(1, int(request.GET.get("page", 1)))
+    except (ValueError, TypeError):
+        page = 1
+    try:
+        page_size = min(200, max(1, int(request.GET.get("page_size", 50))))
+    except (ValueError, TypeError):
+        page_size = 50
+
+    total = qs.count()
+    pages = max(1, (total + page_size - 1) // page_size)
+    users_page = list(qs[(page - 1) * page_size:(page - 1) * page_size + page_size])
+
+    DjangoUser = get_user_model()
+    superusers = list(DjangoUser.objects.filter(is_superuser=True).values("email", "username"))
+    superuser_emails = {su["email"].strip().lower() for su in superusers}
+    superuser_usernames = {su["username"].strip().lower() for su in superusers}
+
+    return JsonResponse({
+        "items": [_serialize_user_item(u, superuser_emails, superuser_usernames) for u in users_page],
+        "page": page,
+        "page_size": page_size,
+        "total": total,
+        "pages": pages,
+    })
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_users_export(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    qs = _build_user_queryset(request.GET)
+    total = qs.count()
+
+    if total > 10_000:
+        return JsonResponse(
+            {
+                "error": (
+                    f"Export exceeds the 10,000-user limit ({total:,} matched). "
+                    "Apply tighter filters to narrow down. "
+                    "Streaming exports for larger sets are a planned future enhancement."
+                )
+            },
+            status=413,
+        )
+
+    DjangoUser = get_user_model()
+    superusers = list(DjangoUser.objects.filter(is_superuser=True).values("email", "username"))
+    superuser_emails = {su["email"].strip().lower() for su in superusers}
+    superuser_usernames = {su["username"].strip().lower() for su in superusers}
+
+    today_str = dj_tz.now().strftime("%Y-%m-%d")
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="users-{today_str}.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow([
+        "id", "email", "first_name", "last_name", "display_name", "role",
+        "industry", "company_size", "years_experience", "date_joined",
+        "last_active_at", "is_suspended", "is_admin", "message_count",
+        "session_count", "has_profile", "expertise_areas",
+    ])
+    for user in qs.iterator():
+        item = _serialize_user_item(user, superuser_emails, superuser_usernames)
+        expertise = ", ".join(user.expertise_areas) if isinstance(user.expertise_areas, list) else ""
+        writer.writerow([
+            item["id"], item["email"], item["first_name"], item["last_name"],
+            item["display_name"], item["role"], item["industry"],
+            user.company_size, user.years_experience,
+            item["date_joined"], item["last_active_at"],
+            item["is_suspended"], item["is_admin"],
+            item["message_count"], item["session_count"],
+            item["has_profile"], expertise,
+        ])
+
+    active_filters = {k: v for k, v in request.GET.items() if v and k not in ("page", "page_size")}
+    record_admin_action(
+        admin=request.current_user,
+        action_type="user.export",
+        target_type="user",
+        metadata={"count": total, "filters": active_filters},
+    )
+    return response
 
 
 @login_required_api

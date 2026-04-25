@@ -140,6 +140,111 @@
   transition:background .15s;
 }
 .pulse-retry-btn:hover{background:rgba(244,63,94,.25)}
+
+/* ── USERS panel ── */
+.users-topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.users-search-wrap{position:relative;flex:1;min-width:240px}
+.users-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);font-size:13px;pointer-events:none}
+.users-search-input{
+  width:100%;padding:9px 14px 9px 36px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  border-radius:10px;color:#fff;font-size:13px;outline:none;
+  transition:border-color .15s,background .15s;box-sizing:border-box;
+}
+.users-search-input::placeholder{color:rgba(255,255,255,.35)}
+.users-search-input:focus{border-color:rgba(139,92,246,.5);background:rgba(255,255,255,.11)}
+.users-topbar-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.users-count{font-size:13px;color:rgba(255,255,255,.5);white-space:nowrap}
+.users-export-btn{
+  display:flex;align-items:center;gap:7px;padding:8px 16px;
+  border:1px solid rgba(139,92,246,.45);border-radius:10px;
+  background:rgba(139,92,246,.18);color:#c4b5fd;
+  font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;
+  transition:background .15s,border-color .15s;
+}
+.users-export-btn:hover{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.65)}
+.users-export-btn:disabled{opacity:.55;cursor:default}
+.users-filter-row{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.uf-select{
+  padding:7px 12px;background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);border-radius:8px;
+  color:rgba(255,255,255,.82);font-size:12.5px;cursor:pointer;outline:none;
+}
+.uf-select:hover{background:rgba(255,255,255,.11)}
+.uf-select option{background:#1e1b2e;color:#fff}
+.uf-clear-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 12px;background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);border-radius:8px;
+  color:rgba(255,255,255,.6);font-size:12.5px;cursor:pointer;
+  transition:background .15s;
+}
+.uf-clear-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.users-table-wrap{
+  background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.15);border-radius:16px;
+  overflow:hidden;margin-bottom:20px;
+}
+.users-table{width:100%;border-collapse:collapse;font-size:13px}
+.users-table th{
+  padding:11px 14px;text-align:left;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);
+  border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap;
+}
+.users-table td{
+  padding:11px 14px;color:rgba(255,255,255,.85);
+  border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle;
+}
+.users-table tr:last-child td{border-bottom:none}
+.users-table tbody tr{cursor:pointer;transition:background .13s}
+.users-table tbody tr:hover{background:rgba(255,255,255,.06)}
+.user-avatar{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,rgba(139,92,246,.6),rgba(99,102,241,.6));
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#fff;
+}
+.user-name-cell{display:flex;align-items:center;gap:10px}
+.user-name-text strong{display:block;font-size:13px;color:#fff;font-weight:500}
+.user-name-text span{font-size:11.5px;color:rgba(255,255,255,.5)}
+.spill-active{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:20px;font-size:11px;font-weight:600;
+  background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.3);
+}
+.spill-suspended{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;
+  border-radius:20px;font-size:11px;font-weight:600;
+  background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid rgba(245,158,11,.3);
+}
+.spill-admin{
+  display:inline-flex;align-items:center;gap:4px;padding:3px 9px;margin-left:5px;
+  border-radius:20px;font-size:11px;font-weight:600;
+  background:rgba(168,85,247,.2);color:#c084fc;border:1px solid rgba(168,85,247,.3);
+}
+.users-empty-state{padding:48px 32px;text-align:center}
+.users-empty-state i{font-size:32px;color:rgba(255,255,255,.2);display:block;margin-bottom:12px}
+.users-empty-state p{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:16px}
+.users-empty-clear-btn{
+  padding:7px 18px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);
+  color:rgba(255,255,255,.7);font-size:13px;cursor:pointer;
+}
+.users-empty-clear-btn:hover{background:rgba(255,255,255,.14)}
+.users-skel-cell{
+  background:rgba(255,255,255,.09);border-radius:4px;height:14px;
+  animation:shimmer 1.2s ease-in-out infinite alternate;
+}
+.users-pagination{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap}
+.upag-btn{
+  padding:6px 12px;min-width:36px;border-radius:8px;
+  border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.7);font-size:13px;cursor:pointer;
+  transition:background .13s,border-color .13s;
+}
+.upag-btn:hover:not(:disabled){background:rgba(255,255,255,.13);color:#fff}
+.upag-btn.active{background:rgba(139,92,246,.35);border-color:rgba(139,92,246,.55);color:#fff;font-weight:600}
+.upag-btn:disabled{opacity:.35;cursor:default}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -237,14 +342,72 @@
     <div id="panel-users" class="admin-panel">
       <div class="admin-panel-header">
         <h1>Users</h1>
-        <p>Search, inspect, suspend, and export your user base.</p>
+        <p>Search, filter, and export your user base.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-users"></i></div>
-        <h3>User Management</h3>
-        <p>Paginated user list, search, suspend/reinstate, impersonation, and CSV export — coming in Phase 4 &amp; 5.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 4 – 5</span>
+
+      <!-- Search + export bar -->
+      <div class="users-topbar">
+        <div class="users-search-wrap">
+          <i class="fa-solid fa-magnifying-glass users-search-icon"></i>
+          <input type="text" id="users-search" class="users-search-input" placeholder="Search by email, name, or role…" autocomplete="off">
+        </div>
+        <div class="users-topbar-right">
+          <span class="users-count" id="users-count"></span>
+          <button class="users-export-btn" id="users-export-btn" onclick="exportUsers()">
+            <i class="fa-solid fa-download"></i>
+            <span id="users-export-label">Export CSV</span>
+          </button>
+        </div>
       </div>
+
+      <!-- Filter row -->
+      <div class="users-filter-row">
+        <select id="uf-industry" class="uf-select" onchange="usersRefetch()">
+          <option value="">All Industries</option>
+          <option value="legal">Legal</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="finance">Finance</option>
+          <option value="marketing">Marketing</option>
+          <option value="technology">Technology</option>
+          <option value="realestate">Real Estate</option>
+          <option value="accounting">Accounting</option>
+          <option value="logistics">Logistics</option>
+          <option value="manufacturing">Manufacturing</option>
+        </select>
+        <select id="uf-has-profile" class="uf-select" onchange="usersRefetch()">
+          <option value="">All Users</option>
+          <option value="true">Profile Complete</option>
+          <option value="false">No Profile</option>
+        </select>
+        <select id="uf-suspended" class="uf-select" onchange="usersRefetch()">
+          <option value="">Any Status</option>
+          <option value="false">Active</option>
+          <option value="true">Suspended</option>
+        </select>
+        <select id="uf-active" class="uf-select" onchange="usersRefetch()">
+          <option value="">Any Activity</option>
+          <option value="24h">Active 24h</option>
+          <option value="7d">Active 7d</option>
+          <option value="30d">Active 30d</option>
+        </select>
+        <select id="uf-sort" class="uf-select" onchange="usersRefetch()">
+          <option value="signup_desc">Newest First</option>
+          <option value="signup_asc">Oldest First</option>
+          <option value="active_desc">Most Recent Active</option>
+          <option value="active_asc">Least Recent Active</option>
+          <option value="messages_desc">Most Messages</option>
+          <option value="name_asc">Name A–Z</option>
+        </select>
+        <button class="uf-clear-btn" onclick="usersClearFilters()">
+          <i class="fa-solid fa-xmark"></i> Clear
+        </button>
+      </div>
+
+      <!-- Table -->
+      <div class="users-table-wrap" id="users-table-wrap"></div>
+
+      <!-- Pagination -->
+      <div class="users-pagination" id="users-pagination"></div>
     </div>
 
     <div id="panel-agents" class="admin-panel">
@@ -519,6 +682,7 @@ function showSection(key) {
   document.querySelectorAll('.admin-sidebar-link[data-section="' + key + '"]').forEach(l => l.classList.add('active'));
   stopPulseRefresh();
   if (key === 'pulse') startPulseRefresh();
+  if (key === 'users') usersMount();
 }
 
 function navigateTo(path, section) {
@@ -542,6 +706,254 @@ window.addEventListener('popstate', e => {
   const section = (e.state && e.state.section) || PATH_TO_SECTION[window.location.pathname] || 'pulse';
   showSection(section);
 });
+
+// ── USERS ──────────────────────────────────────────────────────────────────
+let usersDebounceTimer = null;
+let usersTotalCount = 0;
+let usersCurrentPage = 1;
+let usersMounted = false;
+
+function usersFilters() {
+  const g = id => (document.getElementById(id) || {}).value || '';
+  return {
+    search:       g('users-search'),
+    industry:     g('uf-industry'),
+    has_profile:  g('uf-has-profile'),
+    is_suspended: g('uf-suspended'),
+    active_after: g('uf-active'),
+    sort:         g('uf-sort') || 'signup_desc',
+  };
+}
+
+function usersBuildQuery(filters, page) {
+  const p = new URLSearchParams();
+  if (page) p.set('page', page);
+  if (filters.search)       p.set('search', filters.search);
+  if (filters.industry)     p.set('industry', filters.industry);
+  if (filters.has_profile)  p.set('has_profile', filters.has_profile);
+  if (filters.is_suspended) p.set('is_suspended', filters.is_suspended);
+  if (filters.active_after) p.set('active_after', filters.active_after);
+  if (filters.sort && filters.sort !== 'signup_desc') p.set('sort', filters.sort);
+  return p;
+}
+
+function usersUpdateUrl(filters, page) {
+  const qs = usersBuildQuery(filters, page).toString();
+  history.pushState({section: 'users'}, '', '/admin-dashboard/users/' + (qs ? '?' + qs : ''));
+}
+
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function userAvatar(item) {
+  let i = '';
+  if (item.display_name) { i = item.display_name.trim()[0].toUpperCase(); }
+  else if (item.first_name && item.last_name) { i = (item.first_name[0] + item.last_name[0]).toUpperCase(); }
+  else if (item.first_name) { i = item.first_name[0].toUpperCase(); }
+  else { i = (item.email || '?')[0].toUpperCase(); }
+  return `<div class="user-avatar">${escHtml(i)}</div>`;
+}
+
+function fmtDateShort(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+}
+
+function fmtRelative(iso) {
+  if (!iso) return 'Never';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 60000)         return 'Just now';
+  if (diff < 3600000)       return Math.floor(diff / 60000) + 'm ago';
+  if (diff < 86400000)      return Math.floor(diff / 3600000) + 'h ago';
+  if (diff < 7 * 86400000)  return Math.floor(diff / 86400000) + 'd ago';
+  return fmtDateShort(iso);
+}
+
+function usersRenderRow(item) {
+  const name = [item.first_name, item.last_name].filter(Boolean).join(' ') || item.email;
+  const statusPill = item.is_suspended
+    ? '<span class="spill-suspended"><i class="fa-solid fa-pause"></i> Suspended</span>'
+    : '<span class="spill-active"><i class="fa-solid fa-circle" style="font-size:8px"></i> Active</span>';
+  const adminBadge = item.is_admin ? '<span class="spill-admin"><i class="fa-solid fa-shield"></i> Admin</span>' : '';
+  return `<tr onclick="usersOpenDetail(${item.id})" title="View user #${item.id}">
+    <td><div class="user-name-cell">${userAvatar(item)}<div class="user-name-text"><strong>${escHtml(name)}</strong><span>${escHtml(item.email)}</span></div></div></td>
+    <td>${escHtml(item.industry || '—')}</td>
+    <td>${fmtDateShort(item.date_joined)}</td>
+    <td>${fmtRelative(item.last_active_at)}</td>
+    <td>${item.message_count.toLocaleString()}</td>
+    <td>${statusPill}${adminBadge}</td>
+  </tr>`;
+}
+
+function usersTableShell(bodyHtml) {
+  return `<table class="users-table"><thead><tr>
+    <th>User</th><th>Industry</th><th>Joined</th><th>Last Active</th><th>Messages</th><th>Status</th>
+  </tr></thead><tbody>${bodyHtml}</tbody></table>`;
+}
+
+function usersRenderSkeleton() {
+  const skelRow = () => `<tr>
+    <td><div class="user-name-cell"><div class="user-avatar"></div><div><div class="users-skel-cell" style="width:110px;margin-bottom:5px"></div><div class="users-skel-cell" style="width:150px"></div></div></div></td>
+    <td><div class="users-skel-cell" style="width:70px"></div></td>
+    <td><div class="users-skel-cell" style="width:90px"></div></td>
+    <td><div class="users-skel-cell" style="width:65px"></div></td>
+    <td><div class="users-skel-cell" style="width:36px"></div></td>
+    <td><div class="users-skel-cell" style="width:60px"></div></td>
+  </tr>`;
+  return usersTableShell(Array(8).fill(0).map(skelRow).join(''));
+}
+
+function usersRenderEmpty() {
+  return `<div class="users-empty-state">
+    <i class="fa-solid fa-users-slash"></i>
+    <p>No users match these filters.</p>
+    <button class="users-empty-clear-btn" onclick="usersClearFilters()">Clear filters</button>
+  </div>`;
+}
+
+function usersPaginationRender(data) {
+  const pagEl = document.getElementById('users-pagination');
+  if (!pagEl) return;
+  if (data.pages <= 1) { pagEl.innerHTML = ''; return; }
+  const p = data.page, pages = data.pages;
+  let h = `<button class="upag-btn" ${p <= 1 ? 'disabled' : ''} onclick="loadUsers(${p - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+  const lo = Math.max(1, p - 2), hi = Math.min(pages, p + 2);
+  if (lo > 1) { h += `<button class="upag-btn" onclick="loadUsers(1)">1</button>`; if (lo > 2) h += `<span style="color:rgba(255,255,255,.4);padding:0 4px">…</span>`; }
+  for (let i = lo; i <= hi; i++) h += `<button class="upag-btn ${i === p ? 'active' : ''}" onclick="loadUsers(${i})">${i}</button>`;
+  if (hi < pages) { if (hi < pages - 1) h += `<span style="color:rgba(255,255,255,.4);padding:0 4px">…</span>`; h += `<button class="upag-btn" onclick="loadUsers(${pages})">${pages}</button>`; }
+  h += `<button class="upag-btn" ${p >= pages ? 'disabled' : ''} onclick="loadUsers(${p + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+  pagEl.innerHTML = h;
+}
+
+function usersRender(data) {
+  usersTotalCount = data.total;
+  const countEl = document.getElementById('users-count');
+  if (countEl) countEl.textContent = data.total.toLocaleString() + ' user' + (data.total !== 1 ? 's' : '');
+  const exportLabel = document.getElementById('users-export-label');
+  if (exportLabel) exportLabel.textContent = 'Export ' + data.total.toLocaleString() + ' users';
+
+  const wrap = document.getElementById('users-table-wrap');
+  if (!wrap) return;
+  if (!data.items.length) { wrap.innerHTML = usersRenderEmpty(); document.getElementById('users-pagination').innerHTML = ''; return; }
+  wrap.innerHTML = usersTableShell(data.items.map(usersRenderRow).join(''));
+  usersPaginationRender(data);
+}
+
+async function loadUsers(page) {
+  usersCurrentPage = page || usersCurrentPage;
+  const filters = usersFilters();
+  usersUpdateUrl(filters, usersCurrentPage);
+
+  const wrap = document.getElementById('users-table-wrap');
+  if (wrap) wrap.innerHTML = usersRenderSkeleton();
+  const pagEl = document.getElementById('users-pagination');
+  if (pagEl) pagEl.innerHTML = '';
+  const countEl = document.getElementById('users-count');
+  if (countEl) countEl.textContent = '';
+
+  const params = usersBuildQuery(filters, usersCurrentPage);
+  params.set('page_size', '50');
+
+  try {
+    const r = await fetch('/api/admin/users?' + params.toString(), {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    usersRender(await r.json());
+  } catch(e) {
+    if (wrap) wrap.innerHTML = `<div class="users-empty-state">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p>Failed to load users. Check your connection or try again.</p>
+      <button class="users-empty-clear-btn" onclick="loadUsers(${usersCurrentPage})">Retry</button>
+    </div>`;
+  }
+}
+
+function usersRefetch() { usersCurrentPage = 1; loadUsers(1); }
+
+function usersClearFilters() {
+  ['users-search','uf-industry','uf-has-profile','uf-suspended','uf-active'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const sortEl = document.getElementById('uf-sort');
+  if (sortEl) sortEl.value = 'signup_desc';
+  usersRefetch();
+}
+
+function usersOpenDetail(id) {
+  window.location.href = '/admin-dashboard/users/' + id + '/';
+}
+
+async function exportUsers() {
+  const filters = usersFilters();
+  const params = usersBuildQuery(filters, null);
+  const btn = document.getElementById('users-export-btn');
+  const lbl = document.getElementById('users-export-label');
+  if (btn) btn.disabled = true;
+  if (lbl) lbl.textContent = 'Generating…';
+
+  try {
+    const r = await fetch('/api/admin/users/export?' + params.toString(), {credentials: 'same-origin'});
+    if (r.status === 413) {
+      const d = await r.json();
+      usersToast(d.error || 'Too many users (10,000+). Apply filters to narrow down.');
+      return;
+    }
+    if (!r.ok) throw new Error(r.status);
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), {href: url});
+    const cd = r.headers.get('Content-Disposition') || '';
+    const m = cd.match(/filename="([^"]+)"/);
+    a.download = m ? m[1] : 'users.csv';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  } catch(e) {
+    usersToast('Export failed. Please try again.');
+  } finally {
+    if (btn) btn.disabled = false;
+    if (lbl) lbl.textContent = 'Export ' + usersTotalCount.toLocaleString() + ' users';
+  }
+}
+
+function usersToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#1e1b2e;border:1px solid rgba(244,63,94,.4);color:#fb7185;padding:12px 18px;border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.3);max-width:360px';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 5000);
+}
+
+function usersReadUrlParams() {
+  const sp = new URLSearchParams(window.location.search);
+  const set = (id, key, def) => {
+    const el = document.getElementById(id);
+    if (el) el.value = sp.has(key) ? sp.get(key) : (def || '');
+  };
+  set('users-search',    'search');
+  set('uf-industry',     'industry');
+  set('uf-has-profile',  'has_profile');
+  set('uf-suspended',    'is_suspended');
+  set('uf-active',       'active_after');
+  set('uf-sort',         'sort', 'signup_desc');
+  return parseInt(sp.get('page') || '1', 10);
+}
+
+function usersMount() {
+  if (!usersMounted) {
+    usersMounted = true;
+    const searchEl = document.getElementById('users-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', () => {
+        clearTimeout(usersDebounceTimer);
+        usersDebounceTimer = setTimeout(usersRefetch, 300);
+      });
+    }
+  }
+  loadUsers(usersReadUrlParams());
+}
+// ── END USERS ────────────────────────────────────────────────────────────────
 
 // Profile menu toggle
 const pmToggle = document.getElementById('profile-menu-toggle');
