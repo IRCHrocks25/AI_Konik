@@ -248,7 +248,7 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
         <div class="chat-agent-sub" id="chat-agent-sub">Legal · M&A · Contracts</div>
       </div>
       <div class="chat-top-actions">
-        <button class="icon-action-btn" onclick="copySession()" title="Copy session" aria-label="Copy session"><i class="fa-regular fa-copy"></i></button>
+        <button class="icon-action-btn" onclick="copySession(this)" title="Copy session" aria-label="Copy session"><i class="fa-regular fa-copy"></i></button>
         <button class="icon-action-btn danger" onclick="clearChat()" title="Clear chat" aria-label="Clear chat"><i class="fa-solid fa-trash"></i></button>
       </div>
     </div>
@@ -735,8 +735,30 @@ function copyMsg(btn) {
   setTimeout(()=>btn.textContent='Copy', 2000);
 }
 
-function copySession() {
-  alert('Session copied to clipboard');
+function copySession(btn) {
+  const wraps = document.querySelectorAll('#chat-messages .msg-wrap');
+  if (!wraps.length) {
+    flashBtn(btn, 'fa-ban', 'Nothing to copy', 1500);
+    return;
+  }
+  const lines = [];
+  wraps.forEach(w => {
+    const label = w.classList.contains('user') ? 'You' : (currentAgentName || 'Agent');
+    const text = w.querySelector('.msg-bubble')?.innerText?.trim();
+    if (text) lines.push(`${label}:\n${text}`);
+  });
+  navigator.clipboard.writeText(lines.join('\n\n'))
+    .then(() => flashBtn(btn, 'fa-check', null, 1500))
+    .catch(() => flashBtn(btn, 'fa-xmark', 'Copy failed', 1500));
+}
+
+function flashBtn(btn, iconClass, title, ms) {
+  const icon = btn.querySelector('i');
+  const origClass = icon.className;
+  const origTitle = btn.title;
+  icon.className = `fa-solid ${iconClass}`;
+  if (title) btn.title = title;
+  setTimeout(() => { icon.className = origClass; btn.title = origTitle; }, ms);
 }
 
 function clearChat() {
