@@ -87,6 +87,7 @@ urlpatterns = [
     path("api/chat/upload-file", views.api_chat_upload_file, name="api_chat_upload_file"),
     path("api/chat/sessions/<int:session_id>/send", views.api_send_chat_message, name="api_send_chat_message"),
     path("api/chat/messages/<int:message_id>/feedback", views.api_message_feedback, name="api_message_feedback"),
+    path("api/admin/pulse", views.api_pulse, name="api_admin_pulse"),
     path("api/admin/agents", views.api_admin_agents, name="api_admin_agents"),
     path("api/admin/agents/<int:agent_id>", views.api_admin_agent_detail, name="api_admin_agent_detail"),
     path(

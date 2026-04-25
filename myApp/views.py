@@ -5,11 +5,12 @@ import logging
 import os
 import re
 import uuid
+from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
-from django.db.models import Q
+from django.db.models import Count, Q, Sum
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone as dj_tz
@@ -26,7 +27,7 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
+from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Prompt, SavedPrompt
 from .openai_service import (
     MAX_REQUEST_TOKENS,
     estimate_messages_tokens,
@@ -844,6 +845,76 @@ def api_dashboard(request):
             },
         }
     )
+
+
+# Blended token cost estimate: $0.50/1M tokens (gpt-4.1-mini rough average of input $0.40 + output $1.60).
+# TODO: split ChatMessage.token_count into input/output columns for accurate cost attribution.
+_BLENDED_COST_PER_TOKEN = 0.50 / 1_000_000
+
+
+@csrf_exempt
+@login_required_api
+def api_pulse(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    now = dj_tz.now()
+    today = now.date()
+    day_ago = now - timedelta(hours=24)
+    week_ago = now - timedelta(days=7)
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    signups_today = CustomUser.objects.filter(created_at__date=today).count()
+    signups_week = CustomUser.objects.filter(created_at__gte=week_ago).count()
+
+    active_today = CustomUser.objects.filter(last_active_at__gte=day_ago).count()
+    active_week = CustomUser.objects.filter(last_active_at__gte=week_ago).count()
+
+    messages_today = ChatMessage.objects.filter(role="user", created_at__date=today).count()
+    messages_week = ChatMessage.objects.filter(role="user", created_at__gte=week_ago).count()
+
+    tokens_today = (
+        ChatMessage.objects.filter(role="assistant", created_at__date=today)
+        .aggregate(total=Sum("token_count"))["total"] or 0
+    )
+    tokens_month = (
+        ChatMessage.objects.filter(role="assistant", created_at__gte=month_start)
+        .aggregate(total=Sum("token_count"))["total"] or 0
+    )
+    cost_today = round(tokens_today * _BLENDED_COST_PER_TOKEN, 4)
+    cost_month = round(tokens_month * _BLENDED_COST_PER_TOKEN, 4)
+
+    errors_today = ErrorLog.objects.filter(created_at__gte=day_ago).count()
+    error_by_type = {
+        row["error_type"]: row["n"]
+        for row in ErrorLog.objects.filter(created_at__gte=day_ago)
+        .values("error_type")
+        .annotate(n=Count("id"))
+    }
+
+    total_users = CustomUser.objects.count()
+    completed_users = CustomUser.objects.exclude(display_name="").count()
+    profile_rate = round(completed_users / total_users * 100) if total_users else 0
+
+    return JsonResponse({
+        "signups": {"today": signups_today, "week": signups_week},
+        "active_users": {"today": active_today, "week": active_week},
+        "messages": {"today": messages_today, "week": messages_week},
+        "tokens": {
+            "today": tokens_today,
+            "month": tokens_month,
+            "estimated_cost_usd_today": cost_today,
+            "estimated_cost_usd_month": cost_month,
+        },
+        "errors": {"today": errors_today, "by_type": error_by_type},
+        "profile_completion": {
+            "rate": profile_rate,
+            "completed": completed_users,
+            "total": total_users,
+        },
+    })
 
 
 @login_required_api

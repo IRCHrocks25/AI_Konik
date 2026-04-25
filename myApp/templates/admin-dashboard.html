@@ -62,6 +62,84 @@
   background:rgba(139,92,246,.22);color:#c4b5fd;
   border:1px solid rgba(139,92,246,.35);
 }
+
+/* PULSE metric tiles */
+.pulse-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+.pulse-meta{display:flex;align-items:center;gap:12px}
+.pulse-updated{font-size:12px;color:rgba(255,255,255,.45)}
+.pulse-refresh-btn{
+  display:flex;align-items:center;gap:6px;padding:6px 14px;
+  border:1px solid rgba(255,255,255,.2);border-radius:8px;
+  background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);
+  font-size:12px;font-weight:500;cursor:pointer;
+  transition:background .15s,border-color .15s;
+}
+.pulse-refresh-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.35)}
+.pulse-refresh-btn.spinning i{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.pulse-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:16px;
+}
+@media(max-width:900px){.pulse-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.pulse-grid{grid-template-columns:1fr}}
+
+.pulse-tile{
+  background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));
+  border:1px solid rgba(255,255,255,.15);border-radius:16px;
+  padding:22px 24px;cursor:pointer;
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+  position:relative;overflow:hidden;
+}
+.pulse-tile:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 32px rgba(0,0,0,.25);
+  border-color:rgba(255,255,255,.3);
+}
+.pulse-tile-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.pulse-tile-icon{
+  width:42px;height:42px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.pulse-tile-label{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.5);text-align:right}
+.pulse-tile-number{font-family:'DM Serif Display',serif;font-size:42px;line-height:1;color:#fff;margin-bottom:6px}
+.pulse-tile-sub{font-size:12px;color:rgba(255,255,255,.5);line-height:1.4}
+.pulse-tile-sub strong{color:rgba(255,255,255,.75)}
+
+/* icon colour variants */
+.pi-indigo{background:rgba(99,102,241,.22);color:#818cf8}
+.pi-emerald{background:rgba(16,185,129,.22);color:#34d399}
+.pi-cyan{background:rgba(6,182,212,.22);color:#22d3ee}
+.pi-amber{background:rgba(245,158,11,.22);color:#fbbf24}
+.pi-rose{background:rgba(244,63,94,.22);color:#fb7185}
+.pi-purple{background:rgba(168,85,247,.22);color:#c084fc}
+
+/* shimmer skeleton */
+.pulse-skeleton .pulse-tile-number{
+  background:rgba(255,255,255,.1);border-radius:6px;
+  width:80px;height:40px;animation:shimmer 1.2s ease-in-out infinite alternate;
+}
+.pulse-skeleton .pulse-tile-sub{
+  background:rgba(255,255,255,.07);border-radius:4px;
+  width:120px;height:14px;animation:shimmer 1.2s ease-in-out infinite alternate;color:transparent;
+}
+@keyframes shimmer{from{opacity:.5}to{opacity:1}}
+
+/* error state */
+.pulse-error-state{
+  background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.25);
+  border-radius:16px;padding:32px;text-align:center;
+}
+.pulse-error-state p{color:rgba(255,255,255,.7);margin-bottom:12px;font-size:14px}
+.pulse-retry-btn{
+  padding:8px 18px;border-radius:8px;border:1px solid rgba(244,63,94,.4);
+  background:rgba(244,63,94,.15);color:#fb7185;font-size:13px;cursor:pointer;
+  transition:background .15s;
+}
+.pulse-retry-btn:hover{background:rgba(244,63,94,.25)}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -141,16 +219,19 @@
   <main class="admin-main">
 
     <div id="panel-pulse" class="admin-panel">
-      <div class="admin-panel-header">
-        <h1>Pulse</h1>
-        <p>Platform health, activity, and key metrics at a glance.</p>
+      <div class="admin-panel-header pulse-header">
+        <div>
+          <h1>Pulse</h1>
+          <p>Platform health, activity, and key metrics at a glance.</p>
+        </div>
+        <div class="pulse-meta">
+          <span class="pulse-updated" id="pulse-updated"></span>
+          <button class="pulse-refresh-btn" id="pulse-refresh-btn" onclick="loadPulse()">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh
+          </button>
+        </div>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-chart-line"></i></div>
-        <h3>Real-time Metrics</h3>
-        <p>DAU/WAU trends, chat volumes, token usage, and system health — coming in Phase 3.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 3</span>
-      </div>
+      <div id="pulse-content"></div>
     </div>
 
     <div id="panel-users" class="admin-panel">
@@ -287,6 +368,133 @@
 </div>
 
 <script>
+// ── PULSE ──────────────────────────────────────────────────────────────────
+let pulseInterval = null;
+let pulseLoadedAt = null;
+
+function fmtNum(n) { return Number(n).toLocaleString(); }
+function fmtCost(v) { return '$' + Number(v).toFixed(4); }
+
+function renderPulseTiles(d) {
+  const today = new Date().toISOString().slice(0,10);
+  const dayAgo = new Date(Date.now() - 86400*1000).toISOString();
+  const errorSub = d.errors.today === 0
+    ? 'None in last 24h'
+    : Object.entries(d.errors.by_type).map(([t,n])=>`${n} ${t.replace(/_/g,' ')}`).join(', ');
+
+  return `<div class="pulse-grid">
+    <div class="pulse-tile" onclick="window.location.href='/admin-dashboard/users/?signup_after=${today}'">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon pi-indigo"><i class="fa-solid fa-user-plus"></i></div>
+        <span class="pulse-tile-label">New signups</span>
+      </div>
+      <div class="pulse-tile-number">${fmtNum(d.signups.today)}</div>
+      <div class="pulse-tile-sub"><strong>${fmtNum(d.signups.week)}</strong> this week</div>
+    </div>
+    <div class="pulse-tile" onclick="window.location.href='/admin-dashboard/users/?active_after=${encodeURIComponent(dayAgo)}'">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon pi-emerald"><i class="fa-solid fa-circle-dot"></i></div>
+        <span class="pulse-tile-label">Active users</span>
+      </div>
+      <div class="pulse-tile-number">${fmtNum(d.active_users.today)}</div>
+      <div class="pulse-tile-sub"><strong>${fmtNum(d.active_users.week)}</strong> this week</div>
+    </div>
+    <div class="pulse-tile" onclick="navigateTo('/admin-dashboard/operations/','operations')">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon pi-cyan"><i class="fa-solid fa-message"></i></div>
+        <span class="pulse-tile-label">Messages today</span>
+      </div>
+      <div class="pulse-tile-number">${fmtNum(d.messages.today)}</div>
+      <div class="pulse-tile-sub"><strong>${fmtNum(d.messages.week)}</strong> this week</div>
+    </div>
+    <div class="pulse-tile" onclick="navigateTo('/admin-dashboard/operations/','operations')">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon pi-amber"><i class="fa-solid fa-coins"></i></div>
+        <span class="pulse-tile-label">Tokens today</span>
+      </div>
+      <div class="pulse-tile-number">${fmtNum(d.tokens.today)}</div>
+      <div class="pulse-tile-sub">
+        <strong>${fmtCost(d.tokens.estimated_cost_usd_today)}</strong> est. today &nbsp;·&nbsp;
+        ${fmtNum(d.tokens.month)} this month (${fmtCost(d.tokens.estimated_cost_usd_month)})
+      </div>
+    </div>
+    <div class="pulse-tile" onclick="navigateTo('/admin-dashboard/operations/','operations')">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon pi-rose"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <span class="pulse-tile-label">Errors (24h)</span>
+      </div>
+      <div class="pulse-tile-number">${fmtNum(d.errors.today)}</div>
+      <div class="pulse-tile-sub">${errorSub}</div>
+    </div>
+    <div class="pulse-tile" onclick="window.location.href='/admin-dashboard/users/?has_profile=false'">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon pi-purple"><i class="fa-solid fa-id-card"></i></div>
+        <span class="pulse-tile-label">Profile complete</span>
+      </div>
+      <div class="pulse-tile-number">${d.profile_completion.rate}%</div>
+      <div class="pulse-tile-sub">${fmtNum(d.profile_completion.completed)} / ${fmtNum(d.profile_completion.total)} users</div>
+    </div>
+  </div>`;
+}
+
+function renderPulseSkeleton() {
+  const tiles = Array(6).fill(0).map((_, i) => {
+    const icons = ['pi-indigo','pi-emerald','pi-cyan','pi-amber','pi-rose','pi-purple'];
+    return `<div class="pulse-tile pulse-skeleton">
+      <div class="pulse-tile-top">
+        <div class="pulse-tile-icon ${icons[i]}"></div>
+        <span class="pulse-tile-label">&nbsp;</span>
+      </div>
+      <div class="pulse-tile-number">&nbsp;</div>
+      <div class="pulse-tile-sub">&nbsp;</div>
+    </div>`;
+  }).join('');
+  return `<div class="pulse-grid">${tiles}</div>`;
+}
+
+function updatePulseTimestamp() {
+  const el = document.getElementById('pulse-updated');
+  if (!el || !pulseLoadedAt) return;
+  const secs = Math.round((Date.now() - pulseLoadedAt) / 1000);
+  el.textContent = secs < 5 ? 'Updated just now' : `Updated ${secs}s ago`;
+}
+
+async function loadPulse() {
+  const content = document.getElementById('pulse-content');
+  const btn = document.getElementById('pulse-refresh-btn');
+  if (!content) return;
+  if (btn) btn.classList.add('spinning');
+  content.innerHTML = renderPulseSkeleton();
+  try {
+    const r = await fetch('/api/admin/pulse', {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    content.innerHTML = renderPulseTiles(d);
+    pulseLoadedAt = Date.now();
+    updatePulseTimestamp();
+  } catch (e) {
+    content.innerHTML = `<div class="pulse-error-state">
+      <p>Couldn't load metrics. Check your connection or try again.</p>
+      <button class="pulse-retry-btn" onclick="loadPulse()"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+    </div>`;
+  } finally {
+    if (btn) btn.classList.remove('spinning');
+  }
+}
+
+function startPulseRefresh() {
+  loadPulse();
+  pulseInterval = setInterval(() => {
+    loadPulse();
+  }, 60000);
+  setInterval(updatePulseTimestamp, 5000);
+}
+
+function stopPulseRefresh() {
+  if (pulseInterval) { clearInterval(pulseInterval); pulseInterval = null; }
+}
+// ── END PULSE ───────────────────────────────────────────────────────────────
+
 const PATH_TO_SECTION = {
   '/admin-dashboard/':                    'pulse',
   '/admin-dashboard/pulse/':              'pulse',
@@ -309,6 +517,8 @@ function showSection(key) {
   const panel = document.getElementById('panel-' + key);
   if (panel) panel.classList.add('active');
   document.querySelectorAll('.admin-sidebar-link[data-section="' + key + '"]').forEach(l => l.classList.add('active'));
+  stopPulseRefresh();
+  if (key === 'pulse') startPulseRefresh();
 }
 
 function navigateTo(path, section) {
