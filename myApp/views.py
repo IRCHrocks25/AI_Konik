@@ -19,8 +19,10 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .admin_audit import log_error, record_admin_action
 from .auth_utils import (
+    _do_restore_impersonation,
     _is_admin_user,
     admin_required,
+    check_impersonation_timeout,
     get_current_user,
     get_request_json,
     login_required_api,
@@ -235,7 +237,7 @@ def legacy_html_redirect(request, page):
 
 
 @admin_required
-def admin_dashboard(request):
+def admin_dashboard(request, **kwargs):
     return render(request, "admin-dashboard.html")
 
 
@@ -369,58 +371,40 @@ def api_logout(request):
 
 
 def api_me(request):
+    check_impersonation_timeout(request)  # must run before get_current_user reads the session
     user = get_current_user(request)
     if not user:
         return JsonResponse({"authenticated": False, "is_admin": False})
-    return JsonResponse(
-        {
-            "authenticated": True,
-            "is_admin": _is_admin_user(user),
-            "id": user.id,
-            "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "industry": user.industry,
-        }
-    )
+    is_impersonating = "_impersonated_by" in request.session
+    result = {
+        "authenticated": True,
+        "is_admin": _is_admin_user(user),
+        "id": user.id,
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "industry": user.industry,
+        "is_impersonating": is_impersonating,
+    }
+    if is_impersonating:
+        admin_id = request.session.get("_impersonated_by")
+        admin_custom = CustomUser.objects.filter(id=admin_id).first()
+        result["impersonated_by_email"] = admin_custom.email if admin_custom else None
+    return JsonResponse(result)
 
 
-@csrf_exempt
-@login_required_api
-def api_profile(request):
-    user = request.current_user
+def _validate_and_build_profile_updates(payload):
+    """Validate a profile payload and return (updates, errors).
 
-    if request.method == "GET":
-        return JsonResponse({
-            "display_name": user.display_name,
-            "role": user.role,
-            "industry": user.industry,
-            "company_size": user.company_size,
-            "years_experience": user.years_experience,
-            "timezone": user.timezone,
-            "communication_style": user.communication_style,
-            "response_length": user.response_length,
-            "expertise_level": user.expertise_level,
-            "formality": user.formality,
-            "emoji_use": user.emoji_use,
-            "pushback_style": user.pushback_style,
-            "explanation_style": user.explanation_style,
-            "clarifying_questions": user.clarifying_questions,
-            "expertise_areas": user.expertise_areas,
-            "current_focus": user.current_focus,
-            "things_to_avoid": user.things_to_avoid,
-            "about_me": user.about_me,
-        })
+    updates: dict of field → validated value, ready to setattr on a CustomUser.
+    errors:  dict of field → error message for invalid inputs.
 
-    if request.method != "PUT":
-        return JsonResponse({"error": "Method not allowed"}, status=405)
-
-    payload = get_request_json(request)
-    if payload is None:
-        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
-
-    errors = {}
-    updates = {}
+    Handles all 18 personalization fields. is_suspended is intentionally NOT
+    handled here — callers that need it validate and append it themselves so
+    that admin-specific business rules (cannot suspend self/other-admin) stay
+    in the view layer, not in this shared helper.
+    """
+    errors, updates = {}, {}
 
     for field, limit in _PROFILE_TEXT_LIMITS.items():
         if field not in payload:
@@ -463,6 +447,44 @@ def api_profile(request):
             else:
                 updates["expertise_areas"] = val
 
+    return updates, errors
+
+
+@csrf_exempt
+@login_required_api
+def api_profile(request):
+    user = request.current_user
+
+    if request.method == "GET":
+        return JsonResponse({
+            "display_name": user.display_name,
+            "role": user.role,
+            "industry": user.industry,
+            "company_size": user.company_size,
+            "years_experience": user.years_experience,
+            "timezone": user.timezone,
+            "communication_style": user.communication_style,
+            "response_length": user.response_length,
+            "expertise_level": user.expertise_level,
+            "formality": user.formality,
+            "emoji_use": user.emoji_use,
+            "pushback_style": user.pushback_style,
+            "explanation_style": user.explanation_style,
+            "clarifying_questions": user.clarifying_questions,
+            "expertise_areas": user.expertise_areas,
+            "current_focus": user.current_focus,
+            "things_to_avoid": user.things_to_avoid,
+            "about_me": user.about_me,
+        })
+
+    if request.method != "PUT":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    updates, errors = _validate_and_build_profile_updates(payload)
     if errors:
         return JsonResponse({"errors": errors}, status=400)
 
@@ -1047,6 +1069,52 @@ def _serialize_user_item(user, superuser_emails, superuser_usernames):
     }
 
 
+def _serialize_user_full(target, superuser_emails, superuser_usernames):
+    """All-fields user serialization for admin detail/edit responses.
+
+    Unlike _serialize_user_item (which carries annotated counts from the list
+    queryset), this version includes all 18 profile fields. message_count and
+    session_count are computed separately by the detail endpoint and surfaced
+    under the 'stats' key, not here.
+    """
+    email = (target.email or "").strip().lower()
+    is_admin = email in superuser_emails or email in superuser_usernames
+    if not is_admin and email.endswith("@local.user"):
+        is_admin = email.split("@", 1)[0] in superuser_usernames
+
+    def iso(dt):
+        return dt.isoformat().replace("+00:00", "Z") if dt else None
+
+    return {
+        "id": target.id,
+        "email": target.email,
+        "first_name": target.first_name,
+        "last_name": target.last_name,
+        "is_suspended": target.is_suspended,
+        "is_admin": is_admin,
+        "date_joined": iso(target.created_at),
+        "last_active_at": iso(target.last_active_at),
+        "industry": target.industry,
+        "display_name": target.display_name,
+        "role": target.role,
+        "company_size": target.company_size,
+        "years_experience": target.years_experience,
+        "timezone": target.timezone,
+        "communication_style": target.communication_style,
+        "response_length": target.response_length,
+        "expertise_level": target.expertise_level,
+        "formality": target.formality,
+        "emoji_use": target.emoji_use,
+        "pushback_style": target.pushback_style,
+        "explanation_style": target.explanation_style,
+        "clarifying_questions": target.clarifying_questions,
+        "expertise_areas": target.expertise_areas,
+        "current_focus": target.current_focus,
+        "things_to_avoid": target.things_to_avoid,
+        "about_me": target.about_me,
+    }
+
+
 @csrf_exempt
 @login_required_api
 def api_admin_users(request):
@@ -1144,6 +1212,287 @@ def api_admin_users_export(request):
         metadata={"count": total, "filters": active_filters},
     )
     return response
+
+
+# ── User detail (GET + PATCH) ───────────────────────────────────────────────
+
+@csrf_exempt
+@login_required_api
+def api_admin_user_detail(request, user_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    target = CustomUser.objects.filter(id=user_id).first()
+    if not target:
+        return JsonResponse({"error": "User not found"}, status=404)
+
+    if request.method == "GET":
+        DjangoUser = get_user_model()
+        superusers = list(DjangoUser.objects.filter(is_superuser=True).values("email", "username"))
+        superuser_emails = {su["email"].strip().lower() for su in superusers}
+        superuser_usernames = {su["username"].strip().lower() for su in superusers}
+
+        now = dj_tz.now()
+        thirty_ago = now - timedelta(days=30)
+        seven_ago = now - timedelta(days=7)
+
+        message_count = ChatMessage.objects.filter(session__user=target, role="user").count()
+        session_count = ChatSession.objects.filter(user=target).count()
+
+        top_agents = list(
+            ChatSession.objects.filter(user=target)
+            .values("agent_name")
+            .annotate(count=Count("id"))
+            .order_by("-count")[:5]
+        )
+
+        top_prompts_qs = (
+            SavedPrompt.objects.filter(user=target)
+            .select_related("prompt")
+            .annotate(total_saves=Count("prompt__saved_by", distinct=True))
+            .order_by("-created_at")[:5]
+        )
+
+        first_msg = (
+            ChatMessage.objects.filter(session__user=target, role="user")
+            .order_by("created_at")
+            .values("created_at")
+            .first()
+        )
+
+        # Distinct active days: fetch datetimes, extract unique UTC dates in Python.
+        # Per-user message volume is small enough that this is efficient.
+        active_dates_raw = list(
+            ChatMessage.objects.filter(
+                session__user=target, role="user", created_at__gte=thirty_ago
+            ).values_list("created_at", flat=True)
+        )
+        active_days_30 = len({dt.date() for dt in active_dates_raw})
+
+        messages_7d = ChatMessage.objects.filter(
+            session__user=target, role="user", created_at__gte=seven_ago
+        ).count()
+        messages_30d = ChatMessage.objects.filter(
+            session__user=target, role="user", created_at__gte=thirty_ago
+        ).count()
+
+        recent_sessions = list(
+            ChatSession.objects.filter(user=target)
+            .annotate(msg_count=Count("messages"))
+            .order_by("-updated_at")[:20]
+        )
+
+        def iso(dt):
+            return dt.isoformat().replace("+00:00", "Z") if dt else None
+
+        return JsonResponse({
+            "user": _serialize_user_full(target, superuser_emails, superuser_usernames),
+            "stats": {
+                "message_count": message_count,
+                "session_count": session_count,
+                "top_agents": [
+                    {"name": a["agent_name"], "count": a["count"]} for a in top_agents
+                ],
+                "top_prompts": [
+                    {"title": sp.prompt.title, "saved_count": sp.total_saves}
+                    for sp in top_prompts_qs
+                ],
+                "engagement": {
+                    "first_active": iso(first_msg["created_at"]) if first_msg else None,
+                    "last_active_at": iso(target.last_active_at),
+                    "active_days_last_30": active_days_30,
+                    "messages_last_7d": messages_7d,
+                    "messages_last_30d": messages_30d,
+                },
+            },
+            "sessions": [
+                {
+                    "id": s.id,
+                    "title": s.title,
+                    "agent_name": s.agent_name,
+                    "industry": s.industry,
+                    "message_count": s.msg_count,
+                    "created_at": iso(s.created_at),
+                    "updated_at": iso(s.updated_at),
+                }
+                for s in recent_sessions
+            ],
+        })
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        updates, errors = _validate_and_build_profile_updates(payload)
+
+        if "is_suspended" in payload:
+            val = payload["is_suspended"]
+            if not isinstance(val, bool):
+                errors["is_suspended"] = "Must be a boolean."
+            elif val and target.id == request.current_user.id:
+                errors["is_suspended"] = "Cannot suspend yourself."
+            elif val and _is_admin_user(target):
+                errors["is_suspended"] = "Cannot suspend another admin."
+            else:
+                updates["is_suspended"] = val
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        if not updates:
+            return JsonResponse({"success": True, "changed_fields": []})
+
+        changed_fields = list(updates.keys())
+        for field, value in updates.items():
+            setattr(target, field, value)
+        target.save(update_fields=changed_fields + ["updated_at"])
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="user.edit_profile",
+            target_type="user",
+            target_id=target.id,
+            metadata={"changed_fields": changed_fields},
+        )
+
+        DjangoUser = get_user_model()
+        superusers = list(DjangoUser.objects.filter(is_superuser=True).values("email", "username"))
+        superuser_emails = {su["email"].strip().lower() for su in superusers}
+        superuser_usernames = {su["username"].strip().lower() for su in superusers}
+        return JsonResponse({
+            "success": True,
+            "changed_fields": changed_fields,
+            "user": _serialize_user_full(target, superuser_emails, superuser_usernames),
+        })
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# ── Suspend / Unsuspend ─────────────────────────────────────────────────────
+
+@csrf_exempt
+@login_required_api
+def api_admin_user_suspend(request, user_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    target = CustomUser.objects.filter(id=user_id).first()
+    if not target:
+        return JsonResponse({"error": "User not found"}, status=404)
+    if target.id == request.current_user.id:
+        return JsonResponse({"error": "Cannot suspend yourself."}, status=400)
+    if _is_admin_user(target):
+        return JsonResponse({"error": "Cannot suspend another admin."}, status=400)
+    if target.is_suspended:
+        return JsonResponse({"error": "User is already suspended."}, status=400)
+
+    target.is_suspended = True
+    target.save(update_fields=["is_suspended", "updated_at"])
+
+    record_admin_action(
+        admin=request.current_user,
+        action_type="user.suspend",
+        target_type="user",
+        target_id=target.id,
+        metadata={},
+    )
+    return JsonResponse({"ok": True})
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_user_unsuspend(request, user_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    target = CustomUser.objects.filter(id=user_id).first()
+    if not target:
+        return JsonResponse({"error": "User not found"}, status=404)
+    if not target.is_suspended:
+        return JsonResponse({"error": "User is not suspended."}, status=400)
+
+    target.is_suspended = False
+    target.save(update_fields=["is_suspended", "updated_at"])
+
+    record_admin_action(
+        admin=request.current_user,
+        action_type="user.unsuspend",
+        target_type="user",
+        target_id=target.id,
+        metadata={},
+    )
+    return JsonResponse({"ok": True})
+
+
+# ── Impersonation ───────────────────────────────────────────────────────────
+
+@csrf_exempt
+@login_required_api
+def api_admin_user_impersonate(request, user_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if "_impersonated_by" in request.session:
+        return JsonResponse(
+            {"error": "Already in an impersonation session. Stop the current one first."},
+            status=400,
+        )
+
+    target = CustomUser.objects.filter(id=user_id).first()
+    if not target:
+        return JsonResponse({"error": "User not found"}, status=404)
+    if target.id == request.current_user.id:
+        return JsonResponse({"error": "Cannot impersonate yourself."}, status=400)
+    if _is_admin_user(target):
+        return JsonResponse({"error": "Cannot impersonate other admins."}, status=400)
+    if target.is_suspended:
+        return JsonResponse({"error": "Cannot impersonate a suspended user."}, status=400)
+
+    request.session["_impersonated_by"] = request.current_user.id
+    request.session["_impersonation_started_at"] = (
+        dj_tz.now().isoformat().replace("+00:00", "Z")
+    )
+    login_user(request, target)  # sets custom_user_id = target.id
+
+    record_admin_action(
+        admin=request.current_user,
+        action_type="user.impersonate",
+        target_type="user",
+        target_id=target.id,
+        metadata={"target_user_id": target.id, "target_email": target.email},
+    )
+    return JsonResponse({"ok": True, "redirect": "/dashboard/"})
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_stop_impersonation(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if "_impersonated_by" not in request.session:
+        return JsonResponse({"error": "Not currently impersonating."}, status=400)
+
+    impersonated_user_id = request.session.get("custom_user_id")  # capture before restore
+    admin_id = request.session.get("_impersonated_by")
+    _do_restore_impersonation(request)  # session now points back to admin
+
+    admin_user = CustomUser.objects.filter(id=admin_id).first()
+    if admin_user:
+        record_admin_action(
+            admin=admin_user,
+            action_type="user.stop_impersonation",
+            target_type="user",
+            target_id=impersonated_user_id,
+            metadata={"target_user_id": impersonated_user_id},
+        )
+    return JsonResponse({"ok": True, "redirect": "/admin-dashboard/"})
 
 
 @login_required_api

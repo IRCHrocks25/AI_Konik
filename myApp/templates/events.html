@@ -59,7 +59,43 @@
     </div>
   </div>
 </nav>
-<script>fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{if(d.is_admin)document.body.classList.add('admin-visible')}).catch(()=>{});</script>
+<script>
+function applyImpersonationBanner(meData) {
+  if (!meData || !meData.is_impersonating) return;
+  document.body.classList.add('impersonating');
+  const b = document.createElement('div');
+  b.className = 'impersonation-banner';
+  const name = meData.first_name
+    ? meData.first_name + (meData.last_name ? ' ' + meData.last_name : '')
+    : meData.email;
+  const safeName = String(name).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  b.innerHTML = `
+    <span class="imp-banner-text">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      Impersonating <strong>${safeName}</strong>
+    </span>
+    <button class="imp-stop-btn" onclick="stopImpersonation()">
+      Return to your account &rarr;
+    </button>`;
+  document.body.prepend(b);
+}
+async function stopImpersonation() {
+  try {
+    const r = await fetch('/api/admin/stop-impersonation', {
+      method: 'POST',
+      credentials: 'same-origin',
+    });
+    const d = await r.json();
+    window.location.href = d.redirect || '/admin-dashboard/';
+  } catch (e) {
+    window.location.href = '/admin-dashboard/';
+  }
+}
+fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{
+  if(d.is_admin)document.body.classList.add('admin-visible');
+  applyImpersonationBanner(d);
+}).catch(()=>{});
+</script>
 <div class="page-shell portal-wrap">
   <section class="hero glass">
     <h1>Workshops, Summits & Masterclasses</h1>

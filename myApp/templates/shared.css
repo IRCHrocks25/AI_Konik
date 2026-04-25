@@ -351,3 +351,69 @@ body.auth-layout{background:var(--bg);display:flex;min-height:100vh}
   font-size:14px;color:var(--red);
   margin-bottom:20px;display:none;
 }
+
+/* ── IMPERSONATION BANNER ────────────────────────────────────────
+   Fixed amber bar shown when an admin is impersonating a user.
+   body.impersonating is set by JS (applyImpersonationBanner).
+   z-index 200 sits above nav (z-index 100).
+──────────────────────────────────────────────────────────────── */
+
+.impersonation-banner{
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:200;
+  height:44px;
+  background:var(--amber-bg);
+  border-bottom:2px solid var(--amber);
+  color:#78350f;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:16px;
+  font-size:13px;
+  font-weight:500;
+  padding:0 20px;
+}
+
+.imp-banner-text{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.imp-banner-text i{color:var(--amber)}
+
+.imp-stop-btn{
+  padding:5px 14px;
+  border-radius:6px;
+  background:var(--amber);
+  color:#fff;
+  border:none;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  font-family:inherit;
+}
+
+.imp-stop-btn:hover{background:#92400e}
+
+/* Layout shifts when banner is active */
+body.impersonating nav{top:44px}
+
+body.impersonating .page-shell,
+body.impersonating.dark-app .page-shell{padding-top:calc(64px + 44px)}
+
+body.impersonating .admin-shell{padding-top:calc(64px + 44px)}
+
+@media(max-width:640px){
+  .impersonation-banner{
+    height:auto;
+    min-height:44px;
+    padding:8px 12px;
+    font-size:12px;
+    flex-wrap:wrap;
+    text-align:center;
+  }
+  /* banner height is variable when wrapped — let nav sit at its default */
+  body.impersonating nav{top:auto}
+}

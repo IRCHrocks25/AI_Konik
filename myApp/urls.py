@@ -104,4 +104,9 @@ urlpatterns = [
     path("api/admin/prompts/import", views.api_admin_import_prompts, name="api_admin_import_prompts"),
     path("api/admin/users", views.api_admin_users, name="api_admin_users"),
     path("api/admin/users/export", views.api_admin_users_export, name="api_admin_users_export"),
+    path("api/admin/users/<int:user_id>", views.api_admin_user_detail, name="api_admin_user_detail"),
+    path("api/admin/users/<int:user_id>/suspend", views.api_admin_user_suspend, name="api_admin_user_suspend"),
+    path("api/admin/users/<int:user_id>/unsuspend", views.api_admin_user_unsuspend, name="api_admin_user_unsuspend"),
+    path("api/admin/users/<int:user_id>/impersonate", views.api_admin_user_impersonate, name="api_admin_user_impersonate"),
+    path("api/admin/stop-impersonation", views.api_admin_stop_impersonation, name="api_admin_stop_impersonation"),
 ]
