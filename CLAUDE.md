@@ -131,6 +131,13 @@ Most API views follow this pattern:
 
 Keep this behavior consistent when adding endpoints.
 
+## Design System Notes
+
+- All authenticated app pages use `class="dark-app"` on `<body>` and rely on `shared.css` for theme.
+- Auth pages (login, register) use `class="auth-layout"` on `<body>`.
+- Public landing page (`index.html`) and bulk import (`prompt-import.html`) use `shared.css` with no body class — they remain light-themed.
+- `agent-admin.html` is **intentionally NOT linked to shared.css**. It is a standalone light-themed admin tool with its own design language and cyan primary color (`#0891b2`). This is a deliberate visual outlier — do not "consolidate" it without an explicit design decision to unify admin into the app theme.
+
 ## Safe Change Checklist
 
 Before finishing a change:
