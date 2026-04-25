@@ -11,6 +11,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone as dj_tz
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
@@ -71,6 +72,33 @@ INDUSTRY_MAP = {
     "accounting": "accounting",
     "logistics": "logistics",
     "manufacturing": "manufacturing",
+}
+
+_PROFILE_CHOICES = {
+    "company_size": {"solo", "2-10", "11-50", "51-200", "200+"},
+    "years_experience": {"<1", "1-3", "3-7", "7-15", "15+"},
+    "communication_style": {"direct", "friendly", "formal", "casual"},
+    "response_length": {"concise", "balanced", "detailed"},
+    "expertise_level": {"beginner", "intermediate", "expert"},
+    "emoji_use": {"never", "sparingly", "freely"},
+    "pushback_style": {"always", "diplomatic", "supportive"},
+    "explanation_style": {"answer_only", "with_reasoning", "step_by_step"},
+    "clarifying_questions": {"when_needed", "always", "never"},
+}
+
+_PROFILE_TEXT_LIMITS = {
+    "display_name": 80,
+    "role": 120,
+    "timezone": 64,
+    "current_focus": 500,
+    "things_to_avoid": 300,
+    "about_me": 1000,
+}
+
+_EXPERTISE_AREAS_VALID = {
+    "Legal", "Finance", "Marketing", "Tech", "Healthcare", "RealEstate",
+    "Accounting", "Logistics", "Manufacturing", "Operations", "Sales",
+    "HR", "Strategy", "Product", "Design",
 }
 
 HEADER_ALIASES = {
@@ -351,6 +379,109 @@ def api_me(request):
             "industry": user.industry,
         }
     )
+
+
+@csrf_exempt
+@login_required_api
+def api_profile(request):
+    user = request.current_user
+
+    if request.method == "GET":
+        return JsonResponse({
+            "display_name": user.display_name,
+            "role": user.role,
+            "industry": user.industry,
+            "company_size": user.company_size,
+            "years_experience": user.years_experience,
+            "timezone": user.timezone,
+            "communication_style": user.communication_style,
+            "response_length": user.response_length,
+            "expertise_level": user.expertise_level,
+            "formality": user.formality,
+            "emoji_use": user.emoji_use,
+            "pushback_style": user.pushback_style,
+            "explanation_style": user.explanation_style,
+            "clarifying_questions": user.clarifying_questions,
+            "expertise_areas": user.expertise_areas,
+            "current_focus": user.current_focus,
+            "things_to_avoid": user.things_to_avoid,
+            "about_me": user.about_me,
+        })
+
+    if request.method != "PUT":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    errors = {}
+    updates = {}
+
+    for field, limit in _PROFILE_TEXT_LIMITS.items():
+        if field not in payload:
+            continue
+        val = str(payload[field]).strip()
+        if len(val) > limit:
+            errors[field] = f"Too long (max {limit} characters)."
+        else:
+            updates[field] = val
+
+    for field, valid_set in _PROFILE_CHOICES.items():
+        if field not in payload:
+            continue
+        val = str(payload[field]).strip()
+        if val and val not in valid_set:
+            errors[field] = f"Invalid choice. Allowed: {', '.join(sorted(valid_set))}."
+        else:
+            updates[field] = val
+
+    if "industry" in payload:
+        updates["industry"] = _normalize_industry(str(payload.get("industry", "")))
+
+    if "formality" in payload:
+        try:
+            v = int(payload["formality"])
+            if not 1 <= v <= 5:
+                raise ValueError
+            updates["formality"] = v
+        except (TypeError, ValueError):
+            errors["formality"] = "Must be an integer between 1 and 5."
+
+    if "expertise_areas" in payload:
+        val = payload["expertise_areas"]
+        if not isinstance(val, list):
+            errors["expertise_areas"] = "Must be a list."
+        else:
+            invalid = [v for v in val if v not in _EXPERTISE_AREAS_VALID]
+            if invalid:
+                errors["expertise_areas"] = f"Invalid values: {', '.join(sorted(invalid))}."
+            else:
+                updates["expertise_areas"] = val
+
+    if errors:
+        return JsonResponse({"errors": errors}, status=400)
+
+    if not updates:
+        return JsonResponse({"success": True})
+
+    fields_to_save = list(updates.keys())
+
+    if user.profile_completed_at is None:
+        has_meaningful = any(
+            (isinstance(v, list) and v) or (isinstance(v, str) and v)
+            for v in updates.values()
+        )
+        if has_meaningful:
+            user.profile_completed_at = dj_tz.now()
+            fields_to_save.append("profile_completed_at")
+
+    for field, value in updates.items():
+        setattr(user, field, value)
+
+    fields_to_save.append("updated_at")
+    user.save(update_fields=fields_to_save)
+    return JsonResponse({"success": True})
 
 
 def _serialize_agent(agent, include_prompts=False):

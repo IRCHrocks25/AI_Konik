@@ -1,12 +1,87 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
 class CustomUser(models.Model):
+    # Core identity
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, blank=True)
     email = models.EmailField(unique=True)
     password_hash = models.CharField(max_length=255)
+
+    # Section 1 — Identity & Context
+    display_name = models.CharField(max_length=80, blank=True)
+    role = models.CharField(max_length=120, blank=True)
     industry = models.CharField(max_length=100, blank=True)
+    company_size = models.CharField(
+        max_length=20, blank=True,
+        choices=[("solo", "Solo"), ("2-10", "2–10"), ("11-50", "11–50"), ("51-200", "51–200"), ("200+", "200+")],
+    )
+    years_experience = models.CharField(
+        max_length=10, blank=True,
+        choices=[("<1", "<1"), ("1-3", "1–3"), ("3-7", "3–7"), ("7-15", "7–15"), ("15+", "15+")],
+    )
+    timezone = models.CharField(max_length=64, blank=True)
+
+    # Section 2 — Communication Style
+    communication_style = models.CharField(
+        max_length=20, blank=True,
+        choices=[("direct", "Direct"), ("friendly", "Friendly"), ("formal", "Formal"), ("casual", "Casual")],
+    )
+    response_length = models.CharField(
+        max_length=20, blank=True,
+        choices=[("concise", "Concise"), ("balanced", "Balanced"), ("detailed", "Detailed")],
+    )
+    expertise_level = models.CharField(
+        max_length=20, blank=True,
+        choices=[("beginner", "Beginner"), ("intermediate", "Intermediate"), ("expert", "Expert")],
+    )
+    formality = models.IntegerField(
+        default=3,
+        validators=[MinValueValidator(1), MaxValueValidator(5)],
+    )
+    emoji_use = models.CharField(
+        max_length=20, blank=True,
+        choices=[("never", "Never"), ("sparingly", "Sparingly"), ("freely", "Freely")],
+    )
+
+    # Section 3 — AI Behavior Preferences
+    pushback_style = models.CharField(
+        max_length=20, blank=True,
+        choices=[
+            ("always", "Always tell me when I'm wrong"),
+            ("diplomatic", "Be diplomatic"),
+            ("supportive", "Supportive — acknowledge effort before critiquing"),
+        ],
+    )
+    explanation_style = models.CharField(
+        max_length=20, blank=True,
+        choices=[
+            ("answer_only", "Just give the answer"),
+            ("with_reasoning", "Explain reasoning"),
+            ("step_by_step", "Step by step"),
+        ],
+    )
+    clarifying_questions = models.CharField(
+        max_length=20, blank=True,
+        choices=[
+            ("when_needed", "When needed"),
+            ("always", "Always confirm"),
+            ("never", "Never ask, just go"),
+        ],
+    )
+
+    # Section 4 — Work Context
+    expertise_areas = models.JSONField(default=list, blank=True)
+    current_focus = models.TextField(blank=True)
+    things_to_avoid = models.TextField(blank=True)
+
+    # Section 5 — About
+    about_me = models.TextField(blank=True)
+
+    # Analytics
+    profile_completed_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

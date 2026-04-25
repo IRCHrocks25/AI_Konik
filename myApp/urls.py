@@ -61,6 +61,7 @@ urlpatterns = [
     path("api/auth/login", views.api_login, name="api_login"),
     path("api/auth/logout", views.api_logout, name="api_logout"),
     path("api/auth/me", views.api_me, name="api_me"),
+    path("api/profile", views.api_profile, name="api_profile"),
     path("api/dashboard", views.api_dashboard, name="api_dashboard"),
     path("api/agents", views.api_agents, name="api_agents"),
     path("api/prompts", views.api_prompts, name="api_prompts"),
