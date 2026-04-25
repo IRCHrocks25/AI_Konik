@@ -24,6 +24,7 @@ from .auth_utils import (
 )
 from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
 from .openai_service import get_openai_reply
+from .personalization import build_full_system_prompt
 from .seed_data import seed_agents_and_prompts
 
 try:
@@ -1042,9 +1043,10 @@ def api_send_chat_message(request, session_id):
 
     ChatMessage.objects.create(session=session, role="user", content=content)
     history = list(session.messages.order_by("created_at").values("role", "content"))
-    openai_messages = [
-        {"role": "system", "content": "You are a practical assistant for SMB users."}
-    ]
+    agent = Agent.objects.filter(name=session.agent_name).first()
+    agent_prompts = list(agent.prompts.all()) if agent else []
+    system_content = build_full_system_prompt(agent, agent_prompts, request.current_user)
+    openai_messages = [{"role": "system", "content": system_content}]
     openai_messages.extend({"role": item["role"], "content": item["content"]} for item in history)
     assistant_text, total_tokens = get_openai_reply(openai_messages)
     assistant = ChatMessage.objects.create(
