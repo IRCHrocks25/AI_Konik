@@ -1,6 +1,10 @@
+import re
+from datetime import datetime
+
+from django.utils import timezone as dj_tz
 from django.utils.text import slugify
 
-from .models import Agent, AgentPrompt
+from .models import Agent, AgentPrompt, Event, Industry, Tool
 
 
 AGENT_SEED_DATA = [
@@ -255,3 +259,239 @@ def seed_agents_and_prompts():
                 ],
             ]
         )
+
+
+# ── Industries ──────────────────────────────────────────────────────
+
+INDUSTRY_SEEDS = [
+    {"slug": "legal",         "name": "Legal",         "icon_class": "fa-scale-balanced", "sort_order": 100},
+    {"slug": "healthcare",    "name": "Healthcare",    "icon_class": "fa-hospital",       "sort_order": 110},
+    {"slug": "finance",       "name": "Finance",       "icon_class": "fa-sack-dollar",    "sort_order": 120},
+    {"slug": "marketing",     "name": "Marketing",     "icon_class": "fa-bullhorn",       "sort_order": 130},
+    {"slug": "technology",    "name": "Technology",    "icon_class": "fa-laptop-code",    "sort_order": 140},
+    {"slug": "realestate",    "name": "Real Estate",   "icon_class": "fa-house",          "sort_order": 150},
+    {"slug": "accounting",    "name": "Accounting",    "icon_class": "fa-chart-line",     "sort_order": 160},
+    {"slug": "logistics",     "name": "Logistics",     "icon_class": "fa-truck",          "sort_order": 170},
+    {"slug": "manufacturing", "name": "Manufacturing", "icon_class": "fa-gears",          "sort_order": 180},
+]
+
+
+def seed_industries():
+    """Idempotent: get_or_create by slug. Returns count of newly-created rows."""
+    created = 0
+    for s in INDUSTRY_SEEDS:
+        _, was_created = Industry.objects.get_or_create(
+            slug=s["slug"],
+            defaults={
+                "name": s["name"],
+                "icon_class": s["icon_class"],
+                "sort_order": s["sort_order"],
+                "is_active": True,
+            },
+        )
+        if was_created:
+            created += 1
+    return created
+
+
+# ── Events ──────────────────────────────────────────────────────────
+
+EVENT_SEEDS = [
+    {
+        "title": "AI for Legal Teams: Contract Automation Workshop",
+        "description": "Learn how to deploy AI contract review in your firm. Live demo with real NDA analysis and redline generation.",
+        "date_str": "Apr 22, 2026",
+        "time_str": "2:00 PM EST",
+        "industry_slug": "legal",
+        "is_featured": False,
+    },
+    {
+        "title": "AI KONIK Summit 2026 — Annual Flagship Event",
+        "description": "Two days of keynotes, workshops, and networking with 500+ SMB leaders pioneering AI adoption.",
+        "date_str": "May 15–16, 2026",  # date range; parser takes the start
+        "time_str": "9:00 AM EST",
+        "industry_slug": None,  # source had industry='All'
+        "is_featured": True,
+    },
+    {
+        "title": "HIPAA-Compliant AI in Healthcare Practice",
+        "description": "Navigate AI implementation in a HIPAA-regulated environment. Practical guidance from a healthcare compliance expert.",
+        "date_str": "Apr 29, 2026",
+        "time_str": "1:00 PM EST",
+        "industry_slug": "healthcare",
+        "is_featured": False,
+    },
+    {
+        "title": "AI for CFOs: Finance Automation Masterclass",
+        "description": "From automated financial reporting to AI-powered risk analysis — a hands-on session for finance leaders.",
+        "date_str": "May 8, 2026",
+        "time_str": "11:00 AM EST",
+        "industry_slug": "finance",
+        "is_featured": False,
+    },
+    {
+        "title": "Content Marketing at Scale with AI Agents",
+        "description": "Triple your content output without sacrificing quality. Live session building a content engine with AI agents.",
+        "date_str": "May 3, 2026",
+        "time_str": "3:00 PM EST",
+        "industry_slug": "marketing",
+        "is_featured": False,
+    },
+    {
+        "title": "AI-Powered Technical Documentation Sprint",
+        "description": "Build a complete docs-as-code pipeline with AI. From API specs to developer guides — automated end to end.",
+        "date_str": "May 12, 2026",
+        "time_str": "10:00 AM EST",
+        "industry_slug": "technology",
+        "is_featured": False,
+    },
+]
+
+
+def _parse_event_datetime(date_str, time_str):
+    """Parse 'Apr 22, 2026' + '2:00 PM EST' into a tz-aware datetime.
+
+    Handles date ranges like 'May 15–16, 2026' by taking the start.
+    Strips US tz abbreviations from the time component (we treat the
+    parsed wall-clock as the project's TIME_ZONE via make_aware).
+    Returns None if parsing fails.
+    """
+    if not date_str or not time_str:
+        return None
+    date_str = date_str.replace("–", "-").replace("—", "-")
+    parts = date_str.rsplit(",", 1)
+    if len(parts) != 2:
+        return None
+    date_main = parts[0].strip().split("-")[0].strip()
+    year = parts[1].strip()
+    normalized_date = f"{date_main}, {year}"
+    time_clean = re.sub(
+        r"\s*(EST|EDT|PST|PDT|UTC|GMT|CST|CDT|MST|MDT)\s*$",
+        "",
+        time_str.strip(),
+        flags=re.IGNORECASE,
+    )
+    try:
+        naive = datetime.strptime(f"{normalized_date} {time_clean}", "%b %d, %Y %I:%M %p")
+    except ValueError:
+        return None
+    return dj_tz.make_aware(naive)
+
+
+def seed_events():
+    """Idempotent: get_or_create by slug. Returns count of newly-created rows.
+
+    Note: source EVENTS array carries icon (FA markup) and bg (color/gradient)
+    that the Event model doesn't store. Phase 9 cutover will decide whether to
+    add icon_class/accent_bg fields or render via industry-level icons.
+    """
+    created = 0
+    for s in EVENT_SEEDS:
+        slug = slugify(s["title"])
+        if not slug:
+            continue
+        event_dt = _parse_event_datetime(s["date_str"], s["time_str"])
+        if event_dt is None:
+            continue  # skip unparseable rows; do not raise
+        industry = None
+        if s.get("industry_slug"):
+            industry = Industry.objects.filter(slug=s["industry_slug"]).first()
+        _, was_created = Event.objects.get_or_create(
+            slug=slug,
+            defaults={
+                "title": s["title"],
+                "description": s["description"],
+                "event_date": event_dt,
+                "industry": industry,
+                "is_featured": s.get("is_featured", False),
+                "is_active": True,
+            },
+        )
+        if was_created:
+            created += 1
+    return created
+
+
+# ── Tools ───────────────────────────────────────────────────────────
+
+TOOL_SEEDS = [
+    {
+        "name": "Claude (Anthropic)",
+        "description": "The most capable AI assistant for legal, compliance, and complex reasoning tasks. Best-in-class for document analysis.",
+        "icon_class": "fa-file-pen",
+        "external_url": "https://claude.ai",
+        "category": "Writing",
+        "is_featured": True,
+        "sort_order": 100,
+    },
+    {
+        "name": "Perplexity AI",
+        "description": "AI-powered research engine. Ideal for competitive intelligence, market research, and due diligence.",
+        "icon_class": "fa-magnifying-glass",
+        "external_url": "https://www.perplexity.ai",
+        "category": "Research",
+        "is_featured": False,
+        "sort_order": 110,
+    },
+    {
+        "name": "Midjourney",
+        "description": "Best-in-class AI image generation. Used by marketing teams for brand visuals, ads, and creative content.",
+        "icon_class": "fa-palette",
+        "external_url": "https://www.midjourney.com",
+        "category": "Design",
+        "is_featured": False,
+        "sort_order": 120,
+    },
+    {
+        "name": "Notion AI",
+        "description": "AI-powered workspace for teams. Excellent for SOPs, meeting notes, project documentation, and wikis.",
+        "icon_class": "fa-chart-line",
+        "external_url": "https://www.notion.so",
+        "category": "Productivity",
+        "is_featured": False,
+        "sort_order": 130,
+    },
+    {
+        "name": "HubSpot AI",
+        "description": "AI-enhanced CRM for SMBs. Smart email generation, deal scoring, and automated follow-up sequences.",
+        "icon_class": "fa-handshake",
+        "external_url": "https://www.hubspot.com",
+        "category": "CRM",
+        "is_featured": False,
+        "sort_order": 140,
+    },
+    {
+        "name": "Descript",
+        "description": "AI video editor with transcription, overdubbing, and automatic cut removal. Great for training and webinar content.",
+        "icon_class": "fa-video",
+        "external_url": "https://www.descript.com",
+        "category": "Video",
+        "is_featured": False,
+        "sort_order": 150,
+    },
+]
+
+
+def seed_tools():
+    """Idempotent: get_or_create by slug. Returns count of newly-created rows."""
+    created = 0
+    for s in TOOL_SEEDS:
+        slug = slugify(s["name"])
+        if not slug:
+            continue
+        _, was_created = Tool.objects.get_or_create(
+            slug=slug,
+            defaults={
+                "name": s["name"],
+                "description": s["description"],
+                "icon_class": s["icon_class"],
+                "external_url": s["external_url"],
+                "category": s["category"],
+                "is_featured": s.get("is_featured", False),
+                "is_active": True,
+                "sort_order": s["sort_order"],
+            },
+        )
+        if was_created:
+            created += 1
+    return created

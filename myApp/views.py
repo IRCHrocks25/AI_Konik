@@ -16,6 +16,7 @@ from django.utils import timezone as dj_tz
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
+from .admin_audit import log_error
 from .auth_utils import (
     get_current_user,
     get_request_json,
@@ -1049,6 +1050,9 @@ def api_send_chat_message(request, session_id):
     if not content:
         return JsonResponse({"error": "content is required"}, status=400)
 
+    request.current_user.last_active_at = dj_tz.now()
+    request.current_user.save(update_fields=["last_active_at"])
+
     user_message = ChatMessage.objects.create(session=session, role="user", content=content)
     history = list(session.messages.order_by("created_at").values("role", "content"))
     agent = Agent.objects.filter(name=session.agent_name).first()
@@ -1074,6 +1078,12 @@ def api_send_chat_message(request, session_id):
     except Exception as exc:
         user_message.delete()
         logger.exception("Chat send failed (session=%s): %s", session.id, exc)
+        log_error(
+            error_type="openai_chat_send",
+            message=str(exc),
+            user=request.current_user,
+            metadata={"session_id": session.id},
+        )
         return JsonResponse(
             {
                 "error": "Could not generate a reply. Please try again.",
