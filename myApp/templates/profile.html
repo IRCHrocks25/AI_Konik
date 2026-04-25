@@ -8,40 +8,100 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
 .nav-back-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  padding:9px 14px;
-  border-radius:12px;
-  border:1px solid rgba(255,255,255,.3);
-  background:linear-gradient(150deg, rgba(255,255,255,.18), rgba(255,255,255,.07));
-  color:#fff;
-  text-decoration:none;
-  font-size:12px;
-  font-weight:600;
-  letter-spacing:.01em;
-  box-shadow:0 10px 24px rgba(0,0,0,.2);
-  backdrop-filter:blur(8px);
-  transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.3);background:linear-gradient(150deg,rgba(255,255,255,.18),rgba(255,255,255,.07));
+  color:#fff;text-decoration:none;font-size:12px;font-weight:600;letter-spacing:.01em;
+  box-shadow:0 10px 24px rgba(0,0,0,.2);backdrop-filter:blur(8px);
+  transition:transform .15s ease,border-color .15s ease,background .15s ease;
 }
 .nav-back-btn:hover{
-  transform:translateY(-1px);
-  border-color:rgba(255,255,255,.5);
-  background:linear-gradient(150deg, rgba(255,255,255,.24), rgba(255,255,255,.1));
+  transform:translateY(-1px);border-color:rgba(255,255,255,.5);
+  background:linear-gradient(150deg,rgba(255,255,255,.24),rgba(255,255,255,.1));
 }
-.wrap{max-width:980px;margin:0 auto;padding:96px 20px 30px}
+.wrap{max-width:980px;margin:0 auto;padding:96px 20px 48px}
 .hero{padding:24px 22px;margin-bottom:14px}
 .hero h1{font-family:'DM Serif Display',serif;font-size:42px;color:#fff;margin:0 0 6px}
 .hero p{color:rgba(255,255,255,.82);font-size:14px}
-.card{padding:22px}
-.card h2{font-size:16px;color:#fff;margin:0 0 16px}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.lbl{display:block;font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px}
-.inp{width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-family:inherit}
-.inp::placeholder{color:rgba(255,255,255,.6)}
-.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}
+.card{padding:22px;margin-bottom:14px}
+/* Section headers */
+.s-eyebrow{font-size:11px;font-weight:600;color:rgba(168,85,247,.85);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+.s-title{font-size:17px;font-weight:600;color:#fff;margin:0 0 20px}
+/* Field layout */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column}
+.lbl-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.lbl{font-size:12px;color:rgba(255,255,255,.7);margin:0}
+.char-count{font-size:11px;color:rgba(255,255,255,.4)}
+.char-count.over{color:#f87171}
+/* Inputs */
+.inp{
+  width:100%;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:13px;
+  box-sizing:border-box;transition:border-color .15s;
+}
+.inp:focus{outline:none;border-color:rgba(168,85,247,.6)}
+.inp::placeholder{color:rgba(255,255,255,.38)}
+select.inp{
+  appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:32px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='rgba(255,255,255,0.45)' d='M5 7L0 0h10z'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 12px center;
+}
+select.inp option{background:#1e1b4b;color:#fff}
+textarea.inp{resize:vertical;min-height:80px;line-height:1.6}
+.field-error{font-size:11px;color:#f87171;margin-top:4px;min-height:16px}
+/* Formality slider */
+.slider{
+  width:100%;-webkit-appearance:none;appearance:none;height:4px;border-radius:4px;
+  background:rgba(255,255,255,.15);outline:none;cursor:pointer;margin-top:4px;
+}
+.slider::-webkit-slider-thumb{
+  -webkit-appearance:none;appearance:none;width:18px;height:18px;border-radius:50%;
+  background:linear-gradient(135deg,#8b5cf6,#4f46e5);cursor:pointer;
+  box-shadow:0 2px 8px rgba(139,92,246,.45);
+}
+.slider::-moz-range-thumb{
+  width:18px;height:18px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,#8b5cf6,#4f46e5);cursor:pointer;
+  box-shadow:0 2px 8px rgba(139,92,246,.45);
+}
+.formality-val{font-size:20px;font-weight:700;color:rgba(168,85,247,.9);min-width:22px;text-align:right}
+.formality-labels{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.38);margin-top:6px}
+/* Expertise chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{
+  border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.78);border-radius:999px;padding:7px 14px;font-size:12px;
+  font-weight:500;cursor:pointer;transition:all .18s;font-family:inherit;
+}
+.chip:hover{background:rgba(255,255,255,.12);color:#fff}
+.chip.is-selected{
+  border-color:rgba(214,203,255,.6);
+  background:linear-gradient(120deg,rgba(168,85,247,.45),rgba(59,130,246,.35));
+  color:#fff;box-shadow:0 4px 14px rgba(139,92,246,.25);
+}
+/* Actions */
+.actions{display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:24px;flex-wrap:wrap}
 .actions .btn-ghost{border:1px solid rgba(255,255,255,.32);color:#fff;background:rgba(255,255,255,.06)}
 .actions .btn-ghost:hover{background:rgba(255,255,255,.14)}
+.btn-purple{background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:#fff;border:none;font-weight:600}
+.btn-purple:hover:not(:disabled){background:linear-gradient(135deg,#7c3aed,#4338ca)}
+.btn-purple:disabled{opacity:.55;cursor:not-allowed}
+/* Toast */
+.toast{
+  position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:12px;font-size:13px;
+  font-weight:500;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;
+  pointer-events:none;z-index:9999;backdrop-filter:blur(8px);
+}
+.toast.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.toast.success{background:rgba(16,185,129,.92);color:#fff;box-shadow:0 4px 20px rgba(16,185,129,.3)}
+.toast.error{background:rgba(239,68,68,.92);color:#fff;box-shadow:0 4px 20px rgba(239,68,68,.3)}
+/* Responsive */
+@media(max-width:660px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .actions{flex-direction:column-reverse}
+  .actions .btn,.actions a.btn{width:100%;text-align:center;justify-content:center}
+}
 </style>
 </head>
 <body class="dark-app">
@@ -52,24 +112,350 @@
     <div class="nav-cta"><a href="{% url 'dashboard' %}" class="nav-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a></div>
   </div>
 </nav>
+
+<div id="toast" class="toast"></div>
+
 <div class="wrap">
+
   <section class="hero glass">
     <h1>Profile</h1>
-    <p>Manage your account identity and business details.</p>
+    <p>Shape how every AI agent communicates with you. Changes apply to all new chat sessions.</p>
   </section>
+
+  <!-- Section 1: Identity & Context -->
   <section class="card glass">
-    <h2>Personal Information</h2>
-    <div class="grid">
-      <div><label class="lbl">First name</label><input class="inp" placeholder="Sarah"></div>
-      <div><label class="lbl">Last name</label><input class="inp" placeholder="Chen"></div>
-      <div><label class="lbl">Email</label><input class="inp" placeholder="sarah@example.com"></div>
-      <div><label class="lbl">Company</label><input class="inp" placeholder="AI KONIK Client"></div>
-    </div>
-    <div class="actions">
-      <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
-      <button class="btn btn-teal" onclick="alert('Profile saved')">Save changes</button>
+    <div class="s-eyebrow">Section 1 of 5</div>
+    <h2 class="s-title">Identity &amp; Context</h2>
+    <div class="grid-2">
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="display_name">What should AI call you?</label></div>
+        <input id="display_name" class="inp" type="text" placeholder="e.g. Sarah" maxlength="80">
+        <div class="field-error" id="err-display_name"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="role">Job title</label></div>
+        <input id="role" class="inp" type="text" placeholder="e.g. Marketing Director" maxlength="120">
+        <div class="field-error" id="err-role"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="industry">Industry</label></div>
+        <select id="industry" class="inp">
+          <option value="">Select industry</option>
+          <option value="legal">Legal</option>
+          <option value="healthcare">Healthcare</option>
+          <option value="finance">Finance</option>
+          <option value="marketing">Marketing</option>
+          <option value="technology">Technology</option>
+          <option value="realestate">Real Estate</option>
+          <option value="accounting">Accounting</option>
+          <option value="logistics">Logistics</option>
+          <option value="manufacturing">Manufacturing</option>
+        </select>
+        <div class="field-error" id="err-industry"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="company_size">Company size</label></div>
+        <select id="company_size" class="inp">
+          <option value="">Select size</option>
+          <option value="solo">Solo</option>
+          <option value="2-10">2–10 people</option>
+          <option value="11-50">11–50 people</option>
+          <option value="51-200">51–200 people</option>
+          <option value="200+">200+ people</option>
+        </select>
+        <div class="field-error" id="err-company_size"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="years_experience">Years of experience</label></div>
+        <select id="years_experience" class="inp">
+          <option value="">Select range</option>
+          <option value="<1">Less than 1 year</option>
+          <option value="1-3">1–3 years</option>
+          <option value="3-7">3–7 years</option>
+          <option value="7-15">7–15 years</option>
+          <option value="15+">15+ years</option>
+        </select>
+        <div class="field-error" id="err-years_experience"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="timezone">Timezone</label></div>
+        <input id="timezone" class="inp" type="text" placeholder="Auto-detected from browser" maxlength="64">
+        <div class="field-error" id="err-timezone"></div>
+      </div>
     </div>
   </section>
+
+  <!-- Section 2: Communication Style -->
+  <section class="card glass">
+    <div class="s-eyebrow">Section 2 of 5</div>
+    <h2 class="s-title">Communication Style</h2>
+    <div class="grid-2">
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="communication_style">Tone</label></div>
+        <select id="communication_style" class="inp">
+          <option value="">No preference</option>
+          <option value="direct">Direct</option>
+          <option value="friendly">Friendly</option>
+          <option value="formal">Formal</option>
+          <option value="casual">Casual</option>
+        </select>
+        <div class="field-error" id="err-communication_style"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="response_length">Response length</label></div>
+        <select id="response_length" class="inp">
+          <option value="">No preference</option>
+          <option value="concise">Concise</option>
+          <option value="balanced">Balanced</option>
+          <option value="detailed">Detailed</option>
+        </select>
+        <div class="field-error" id="err-response_length"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="expertise_level">Your expertise level</label></div>
+        <select id="expertise_level" class="inp">
+          <option value="">No preference</option>
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="expert">Expert</option>
+        </select>
+        <div class="field-error" id="err-expertise_level"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="emoji_use">Emoji use</label></div>
+        <select id="emoji_use" class="inp">
+          <option value="">No preference</option>
+          <option value="never">Never</option>
+          <option value="sparingly">Sparingly</option>
+          <option value="freely">Freely</option>
+        </select>
+        <div class="field-error" id="err-emoji_use"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:18px">
+      <div class="lbl-row">
+        <label class="lbl" for="formality">Formality level</label>
+        <span class="formality-val" id="formality-val">3</span>
+      </div>
+      <input id="formality" class="slider" type="range" min="1" max="5" value="3" oninput="updateFormality(this.value)">
+      <div class="formality-labels"><span>Very casual</span><span>Very formal</span></div>
+      <div class="field-error" id="err-formality"></div>
+    </div>
+  </section>
+
+  <!-- Section 3: AI Behavior -->
+  <section class="card glass">
+    <div class="s-eyebrow">Section 3 of 5</div>
+    <h2 class="s-title">AI Behavior</h2>
+    <div class="grid-3">
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="pushback_style">When you're wrong…</label></div>
+        <select id="pushback_style" class="inp">
+          <option value="">No preference</option>
+          <option value="always">Always correct me directly</option>
+          <option value="diplomatic">Be diplomatic</option>
+          <option value="supportive">Acknowledge effort first</option>
+        </select>
+        <div class="field-error" id="err-pushback_style"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="explanation_style">How to explain</label></div>
+        <select id="explanation_style" class="inp">
+          <option value="">No preference</option>
+          <option value="answer_only">Just give the answer</option>
+          <option value="with_reasoning">Include reasoning</option>
+          <option value="step_by_step">Step by step</option>
+        </select>
+        <div class="field-error" id="err-explanation_style"></div>
+      </div>
+      <div class="field">
+        <div class="lbl-row"><label class="lbl" for="clarifying_questions">Clarifying questions</label></div>
+        <select id="clarifying_questions" class="inp">
+          <option value="">No preference</option>
+          <option value="when_needed">When needed</option>
+          <option value="always">Always confirm first</option>
+          <option value="never">Never — just go</option>
+        </select>
+        <div class="field-error" id="err-clarifying_questions"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 4: Work Context -->
+  <section class="card glass">
+    <div class="s-eyebrow">Section 4 of 5</div>
+    <h2 class="s-title">Work Context</h2>
+    <div class="field">
+      <label class="lbl" style="margin-bottom:10px">Expertise areas <span style="color:rgba(255,255,255,.45);font-weight:400">(select all that apply)</span></label>
+      <div class="chips">
+        <button type="button" class="chip" data-value="Legal" onclick="toggleChip(this)">Legal</button>
+        <button type="button" class="chip" data-value="Finance" onclick="toggleChip(this)">Finance</button>
+        <button type="button" class="chip" data-value="Marketing" onclick="toggleChip(this)">Marketing</button>
+        <button type="button" class="chip" data-value="Tech" onclick="toggleChip(this)">Tech</button>
+        <button type="button" class="chip" data-value="Healthcare" onclick="toggleChip(this)">Healthcare</button>
+        <button type="button" class="chip" data-value="RealEstate" onclick="toggleChip(this)">Real Estate</button>
+        <button type="button" class="chip" data-value="Accounting" onclick="toggleChip(this)">Accounting</button>
+        <button type="button" class="chip" data-value="Logistics" onclick="toggleChip(this)">Logistics</button>
+        <button type="button" class="chip" data-value="Manufacturing" onclick="toggleChip(this)">Manufacturing</button>
+        <button type="button" class="chip" data-value="Operations" onclick="toggleChip(this)">Operations</button>
+        <button type="button" class="chip" data-value="Sales" onclick="toggleChip(this)">Sales</button>
+        <button type="button" class="chip" data-value="HR" onclick="toggleChip(this)">HR</button>
+        <button type="button" class="chip" data-value="Strategy" onclick="toggleChip(this)">Strategy</button>
+        <button type="button" class="chip" data-value="Product" onclick="toggleChip(this)">Product</button>
+        <button type="button" class="chip" data-value="Design" onclick="toggleChip(this)">Design</button>
+      </div>
+      <div class="field-error" id="err-expertise_areas"></div>
+    </div>
+    <div class="field" style="margin-top:20px">
+      <div class="lbl-row">
+        <label class="lbl" for="current_focus">Current focus</label>
+        <span class="char-count" id="cnt-current_focus">0/500</span>
+      </div>
+      <textarea id="current_focus" class="inp" data-max="500" oninput="updateCounter('current_focus')" rows="3"
+        placeholder="What are you working on right now? Your priorities, active projects, or goals."></textarea>
+      <div class="field-error" id="err-current_focus"></div>
+    </div>
+    <div class="field" style="margin-top:14px">
+      <div class="lbl-row">
+        <label class="lbl" for="things_to_avoid">Things to avoid</label>
+        <span class="char-count" id="cnt-things_to_avoid">0/300</span>
+      </div>
+      <textarea id="things_to_avoid" class="inp" data-max="300" oninput="updateCounter('things_to_avoid')" rows="2"
+        placeholder='e.g. Generic disclaimers, suggesting "consult a lawyer", bullet-point-only answers'></textarea>
+      <div class="field-error" id="err-things_to_avoid"></div>
+    </div>
+  </section>
+
+  <!-- Section 5: About -->
+  <section class="card glass">
+    <div class="s-eyebrow">Section 5 of 5</div>
+    <h2 class="s-title">About You</h2>
+    <div class="field">
+      <div class="lbl-row">
+        <label class="lbl" for="about_me">Tell the AI about yourself</label>
+        <span class="char-count" id="cnt-about_me">0/1000</span>
+      </div>
+      <textarea id="about_me" class="inp" data-max="1000" oninput="updateCounter('about_me')" rows="6"
+        placeholder="Background, working style, what you care about — anything that helps the AI understand you better."></textarea>
+      <div class="field-error" id="err-about_me"></div>
+    </div>
+  </section>
+
+  <div class="actions">
+    <a href="{% url 'dashboard' %}" class="btn btn-ghost">Cancel</a>
+    <button id="save-btn" class="btn btn-purple" onclick="saveProfile()">Save profile</button>
+  </div>
+
 </div>
+
+<script>
+const SIMPLE_FIELDS = [
+  'display_name','role','industry','company_size','years_experience','timezone',
+  'communication_style','response_length','expertise_level','emoji_use',
+  'pushback_style','explanation_style','clarifying_questions',
+  'current_focus','things_to_avoid','about_me'
+];
+
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/api/profile', {credentials:'same-origin'})
+    .then(r => r.json())
+    .then(data => {
+      SIMPLE_FIELDS.forEach(f => {
+        const el = document.getElementById(f);
+        if (el && data[f] != null) el.value = data[f];
+      });
+      const fEl = document.getElementById('formality');
+      if (fEl && data.formality) {
+        fEl.value = data.formality;
+        document.getElementById('formality-val').textContent = data.formality;
+      }
+      if (!data.timezone) {
+        const tzEl = document.getElementById('timezone');
+        if (tzEl) tzEl.value = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      }
+      const areas = Array.isArray(data.expertise_areas) ? data.expertise_areas : [];
+      document.querySelectorAll('.chip[data-value]').forEach(chip => {
+        if (areas.includes(chip.dataset.value)) chip.classList.add('is-selected');
+      });
+      ['current_focus','things_to_avoid','about_me'].forEach(updateCounter);
+    })
+    .catch(() => showToast('Could not load profile data', 'error'));
+});
+
+function toggleChip(el) {
+  el.classList.toggle('is-selected');
+}
+
+function updateFormality(val) {
+  document.getElementById('formality-val').textContent = val;
+}
+
+function updateCounter(id) {
+  const el = document.getElementById(id);
+  const counter = document.getElementById('cnt-' + id);
+  if (!el || !counter) return;
+  const max = parseInt(el.dataset.max, 10);
+  const len = el.value.length;
+  counter.textContent = len + '/' + max;
+  counter.classList.toggle('over', len > max);
+}
+
+function clearErrors() {
+  document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
+}
+
+function showFieldError(field, msg) {
+  const el = document.getElementById('err-' + field);
+  if (el) el.textContent = msg;
+}
+
+function saveProfile() {
+  clearErrors();
+  const btn = document.getElementById('save-btn');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const payload = {};
+  SIMPLE_FIELDS.forEach(f => {
+    const el = document.getElementById(f);
+    if (el) payload[f] = el.value;
+  });
+  payload.formality = parseInt(document.getElementById('formality').value, 10);
+  payload.expertise_areas = Array.from(
+    document.querySelectorAll('.chip.is-selected[data-value]')
+  ).map(c => c.dataset.value);
+
+  fetch('/api/profile', {
+    method: 'PUT',
+    headers: {'Content-Type': 'application/json'},
+    credentials: 'same-origin',
+    body: JSON.stringify(payload),
+  })
+  .then(async r => ({ok:r.ok, status:r.status, data:await r.json()}))
+  .then(({ok, status, data}) => {
+    if (ok) { showToast('Profile saved', 'success'); return; }
+    if (status === 400 && data.errors) {
+      const keys = Object.keys(data.errors);
+      keys.forEach(f => showFieldError(f, data.errors[f]));
+      const firstErr = document.getElementById('err-' + keys[0]);
+      if (firstErr) firstErr.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+    showToast(data.error || 'Save failed', 'error');
+  })
+  .catch(() => showToast('Network error — please try again', 'error'))
+  .finally(() => { btn.disabled = false; btn.textContent = origText; });
+}
+
+let _toastTimer;
+function showToast(msg, type) {
+  const el = document.getElementById('toast');
+  clearTimeout(_toastTimer);
+  el.textContent = msg;
+  el.className = 'toast ' + (type || 'success') + ' show';
+  _toastTimer = setTimeout(() => { el.className = 'toast'; }, 3000);
+}
+</script>
 </body>
 </html>
