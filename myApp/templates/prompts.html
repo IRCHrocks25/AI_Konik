@@ -293,6 +293,7 @@
       <a href="{% url 'tools' %}">Tools</a>
     </div>
     <div class="nav-cta profile-nav">
+      <a href="/admin-dashboard/" class="admin-only admin-nav-btn"><i class="fa-solid fa-shield-halved"></i> Admin</a>
       <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
       <div class="profile-menu" id="profile-menu">
         <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
@@ -599,6 +600,7 @@ fetch('/api/auth/me',{credentials:'same-origin'})
       window.location.href='{% url 'login' %}';
       return;
     }
+    if(data.is_admin) document.body.classList.add('admin-visible');
     authProfile = data || {};
     renderUserIdentity(authProfile);
     loadPrompts();

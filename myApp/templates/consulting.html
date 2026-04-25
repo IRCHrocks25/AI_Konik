@@ -326,6 +326,7 @@
     <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
     <div class="nav-links"><a href="{% url 'agents' %}">Agents</a><a href="{% url 'prompts' %}">Prompts</a><a href="{% url 'industries' %}">Industries</a><a href="{% url 'events' %}">Events</a><a href="{% url 'tools' %}">Tools</a></div>
     <div class="nav-cta profile-nav">
+      <a href="/admin-dashboard/" class="admin-only admin-nav-btn"><i class="fa-solid fa-shield-halved"></i> Admin</a>
       <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
       <div class="profile-menu" id="profile-menu">
         <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
@@ -336,6 +337,7 @@
     </div>
   </div>
 </nav>
+<script>fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{if(d.is_admin)document.body.classList.add('admin-visible')}).catch(()=>{});</script>
 
 <div class="portal-wrap">
   <section class="hero glass">

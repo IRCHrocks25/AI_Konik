@@ -18,6 +18,8 @@ from django.views.decorators.csrf import csrf_exempt
 
 from .admin_audit import log_error
 from .auth_utils import (
+    _is_admin_user,
+    admin_required,
     get_current_user,
     get_request_json,
     login_required_api,
@@ -231,18 +233,9 @@ def legacy_html_redirect(request, page):
     return redirect(target)
 
 
-def _is_admin_user(custom_user):
-    if not custom_user:
-        return False
-    django_user_model = get_user_model()
-    email = (custom_user.email or "").strip().lower()
-    django_user = django_user_model.objects.filter(
-        Q(email__iexact=email) | Q(username__iexact=email)
-    ).first()
-    if not django_user and email.endswith("@local.user"):
-        username_guess = email.split("@", 1)[0]
-        django_user = django_user_model.objects.filter(username__iexact=username_guess).first()
-    return bool(django_user and django_user.is_superuser)
+@admin_required
+def admin_dashboard(request):
+    return render(request, "admin-dashboard.html")
 
 
 def prompt_import_dashboard(request):

@@ -106,6 +106,7 @@
       <a href="{% url 'tools' %}">Tools</a>
     </div>
     <div class="nav-cta profile-nav">
+      <a href="/admin-dashboard/" class="admin-only admin-nav-btn"><i class="fa-solid fa-shield-halved"></i> Admin</a>
       <span style="font-size:13px;color:var(--slate)">Sarah Chen</span>
       <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
       <div class="profile-menu" id="profile-menu">
@@ -267,6 +268,7 @@ function initDashboard(){
       if(!data.authenticated){
         window.location.href="{% url 'login' %}";
       }
+      if(data.is_admin) document.body.classList.add('admin-visible');
     });
   fetch('/api/dashboard',{credentials:'same-origin'})
     .then(async r=>({ok:r.ok,data:await r.json()}))

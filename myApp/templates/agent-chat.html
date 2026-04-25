@@ -220,6 +220,7 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
       <a href="{% url 'tools' %}">Tools</a>
     </div>
     <div class="nav-cta">
+      <a href="/admin-dashboard/" class="admin-only admin-nav-btn"><i class="fa-solid fa-shield-halved"></i> Admin</a>
       <a href="{% url 'agents' %}" class="btn btn-ghost btn-sm back-agents-btn"><i class="fa-solid fa-arrow-left"></i> Back to Agents</a>
     </div>
   </div>
@@ -896,6 +897,7 @@ fetch('/api/auth/me',{credentials:'same-origin'})
       window.location.href="{% url 'login' %}";
       return;
     }
+    if(data.is_admin) document.body.classList.add('admin-visible');
     await hydrateAgentConfigFromApi();
     if(forceNewChat){
       newChat({

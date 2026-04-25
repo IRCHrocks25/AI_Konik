@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.admin-shell{display:grid;grid-template-columns:220px 1fr;min-height:calc(100vh - 64px);padding-top:64px}
+
+/* Sidebar */
+.admin-sidebar{
+  background:linear-gradient(120deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+  border-right:1px solid rgba(255,255,255,.14);
+  padding:28px 0;
+  position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto;
+}
+.admin-sidebar-group{margin-bottom:6px}
+.admin-sidebar-label{
+  font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);padding:0 20px;margin:18px 0 4px;
+}
+.admin-sidebar-link{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 20px;font-size:13px;font-weight:500;
+  color:rgba(255,255,255,.76);text-decoration:none;
+  cursor:pointer;border:none;background:none;width:100%;
+  transition:background .15s,color .15s;
+  border-left:3px solid transparent;
+}
+.admin-sidebar-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.admin-sidebar-link.active{
+  background:linear-gradient(90deg,rgba(139,92,246,.28),rgba(139,92,246,.08));
+  color:#fff;border-left-color:#8b5cf6;
+}
+.admin-sidebar-link .si{width:16px;text-align:center;flex-shrink:0}
+.admin-sidebar-link.sub{padding-left:38px;font-size:12.5px}
+
+/* Main panel */
+.admin-main{padding:32px 36px;overflow-y:auto}
+.admin-panel{display:none}
+.admin-panel.active{display:block}
+.admin-panel-header{margin-bottom:28px}
+.admin-panel-header h1{font-family:'DM Serif Display',serif;font-size:28px;color:#fff;margin-bottom:6px}
+.admin-panel-header p{font-size:14px;color:rgba(255,255,255,.68)}
+
+/* Placeholder card */
+.placeholder-card{
+  background:linear-gradient(150deg,rgba(255,255,255,.14),rgba(255,255,255,.05));
+  border:1px solid rgba(255,255,255,.18);border-radius:16px;
+  padding:40px 32px;text-align:center;
+  box-shadow:0 10px 28px rgba(0,0,0,.18);
+}
+.placeholder-card .ph-icon{font-size:40px;color:rgba(139,92,246,.7);margin-bottom:16px}
+.placeholder-card h3{font-size:17px;font-weight:600;color:#fff;margin-bottom:8px}
+.placeholder-card p{font-size:13px;color:rgba(255,255,255,.62);max-width:360px;margin:0 auto}
+.ph-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  margin-top:18px;padding:5px 14px;
+  border-radius:20px;font-size:12px;font-weight:600;
+  background:rgba(139,92,246,.22);color:#c4b5fd;
+  border:1px solid rgba(139,92,246,.35);
+}
+</style>
+</head>
+<body class="dark-app admin-visible">
+<nav>
+  <div class="nav-inner">
+    <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <div class="nav-links">
+      <a href="{% url 'agents' %}">Agents</a>
+      <a href="{% url 'prompts' %}">Prompts</a>
+      <a href="{% url 'industries' %}">Industries</a>
+      <a href="{% url 'events' %}">Events</a>
+      <a href="{% url 'tools' %}">Tools</a>
+    </div>
+    <div class="nav-cta profile-nav">
+      <a href="/admin-dashboard/" class="admin-only admin-nav-btn active"><i class="fa-solid fa-shield-halved"></i> Admin</a>
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
+      <div class="profile-menu" id="profile-menu">
+        <a href="{% url 'dashboard' %}"><i class="fa-solid fa-table-cells-large"></i> Dashboard</a>
+        <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
+        <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
+        <a href="{% url 'settings' %}"><i class="fa-solid fa-gear"></i> Settings</a>
+        <button type="button" id="profile-signout-btn"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="admin-shell">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-group">
+      <button class="admin-sidebar-link" data-section="pulse" data-path="/admin-dashboard/pulse/">
+        <span class="si"><i class="fa-solid fa-chart-line"></i></span> Pulse
+      </button>
+    </div>
+    <div class="admin-sidebar-group">
+      <button class="admin-sidebar-link" data-section="users" data-path="/admin-dashboard/users/">
+        <span class="si"><i class="fa-solid fa-users"></i></span> Users
+      </button>
+    </div>
+    <div class="admin-sidebar-group">
+      <div class="admin-sidebar-label">Content</div>
+      <button class="admin-sidebar-link sub" data-section="agents" data-path="/admin-dashboard/content/agents/">
+        <span class="si"><i class="fa-solid fa-robot"></i></span> Agents
+      </button>
+      <button class="admin-sidebar-link sub" data-section="prompts" data-path="/admin-dashboard/content/prompts/">
+        <span class="si"><i class="fa-solid fa-book-open"></i></span> Prompts
+      </button>
+      <button class="admin-sidebar-link sub" data-section="industries" data-path="/admin-dashboard/content/industries/">
+        <span class="si"><i class="fa-solid fa-industry"></i></span> Industries
+      </button>
+      <button class="admin-sidebar-link sub" data-section="events" data-path="/admin-dashboard/content/events/">
+        <span class="si"><i class="fa-solid fa-calendar-days"></i></span> Events
+      </button>
+      <button class="admin-sidebar-link sub" data-section="tools" data-path="/admin-dashboard/content/tools/">
+        <span class="si"><i class="fa-solid fa-screwdriver-wrench"></i></span> Tools
+      </button>
+      <button class="admin-sidebar-link sub" data-section="banners" data-path="/admin-dashboard/content/banners/">
+        <span class="si"><i class="fa-solid fa-flag"></i></span> Banners
+      </button>
+    </div>
+    <div class="admin-sidebar-group">
+      <div class="admin-sidebar-label">Operations</div>
+      <button class="admin-sidebar-link" data-section="operations" data-path="/admin-dashboard/operations/">
+        <span class="si"><i class="fa-solid fa-shield-halved"></i></span> Overview
+      </button>
+      <button class="admin-sidebar-link sub" data-section="errors" data-path="/admin-dashboard/operations/errors/">
+        <span class="si"><i class="fa-solid fa-triangle-exclamation"></i></span> Error Log
+      </button>
+      <button class="admin-sidebar-link sub" data-section="audit" data-path="/admin-dashboard/operations/audit/">
+        <span class="si"><i class="fa-solid fa-scroll"></i></span> Audit Log
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main panels -->
+  <main class="admin-main">
+
+    <div id="panel-pulse" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Pulse</h1>
+        <p>Platform health, activity, and key metrics at a glance.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-chart-line"></i></div>
+        <h3>Real-time Metrics</h3>
+        <p>DAU/WAU trends, chat volumes, token usage, and system health — coming in Phase 3.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 3</span>
+      </div>
+    </div>
+
+    <div id="panel-users" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Users</h1>
+        <p>Search, inspect, suspend, and export your user base.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-users"></i></div>
+        <h3>User Management</h3>
+        <p>Paginated user list, search, suspend/reinstate, impersonation, and CSV export — coming in Phase 4 &amp; 5.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 4 – 5</span>
+      </div>
+    </div>
+
+    <div id="panel-agents" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Agents</h1>
+        <p>Create, edit, and manage AI agents and their starter prompts.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-robot"></i></div>
+        <h3>Agent CRUD</h3>
+        <p>Full create / edit / delete for agents, hint generation via OpenAI, and Font Awesome icon picker — coming in Phase 6.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 6</span>
+      </div>
+    </div>
+
+    <div id="panel-prompts" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Prompts</h1>
+        <p>Review, approve, and manage the community prompt library.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-book-open"></i></div>
+        <h3>Prompt Management</h3>
+        <p>Inline editing, status toggles, and moderation queue — coming in Phase 7.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 7</span>
+      </div>
+    </div>
+
+    <div id="panel-industries" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Industries</h1>
+        <p>Manage industry taxonomy and icons used across the platform.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-industry"></i></div>
+        <h3>Industry Management</h3>
+        <p>Add, reorder, and soft-disable industries; migrate the INDUSTRY_MAP — coming in Phase 8.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 8</span>
+      </div>
+    </div>
+
+    <div id="panel-events" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Events</h1>
+        <p>Schedule and manage community events and webinars.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-calendar-days"></i></div>
+        <h3>Events Management</h3>
+        <p>Create, edit, and feature events; cut over the events page from hardcoded data — coming in Phase 9.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 9</span>
+      </div>
+    </div>
+
+    <div id="panel-tools" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Tools</h1>
+        <p>Curate the AI tools directory shown to users.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+        <h3>Tools Directory</h3>
+        <p>Add, edit, and reorder tools; cut over the tools page from hardcoded data — coming in Phase 9.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 9</span>
+      </div>
+    </div>
+
+    <div id="panel-banners" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Banners</h1>
+        <p>Schedule platform-wide announcements and alerts.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-flag"></i></div>
+        <h3>Banner Management</h3>
+        <p>Create timed info / warning / critical banners with optional dismiss control — coming in Phase 10.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 10</span>
+      </div>
+    </div>
+
+    <div id="panel-operations" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Operations</h1>
+        <p>System health overview, error trends, and admin audit trail.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-shield-halved"></i></div>
+        <h3>Operations Dashboard</h3>
+        <p>Chart.js error trend charts, health check endpoint status, and a filterable audit log viewer — coming in Phase 11.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 11</span>
+      </div>
+    </div>
+
+    <div id="panel-errors" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Error Log</h1>
+        <p>Recent error events with type filters and user context.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h3>Error Log Viewer</h3>
+        <p>Filterable, paginated view of ErrorLog records — coming in Phase 11.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 11</span>
+      </div>
+    </div>
+
+    <div id="panel-audit" class="admin-panel">
+      <div class="admin-panel-header">
+        <h1>Audit Log</h1>
+        <p>Every admin action, who did it, and when.</p>
+      </div>
+      <div class="placeholder-card">
+        <div class="ph-icon"><i class="fa-solid fa-scroll"></i></div>
+        <h3>Audit Log Viewer</h3>
+        <p>Chronological admin action log with actor, target, and metadata — coming in Phase 11.</p>
+        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 11</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+const PATH_TO_SECTION = {
+  '/admin-dashboard/':                    'pulse',
+  '/admin-dashboard/pulse/':              'pulse',
+  '/admin-dashboard/users/':              'users',
+  '/admin-dashboard/content/':            'agents',
+  '/admin-dashboard/content/agents/':     'agents',
+  '/admin-dashboard/content/prompts/':    'prompts',
+  '/admin-dashboard/content/industries/': 'industries',
+  '/admin-dashboard/content/events/':     'events',
+  '/admin-dashboard/content/tools/':      'tools',
+  '/admin-dashboard/content/banners/':    'banners',
+  '/admin-dashboard/operations/':         'operations',
+  '/admin-dashboard/operations/errors/':  'errors',
+  '/admin-dashboard/operations/audit/':   'audit',
+};
+
+function showSection(key) {
+  document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.admin-sidebar-link').forEach(l => l.classList.remove('active'));
+  const panel = document.getElementById('panel-' + key);
+  if (panel) panel.classList.add('active');
+  document.querySelectorAll('.admin-sidebar-link[data-section="' + key + '"]').forEach(l => l.classList.add('active'));
+}
+
+function navigateTo(path, section) {
+  history.pushState({section}, '', path);
+  showSection(section);
+}
+
+// Init from current URL
+const initSection = PATH_TO_SECTION[window.location.pathname] || 'pulse';
+showSection(initSection);
+
+// Sidebar click handlers
+document.querySelectorAll('.admin-sidebar-link[data-section]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    navigateTo(btn.dataset.path, btn.dataset.section);
+  });
+});
+
+// Browser back/forward
+window.addEventListener('popstate', e => {
+  const section = (e.state && e.state.section) || PATH_TO_SECTION[window.location.pathname] || 'pulse';
+  showSection(section);
+});
+
+// Profile menu toggle
+const pmToggle = document.getElementById('profile-menu-toggle');
+const profileMenu = document.getElementById('profile-menu');
+if (pmToggle && profileMenu) {
+  pmToggle.addEventListener('click', () => {
+    const open = profileMenu.classList.toggle('open');
+    pmToggle.setAttribute('aria-expanded', String(open));
+  });
+  document.addEventListener('click', e => {
+    if (!pmToggle.contains(e.target) && !profileMenu.contains(e.target)) {
+      profileMenu.classList.remove('open');
+      pmToggle.setAttribute('aria-expanded', 'false');
+    }
+  });
+}
+
+// Hydrate avatar initials & sign-out
+fetch('/api/auth/me', {credentials: 'same-origin'})
+  .then(async r => ({ok: r.ok, data: await r.json()}))
+  .then(({data}) => {
+    if (!data.authenticated) { window.location.href = "{% url 'login' %}"; return; }
+    if (!data.is_admin) { window.location.href = "{% url 'dashboard' %}"; return; }
+    const initials = ((data.first_name||'')[0]||(data.email||'?')[0]).toUpperCase();
+    const av = document.getElementById('profile-menu-toggle');
+    if (av) av.textContent = initials;
+  })
+  .catch(() => {});
+
+const signOutBtn = document.getElementById('profile-signout-btn');
+if (signOutBtn) {
+  signOutBtn.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', {method: 'POST', credentials: 'same-origin'});
+    window.location.href = "{% url 'login' %}";
+  });
+}
+</script>
+</body>
+</html>

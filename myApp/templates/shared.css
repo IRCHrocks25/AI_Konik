@@ -240,6 +240,17 @@ body.dark-app .nav-links a.active{color:#fff}
 .profile-menu a:hover,
 .profile-menu button:hover{background:rgba(255,255,255,.1);color:#fff}
 
+/* Admin-only nav link — hidden until JS sets body.admin-visible */
+.admin-only{display:none}
+body.admin-visible .admin-only{display:flex;align-items:center;gap:6px}
+.admin-nav-btn{
+  font-size:13px;font-weight:600;
+  color:rgba(255,255,255,.82);text-decoration:none;
+  padding:6px 12px;border:1px solid rgba(255,255,255,.22);
+  border-radius:8px;transition:background .15s;
+}
+.admin-nav-btn:hover{background:rgba(255,255,255,.1);color:#fff}
+
 /* Back button — used on profile/settings instead of profile dropdown */
 .nav-back-btn{
   padding:7px 14px;
