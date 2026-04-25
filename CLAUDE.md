@@ -118,6 +118,37 @@ Upload endpoint: `api_chat_upload_file`
 - Returns extracted `message_text` to client.
 - Does **not** create `ChatMessage`; client sends extracted content in a follow-up chat send call.
 
+## AI Personalization System
+
+The chat system prompt is built dynamically per request from three sources, in this order:
+
+1. **Agent identity** (`myApp/personalization.py` — `build_agent_identity_prompt`)
+   - Pulled from the `Agent` table via `session.agent_name` lookup
+   - Includes agent name, description, hint prompts (framed as "Typical short user queries"), use_case prompts (framed as "Examples of detailed user requests")
+   - Skipped if no matching `Agent` row
+
+2. **Base context line** (`"You are a practical assistant for SMB users."`)
+   - Always present — `DEFAULT_BASE_CONTEXT` in `personalization.py`
+   - The floor everything else builds on
+
+3. **User personalization** (`build_user_personalization_prompt`)
+   - 18 `CustomUser` profile fields mapped to actionable instructions
+   - Grouped into 4 sub-sections: About the user / Communication preferences / How to handle disagreement and reasoning / Current context
+   - Empty fields and empty sub-sections omitted entirely
+   - Skipped if user has no fields filled
+
+Composition lives in `build_full_system_prompt`. View integration is at the top of `api_send_chat_message` in `views.py` — agent + agent_prompts fetched fresh per request so profile and agent edits propagate immediately.
+
+API surface:
+- `GET /api/profile` — current user's 18 personalization fields
+- `PUT /api/profile` — validates against choice whitelists, length caps, `expertise_areas` whitelist, normalizes industry via `INDUSTRY_MAP`. Returns `{"errors": {...}}` on 400.
+- `/api/auth/me` intentionally **not** extended with profile fields (would bloat every page load)
+
+When editing chat behavior or adding profile fields:
+- `personalization.py` is pure — no Django imports, fully unit-testable
+- New profile field requires: model field + migration + form section in `profile.html` + mapping in `personalization.py` + entry in `build_user_personalization_prompt`
+- Token cost ~440 tokens per request for fully-filled profile + agent — acceptable for now, caching strategy on `ChatSession` is the future optimization if needed
+
 ## API Conventions
 
 Most API views follow this pattern:

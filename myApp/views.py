@@ -1,6 +1,7 @@
 import csv
 import importlib
 import io
+import logging
 import os
 import re
 import uuid
@@ -23,7 +24,12 @@ from .auth_utils import (
     logout_user,
 )
 from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
-from .openai_service import get_openai_reply
+from .openai_service import (
+    MAX_REQUEST_TOKENS,
+    estimate_messages_tokens,
+    get_openai_reply,
+    trim_history_to_budget,
+)
 from .personalization import build_full_system_prompt
 from .seed_data import seed_agents_and_prompts
 
@@ -37,6 +43,8 @@ try:
     import cloudinary.uploader
 except Exception:  # pragma: no cover - optional dependency runtime check
     cloudinary = None
+
+logger = logging.getLogger(__name__)
 
 SEED_PROMPTS = [
     {
@@ -1041,14 +1049,39 @@ def api_send_chat_message(request, session_id):
     if not content:
         return JsonResponse({"error": "content is required"}, status=400)
 
-    ChatMessage.objects.create(session=session, role="user", content=content)
+    user_message = ChatMessage.objects.create(session=session, role="user", content=content)
     history = list(session.messages.order_by("created_at").values("role", "content"))
     agent = Agent.objects.filter(name=session.agent_name).first()
     agent_prompts = list(agent.prompts.all()) if agent else []
     system_content = build_full_system_prompt(agent, agent_prompts, request.current_user)
+    trimmed = trim_history_to_budget(history, system_content)
+
+    if estimate_messages_tokens(system_content, trimmed) > MAX_REQUEST_TOKENS:
+        user_message.delete()
+        return JsonResponse(
+            {
+                "error": "This message is too long. Try splitting it into smaller messages.",
+                "retry_content": content,
+            },
+            status=413,
+        )
+
     openai_messages = [{"role": "system", "content": system_content}]
-    openai_messages.extend({"role": item["role"], "content": item["content"]} for item in history)
-    assistant_text, total_tokens = get_openai_reply(openai_messages)
+    openai_messages.extend({"role": m["role"], "content": m["content"]} for m in trimmed)
+
+    try:
+        assistant_text, total_tokens = get_openai_reply(openai_messages)
+    except Exception as exc:
+        user_message.delete()
+        logger.exception("Chat send failed (session=%s): %s", session.id, exc)
+        return JsonResponse(
+            {
+                "error": "Could not generate a reply. Please try again.",
+                "retry_content": content,
+            },
+            status=502,
+        )
+
     assistant = ChatMessage.objects.create(
         session=session,
         role="assistant",
