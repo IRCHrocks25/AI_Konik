@@ -333,6 +333,37 @@ textarea.ud-inp{resize:vertical;min-height:70px;line-height:1.6}
 .ud-modal-body{font-size:13.5px;color:rgba(255,255,255,.72);line-height:1.65;margin-bottom:22px}
 .ud-modal-actions{display:flex;justify-content:flex-end;gap:10px}
 .ud-skel{background:rgba(255,255,255,.09);border-radius:6px;animation:shimmer 1.2s ease-in-out infinite alternate}
+
+/* ── AGENTS panel ── */
+.agents-topbar{display:flex;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.agents-search-wrap{position:relative;flex:1;min-width:240px}
+.agents-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);font-size:13px;pointer-events:none}
+.agents-search-input{width:100%;padding:9px 14px 9px 36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:13px;outline:none;transition:border-color .15s,background .15s;box-sizing:border-box;font-family:inherit}
+.agents-search-input::placeholder{color:rgba(255,255,255,.35)}
+.agents-search-input:focus{border-color:rgba(139,92,246,.5);background:rgba(255,255,255,.11)}
+.agents-create-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid rgba(139,92,246,.45);border-radius:10px;background:rgba(139,92,246,.18);color:#c4b5fd;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s;font-family:inherit}
+.agents-create-btn:hover{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.65)}
+.agents-table-wrap{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15);border-radius:16px;overflow:hidden;margin-bottom:14px}
+.agents-table{width:100%;border-collapse:collapse;font-size:13px}
+.agents-table th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.agents-table td{padding:10px 14px;color:rgba(255,255,255,.85);border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle}
+.agents-table tr:last-child td{border-bottom:none}
+.agents-table tbody tr{cursor:pointer;transition:background .13s}
+.agents-table tbody tr:hover{background:rgba(255,255,255,.06)}
+.agent-icon-cell{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1e1b2e;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
+.agent-name-cell{font-weight:600;color:#fff;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spill-on{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.spill-off{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.06);color:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.12)}
+.agents-row-actions{text-align:right;white-space:nowrap}
+.agents-row-actions .ag-row-btn{margin-left:6px}
+.ag-row-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:rgba(255,255,255,.78);font-size:11.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s,color .15s,border-color .15s}
+.ag-row-btn:hover{background:rgba(255,255,255,.13);color:#fff}
+.ag-row-btn.danger{border-color:rgba(244,63,94,.35);color:#fb7185;background:rgba(244,63,94,.1)}
+.ag-row-btn.danger:hover{background:rgba(244,63,94,.22);color:#fda4af}
+.agents-empty-state{padding:48px 32px;text-align:center}
+.agents-empty-state i{font-size:36px;color:rgba(255,255,255,.22);display:block;margin-bottom:14px}
+.agents-empty-state p{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:14px}
+.agents-count{font-size:12.5px;color:rgba(255,255,255,.45)}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -503,12 +534,17 @@ textarea.ud-inp{resize:vertical;min-height:70px;line-height:1.6}
         <h1>Agents</h1>
         <p>Create, edit, and manage AI agents and their starter prompts.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-robot"></i></div>
-        <h3>Agent CRUD</h3>
-        <p>Full create / edit / delete for agents, hint generation via OpenAI, and Font Awesome icon picker — coming in Phase 6.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 6</span>
+      <div class="agents-topbar">
+        <div class="agents-search-wrap">
+          <i class="fa-solid fa-magnifying-glass agents-search-icon"></i>
+          <input type="text" id="agents-search" class="agents-search-input" placeholder="Search by name, industry, or tag…" autocomplete="off">
+        </div>
+        <button class="agents-create-btn" onclick="agentsOpenCreate()">
+          <i class="fa-solid fa-plus"></i> Create new agent
+        </button>
       </div>
+      <div id="agents-table-wrap" class="agents-table-wrap"></div>
+      <div class="agents-count" id="agents-count"></div>
     </div>
 
     <div id="panel-prompts" class="admin-panel">
@@ -617,6 +653,10 @@ textarea.ud-inp{resize:vertical;min-height:70px;line-height:1.6}
 
     <div id="panel-user-detail" class="admin-panel">
       <div id="ud-content"></div>
+    </div>
+
+    <div id="panel-agent-edit" class="admin-panel">
+      <div id="agent-edit-content"></div>
     </div>
 
   </main>
@@ -767,8 +807,16 @@ const _STATIC_SECTIONS = {
 };
 
 function getInitSection(pathname) {
-  const m = pathname.match(/^\/admin-dashboard\/users\/(\d+)\/?$/);
-  if (m) return ['user-detail', {userId: parseInt(m[1], 10)}];
+  let m;
+  if ((m = pathname.match(/^\/admin-dashboard\/users\/(\d+)\/?$/))) {
+    return ['user-detail', {userId: parseInt(m[1], 10)}];
+  }
+  if (pathname === '/admin-dashboard/content/agents/new/') {
+    return ['agent-edit', {mode: 'create'}];
+  }
+  if ((m = pathname.match(/^\/admin-dashboard\/content\/agents\/(\d+)\/?$/))) {
+    return ['agent-edit', {mode: 'edit', agentId: parseInt(m[1], 10)}];
+  }
   return _STATIC_SECTIONS[pathname] || 'pulse';
 }
 
@@ -777,11 +825,15 @@ function showSection(key, params) {
   document.querySelectorAll('.admin-sidebar-link').forEach(l => l.classList.remove('active'));
   const panel = document.getElementById('panel-' + key);
   if (panel) panel.classList.add('active');
-  document.querySelectorAll('.admin-sidebar-link[data-section="' + key + '"]').forEach(l => l.classList.add('active'));
+  // For nested routes, keep the parent sidebar link highlighted.
+  const sidebarKey = (key === 'agent-edit') ? 'agents' : key;
+  document.querySelectorAll('.admin-sidebar-link[data-section="' + sidebarKey + '"]').forEach(l => l.classList.add('active'));
   stopPulseRefresh();
   if (key === 'pulse') startPulseRefresh();
   if (key === 'users') usersMount();
   if (key === 'user-detail' && params && params.userId) userDetailMount(params.userId);
+  if (key === 'agents') agentsMount();
+  if (key === 'agent-edit') agentEditMount(params || {});
 }
 
 function navigateTo(path, section, params) {
@@ -1545,6 +1597,200 @@ async function userDetailMount(userId) {
   }
 }
 // ── END USER DETAIL ──────────────────────────────────────────────────────────
+
+// ── AGENTS ──────────────────────────────────────────────────────────────────
+let agentsMounted = false;
+let agentsAllItems = [];
+let agentsDebounceTimer = null;
+
+function agentsTitleCase(s) {
+  if (!s) return '—';
+  return String(s).split(/\s+/).map(w => w ? w[0].toUpperCase() + w.slice(1) : '').join(' ');
+}
+
+function agentsCountPrompts(a) {
+  if (Array.isArray(a.prompts)) return a.prompts.length;
+  return ((a.hints || []).length + (a.use_cases || []).length);
+}
+
+function agentsRenderRow(a) {
+  const prompts = agentsCountPrompts(a);
+  const featured = a.is_featured
+    ? '<span class="spill-on"><i class="fa-solid fa-star" style="font-size:9px"></i> Featured</span>'
+    : '<span class="spill-off">—</span>';
+  const active = a.is_active
+    ? '<span class="spill-on"><i class="fa-solid fa-circle" style="font-size:8px"></i> Active</span>'
+    : '<span class="spill-off"><i class="fa-solid fa-pause" style="font-size:9px"></i> Inactive</span>';
+  const accent = escHtml(a.accent_bg || '#EEF2FF');
+  const icon = escHtml(a.icon_class || 'fa-robot');
+  return `<tr onclick="agentsOpenEdit(${a.id})" title="Edit agent #${a.id}">
+    <td><div class="agent-icon-cell" style="background:${accent}"><i class="fa-solid ${icon}"></i></div></td>
+    <td><div class="agent-name-cell" title="${escHtml(a.name)}">${escHtml(a.name)}</div></td>
+    <td>${escHtml(agentsTitleCase(a.industry))}</td>
+    <td>${escHtml(a.tag || '—')}</td>
+    <td>${prompts}</td>
+    <td>${(a.usage_count || 0).toLocaleString()}</td>
+    <td>${featured}</td>
+    <td>${active}</td>
+    <td class="agents-row-actions" onclick="event.stopPropagation()">
+      <button class="ag-row-btn" onclick="agentsOpenEdit(${a.id})" title="Edit"><i class="fa-solid fa-pen"></i> Edit</button>
+      <button class="ag-row-btn danger" onclick="agentsConfirmDelete(${a.id})" title="Delete"><i class="fa-solid fa-trash"></i></button>
+    </td>
+  </tr>`;
+}
+
+function agentsTableShell(rows) {
+  return `<table class="agents-table"><thead><tr>
+    <th></th><th>Name</th><th>Industry</th><th>Tag</th><th>Prompts</th><th>Usage</th><th>Featured</th><th>Active</th><th></th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function agentsRenderSkeleton() {
+  const skelRow = () => `<tr>
+    <td><div class="users-skel-cell" style="width:36px;height:36px;border-radius:10px"></div></td>
+    <td><div class="users-skel-cell" style="width:160px"></div></td>
+    <td><div class="users-skel-cell" style="width:80px"></div></td>
+    <td><div class="users-skel-cell" style="width:90px"></div></td>
+    <td><div class="users-skel-cell" style="width:24px"></div></td>
+    <td><div class="users-skel-cell" style="width:40px"></div></td>
+    <td><div class="users-skel-cell" style="width:64px"></div></td>
+    <td><div class="users-skel-cell" style="width:60px"></div></td>
+    <td><div class="users-skel-cell" style="width:90px;margin-left:auto"></div></td>
+  </tr>`;
+  return agentsTableShell(Array(6).fill(0).map(skelRow).join(''));
+}
+
+function agentsRenderEmpty() {
+  return `<div class="agents-empty-state">
+    <i class="fa-solid fa-robot"></i>
+    <p>No agents yet. Click "Create new agent" to start.</p>
+  </div>`;
+}
+
+function agentsRenderNoMatches() {
+  return `<div class="agents-empty-state">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <p>No agents match your search.</p>
+  </div>`;
+}
+
+function agentsRender() {
+  const wrap = document.getElementById('agents-table-wrap');
+  const countEl = document.getElementById('agents-count');
+  if (!wrap) return;
+  const q = ((document.getElementById('agents-search') || {}).value || '').trim().toLowerCase();
+  const filtered = q
+    ? agentsAllItems.filter(a => (
+        (a.name || '').toLowerCase().includes(q) ||
+        (a.industry || '').toLowerCase().includes(q) ||
+        (a.tag || '').toLowerCase().includes(q)
+      ))
+    : agentsAllItems;
+  if (countEl) {
+    const total = agentsAllItems.length;
+    countEl.textContent = filtered.length.toLocaleString() + ' agent' + (filtered.length !== 1 ? 's' : '') + ' found'
+      + (q ? ' (of ' + total.toLocaleString() + ')' : '');
+  }
+  if (!agentsAllItems.length) { wrap.innerHTML = agentsRenderEmpty(); return; }
+  if (!filtered.length) { wrap.innerHTML = agentsRenderNoMatches(); return; }
+  wrap.innerHTML = agentsTableShell(filtered.map(agentsRenderRow).join(''));
+}
+
+async function agentsLoad() {
+  const wrap = document.getElementById('agents-table-wrap');
+  const countEl = document.getElementById('agents-count');
+  if (wrap) wrap.innerHTML = agentsRenderSkeleton();
+  if (countEl) countEl.textContent = '';
+  try {
+    const r = await fetch('/api/admin/agents', {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    agentsAllItems = d.items || [];
+    agentsRender();
+  } catch (e) {
+    if (wrap) wrap.innerHTML = `<div class="agents-empty-state">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p>Failed to load agents. Check your connection or try again.</p>
+      <button class="users-empty-clear-btn" onclick="agentsLoad()">Retry</button>
+    </div>`;
+  }
+}
+
+function agentsMount() {
+  if (!agentsMounted) {
+    agentsMounted = true;
+    const sEl = document.getElementById('agents-search');
+    if (sEl) {
+      sEl.addEventListener('input', () => {
+        clearTimeout(agentsDebounceTimer);
+        agentsDebounceTimer = setTimeout(agentsRender, 300);
+      });
+    }
+  }
+  agentsLoad();
+}
+
+function agentsOpenCreate() {
+  navigateTo('/admin-dashboard/content/agents/new/', 'agent-edit', {mode: 'create'});
+}
+
+function agentsOpenEdit(id) {
+  navigateTo('/admin-dashboard/content/agents/' + id + '/', 'agent-edit', {mode: 'edit', agentId: id});
+}
+
+function agentsConfirmDelete(id) {
+  const a = agentsAllItems.find(x => x.id === id);
+  if (!a) return;
+  const promptsCount = agentsCountPrompts(a);
+  const promptsLine = promptsCount > 0
+    ? `This will also delete <strong>${promptsCount}</strong> attached prompt${promptsCount !== 1 ? 's' : ''} (hints &amp; use cases).`
+    : 'This agent has no attached prompts.';
+  udShowModal(`<div class="ud-modal">
+    <div class="ud-modal-title">Delete &ldquo;${escHtml(a.name)}&rdquo;?</div>
+    <div class="ud-modal-body">
+      ${promptsLine}<br><br>
+      This action cannot be undone.
+    </div>
+    <div class="ud-modal-actions">
+      <button class="ud-act-btn" onclick="udCloseModal()">Cancel</button>
+      <button class="ud-act-btn danger" onclick="agentsPerformDelete(${id})"><i class="fa-solid fa-trash"></i> Delete agent</button>
+    </div>
+  </div>`);
+}
+
+async function agentsPerformDelete(id) {
+  udCloseModal();
+  try {
+    const r = await fetch('/api/admin/agents/' + id, {method: 'DELETE', credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    udToast('Agent deleted.', 'success');
+    await agentsLoad();
+  } catch (e) {
+    udToast('Failed to delete agent.', 'error');
+  }
+}
+
+// ── AGENT EDIT (full form arrives in Chunk 6.4) ──────────────────────────────
+function agentEditMount(params) {
+  const el = document.getElementById('agent-edit-content');
+  if (!el) return;
+  const isCreate = params.mode === 'create';
+  const idLabel = isCreate ? 'New agent' : ('Edit agent #' + escHtml(String(params.agentId || '')));
+  el.innerHTML = `
+    <button class="ud-back-link" onclick="navigateTo('/admin-dashboard/content/agents/','agents')">
+      <i class="fa-solid fa-arrow-left"></i> Back to agents
+    </button>
+    <div class="ud-breadcrumb">${idLabel}</div>
+    <div class="ud-loaded-at">${isCreate ? 'Create form' : 'Edit form'}</div>
+    <div class="placeholder-card">
+      <div class="ph-icon"><i class="fa-solid fa-pen-to-square"></i></div>
+      <h3>Form: Chunk 6.4 placeholder</h3>
+      <p>The full create/edit form with hints, use cases, color picker, OpenAI generate button, and FA icon picker arrives in Chunk 6.4.</p>
+      <span class="ph-badge"><i class="fa-solid fa-clock"></i> Chunk 6.4</span>
+    </div>
+  `;
+}
+// ── END AGENTS ──────────────────────────────────────────────────────────────
 
 // Profile menu toggle
 const pmToggle = document.getElementById('profile-menu-toggle');
