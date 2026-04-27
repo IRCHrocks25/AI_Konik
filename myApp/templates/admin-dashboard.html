@@ -527,6 +527,42 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
 .ops-tokens-table tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
 .ops-tokens-table tfoot tr{background:rgba(139,92,246,.08)}
 .ops-tokens-table tfoot td{color:#fff;font-weight:600;border-top:1px solid rgba(139,92,246,.22);border-bottom:none}
+
+/* ── OPERATIONS log viewers (audit + error) ── */
+.ops-log-topbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.ops-log-search-wrap{position:relative;flex:1;min-width:200px}
+.ops-log-search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.38);font-size:12px;pointer-events:none}
+.ops-log-search{width:100%;padding:8px 12px 8px 32px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:9px;color:#fff;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s,background .15s;box-sizing:border-box}
+.ops-log-search::placeholder{color:rgba(255,255,255,.32)}
+.ops-log-search:focus{border-color:rgba(139,92,246,.5);background:rgba(255,255,255,.11)}
+.ops-log-select{padding:7px 11px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:9px;color:rgba(255,255,255,.82);font-size:12.5px;font-family:inherit;cursor:pointer;outline:none}
+.ops-log-select:hover{background:rgba(255,255,255,.11)}
+.ops-log-select option{background:#1e1b2e;color:#fff}
+.ops-log-count{font-size:13px;color:rgba(255,255,255,.48);white-space:nowrap;margin-left:auto}
+.ops-log-table-wrap{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15);border-radius:16px;overflow:hidden;margin-bottom:14px}
+.ops-log-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.ops-log-table th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.42);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.ops-log-table td{padding:10px 14px;color:rgba(255,255,255,.82);border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle}
+.ops-log-table tbody tr.data-row{cursor:pointer;transition:background .13s}
+.ops-log-table tbody tr.data-row:hover{background:rgba(255,255,255,.05)}
+.ops-log-table tbody tr.data-row.expanded{background:rgba(139,92,246,.08)}
+.ops-log-table tbody tr.expand-row{display:none}
+.ops-log-table tbody tr.expand-row.visible{display:table-row}
+.ops-log-table tbody tr.expand-row td{padding:0;border-bottom:1px solid rgba(255,255,255,.1)}
+.ops-log-meta-wrap{padding:12px 14px 14px;background:rgba(0,0,0,.2)}
+.ops-log-meta-pre{margin:0;font-size:11.5px;color:rgba(255,255,255,.6);line-height:1.6;white-space:pre-wrap;word-break:break-all;font-family:'Courier New',monospace}
+.ops-action-pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+.opa-blue{background:rgba(99,102,241,.2);color:#818cf8;border:1px solid rgba(99,102,241,.3)}
+.opa-purple{background:rgba(168,85,247,.2);color:#c084fc;border:1px solid rgba(168,85,247,.3)}
+.opa-emerald{background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.opa-amber{background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.opa-rose{background:rgba(244,63,94,.2);color:#fb7185;border:1px solid rgba(244,63,94,.3)}
+.opa-slate{background:rgba(255,255,255,.1);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15)}
+.ops-log-pagination{display:flex;align-items:center;justify-content:center;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.ops-log-empty{padding:48px 32px;text-align:center}
+.ops-log-empty i{font-size:32px;color:rgba(255,255,255,.2);display:block;margin-bottom:12px}
+.ops-log-empty p{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:16px}
+.ops-log-skel{background:rgba(255,255,255,.09);border-radius:4px;height:13px;animation:shimmer 1.2s ease-in-out infinite alternate;display:inline-block}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -804,18 +840,10 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
         <div id="ops-tokens-content"></div>
       </div>
       <div id="ops-audit" class="ops-subpanel hidden">
-        <div class="placeholder-card">
-          <div class="ph-icon"><i class="fa-solid fa-scroll"></i></div>
-          <h3>Audit Log Viewer</h3>
-          <p>Filterable, paginated admin action log — coming in Chunk 11.4</p>
-        </div>
+        <div id="ops-audit-content"></div>
       </div>
       <div id="ops-errors" class="ops-subpanel hidden">
-        <div class="placeholder-card">
-          <div class="ph-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-          <h3>Error Log Viewer</h3>
-          <p>Filterable, paginated error event log — coming in Chunk 11.4</p>
-        </div>
+        <div id="ops-errors-content"></div>
       </div>
     </div>
 
@@ -1000,6 +1028,12 @@ let opsSummaryLoadedAt = null;
 let opsCurrentSubpanel = null;
 let opsTokensChart = null;
 let opsTokensDays = 30;
+let opsAuditFilters = {page: 1, search: '', action_type: '', since: '30d'};
+let opsAuditDebounceTimer = null;
+let opsAuditExpandedId = null;
+let opsErrorsFilters = {page: 1, search: '', error_type: '', since: '7d'};
+let opsErrorsDebounceTimer = null;
+let opsErrorsExpandedId = null;
 
 function opsSubpanelTeardown(key) {
   if (key === 'ops-summary') {
@@ -1026,6 +1060,8 @@ function opsShowSubpanel(key) {
 
   if (subKey === 'ops-summary') opsSummaryMount();
   if (subKey === 'ops-tokens') opsTokensMount();
+  if (subKey === 'ops-audit') opsAuditMount();
+  if (subKey === 'ops-errors') opsErrorsMount();
 }
 
 function showSection(key, params) {
@@ -1381,6 +1417,434 @@ function opsTokensMount() {
       </table>
     </div>`;
   opsTokensLoadAndRender(30);
+}
+// ── OPERATIONS AUDIT LOG ──────────────────────────────────────────────────
+
+function logPagination(data, fnName) {
+  if (data.pages <= 1) return '';
+  const p = data.page, pages = data.pages;
+  let h = `<button class="upag-btn" ${p <= 1 ? 'disabled' : ''} onclick="${fnName}(${p - 1})"><i class="fa-solid fa-chevron-left"></i></button>`;
+  const lo = Math.max(1, p - 2), hi = Math.min(pages, p + 2);
+  if (lo > 1) { h += `<button class="upag-btn" onclick="${fnName}(1)">1</button>`; if (lo > 2) h += `<span style="color:rgba(255,255,255,.4);padding:0 4px">…</span>`; }
+  for (let i = lo; i <= hi; i++) h += `<button class="upag-btn${i === p ? ' active' : ''}" onclick="${fnName}(${i})">${i}</button>`;
+  if (hi < pages) { if (hi < pages - 1) h += `<span style="color:rgba(255,255,255,.4);padding:0 4px">…</span>`; h += `<button class="upag-btn" onclick="${fnName}(${pages})">${pages}</button>`; }
+  h += `<button class="upag-btn" ${p >= pages ? 'disabled' : ''} onclick="${fnName}(${p + 1})"><i class="fa-solid fa-chevron-right"></i></button>`;
+  return h;
+}
+
+function opsAuditActionColor(action) {
+  if (!action) return 'opa-slate';
+  if (action.startsWith('user.')) return 'opa-blue';
+  if (action.startsWith('agent.')) return 'opa-purple';
+  if (action.startsWith('prompt.')) return 'opa-emerald';
+  if (/^(banner|event|tool|industry)\./.test(action)) return 'opa-amber';
+  return 'opa-slate';
+}
+
+function opsAuditSkeleton() {
+  const r = () => `<tr class="data-row">
+    <td><div class="ops-log-skel" style="width:55px"></div></td>
+    <td><div class="ops-log-skel" style="width:150px"></div></td>
+    <td><div class="ops-log-skel" style="width:120px;border-radius:20px"></div></td>
+    <td><div class="ops-log-skel" style="width:70px"></div></td>
+    <td><div class="ops-log-skel" style="width:170px"></div></td>
+  </tr>`;
+  return `<table class="ops-log-table"><thead><tr>
+    <th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Metadata</th>
+  </tr></thead><tbody>${Array(8).fill(0).map(r).join('')}</tbody></table>`;
+}
+
+function opsAuditToggleRow(id) {
+  const wasOpen = opsAuditExpandedId === id;
+  if (opsAuditExpandedId !== null) {
+    const prev = document.querySelector(`#ops-audit-table .data-row[data-id="${opsAuditExpandedId}"]`);
+    const prevExp = document.querySelector(`#ops-audit-table .expand-row[data-parent="${opsAuditExpandedId}"]`);
+    if (prev) prev.classList.remove('expanded');
+    if (prevExp) prevExp.classList.remove('visible');
+    opsAuditExpandedId = null;
+  }
+  if (!wasOpen) {
+    const row = document.querySelector(`#ops-audit-table .data-row[data-id="${id}"]`);
+    const expRow = document.querySelector(`#ops-audit-table .expand-row[data-parent="${id}"]`);
+    if (row) row.classList.add('expanded');
+    if (expRow) expRow.classList.add('visible');
+    opsAuditExpandedId = id;
+  }
+}
+
+function opsAuditRender(data) {
+  opsAuditExpandedId = null;
+  const countEl = document.getElementById('ops-audit-count');
+  if (countEl) countEl.textContent = `${data.total.toLocaleString()} entr${data.total !== 1 ? 'ies' : 'y'}`;
+  const tableWrap = document.getElementById('ops-audit-table-wrap');
+  if (!tableWrap) return;
+
+  if (!data.items.length) {
+    const hasFilters = opsAuditFilters.search || opsAuditFilters.action_type;
+    tableWrap.innerHTML = `<div class="ops-log-empty">
+      <i class="fa-solid fa-scroll"></i>
+      <p>No audit entries match these filters.</p>
+      ${hasFilters ? '<button class="users-empty-clear-btn" onclick="opsAuditClearFilters()">Clear filters</button>' : ''}
+    </div>`;
+    document.getElementById('ops-audit-pagination').innerHTML = '';
+    return;
+  }
+
+  const rows = data.items.map(item => {
+    const metaStr = item.metadata ? JSON.stringify(item.metadata, null, 2) : null;
+    const metaExcerpt = metaStr
+      ? metaStr.replace(/\s+/g, ' ').slice(0, 60) + (metaStr.length > 60 ? '…' : '')
+      : '—';
+    const target = [item.target_type, item.target_id].filter(v => v != null).join(':') || '—';
+    return `<tr class="data-row" data-id="${item.id}" onclick="opsAuditToggleRow(${item.id})" title="${escHtml(item.created_at)}">
+      <td style="white-space:nowrap"><span title="${escHtml(item.created_at)}">${escHtml(item.created_at_relative)}</span></td>
+      <td style="font-size:12px">${escHtml(item.admin_email || '—')}</td>
+      <td><span class="ops-action-pill ${opsAuditActionColor(item.action_type)}">${escHtml(item.action_type)}</span></td>
+      <td style="font-size:12px;color:rgba(255,255,255,.6)">${escHtml(target)}</td>
+      <td style="font-size:11.5px;color:rgba(255,255,255,.42);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(metaExcerpt)}</td>
+    </tr>
+    <tr class="expand-row" data-parent="${item.id}">
+      <td colspan="5"><div class="ops-log-meta-wrap">
+        ${metaStr ? `<pre class="ops-log-meta-pre">${escHtml(metaStr)}</pre>` : '<span style="font-size:12px;color:rgba(255,255,255,.35)">No metadata</span>'}
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  tableWrap.innerHTML = `<table class="ops-log-table" id="ops-audit-table">
+    <thead><tr><th>Time</th><th>Admin</th><th>Action</th><th>Target</th><th>Metadata</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  const pagEl = document.getElementById('ops-audit-pagination');
+  if (pagEl) pagEl.innerHTML = logPagination(data, 'opsAuditGoPage');
+}
+
+function opsAuditPushUrl() {
+  const p = new URLSearchParams();
+  if (opsAuditFilters.page > 1)       p.set('page', opsAuditFilters.page);
+  if (opsAuditFilters.search)          p.set('q', opsAuditFilters.search);
+  if (opsAuditFilters.action_type)     p.set('action_type', opsAuditFilters.action_type);
+  if (opsAuditFilters.since !== '30d') p.set('since', opsAuditFilters.since);
+  const qs = p.toString();
+  history.pushState({section: 'ops-audit', params: null}, '', '/admin-dashboard/operations/audit/' + (qs ? '?' + qs : ''));
+}
+
+async function opsAuditLoadAndRender() {
+  opsAuditPushUrl();
+  const tableWrap = document.getElementById('ops-audit-table-wrap');
+  if (tableWrap) tableWrap.innerHTML = opsAuditSkeleton();
+  const pagEl = document.getElementById('ops-audit-pagination');
+  if (pagEl) pagEl.innerHTML = '';
+  const countEl = document.getElementById('ops-audit-count');
+  if (countEl) countEl.textContent = '';
+
+  const p = new URLSearchParams();
+  p.set('page', opsAuditFilters.page);
+  p.set('page_size', '50');
+  p.set('since', opsAuditFilters.since || '30d');
+  if (opsAuditFilters.search)      p.set('q', opsAuditFilters.search);
+  if (opsAuditFilters.action_type) p.set('action_type', opsAuditFilters.action_type);
+
+  try {
+    const r = await fetch('/api/admin/ops/audit?' + p.toString(), {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    opsAuditRender(await r.json());
+  } catch(e) {
+    if (tableWrap) tableWrap.innerHTML = `<div class="ops-log-empty">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p>Failed to load audit log. Check your connection or try again.</p>
+      <button class="users-empty-clear-btn" onclick="opsAuditLoadAndRender()">Retry</button>
+    </div>`;
+  }
+}
+
+function opsAuditFilter() {
+  const actionEl = document.getElementById('ops-audit-action-type');
+  const sinceEl  = document.getElementById('ops-audit-since');
+  if (actionEl) opsAuditFilters.action_type = actionEl.value;
+  if (sinceEl)  opsAuditFilters.since = sinceEl.value;
+  opsAuditFilters.page = 1;
+  opsAuditLoadAndRender();
+}
+
+function opsAuditGoPage(page) {
+  opsAuditFilters.page = page;
+  opsAuditLoadAndRender();
+}
+
+function opsAuditClearFilters() {
+  opsAuditFilters = {page: 1, search: '', action_type: '', since: '30d'};
+  const s = document.getElementById('ops-audit-search');      if (s) s.value = '';
+  const a = document.getElementById('ops-audit-action-type'); if (a) a.value = '';
+  const t = document.getElementById('ops-audit-since');       if (t) t.value = '30d';
+  opsAuditLoadAndRender();
+}
+
+async function opsAuditMount() {
+  const sp = new URLSearchParams(window.location.search);
+  opsAuditFilters = {
+    page:        parseInt(sp.get('page') || '1', 10),
+    search:      sp.get('q') || '',
+    action_type: sp.get('action_type') || '',
+    since:       sp.get('since') || '30d',
+  };
+
+  const content = document.getElementById('ops-audit-content');
+  if (!content) return;
+  content.innerHTML = `
+    <div class="ops-log-topbar">
+      <div class="ops-log-search-wrap">
+        <i class="fa-solid fa-magnifying-glass ops-log-search-icon"></i>
+        <input type="text" id="ops-audit-search" class="ops-log-search"
+               placeholder="Search action or target…"
+               value="${escHtml(opsAuditFilters.search)}" autocomplete="off">
+      </div>
+      <select id="ops-audit-action-type" class="ops-log-select" onchange="opsAuditFilter()">
+        <option value="">All action types</option>
+        <option value="user.create">user.create</option>
+        <option value="user.suspend">user.suspend</option>
+        <option value="user.unsuspend">user.unsuspend</option>
+        <option value="user.impersonate">user.impersonate</option>
+        <option value="user.stop_impersonation">user.stop_impersonation</option>
+        <option value="user.impersonation_auto_expired">user.impersonation_auto_expired</option>
+        <option value="user.export">user.export</option>
+        <option value="user.edit_profile">user.edit_profile</option>
+        <option value="agent.create">agent.create</option>
+        <option value="agent.update">agent.update</option>
+        <option value="agent.delete">agent.delete</option>
+        <option value="agent.generate">agent.generate</option>
+      </select>
+      <select id="ops-audit-since" class="ops-log-select" onchange="opsAuditFilter()">
+        <option value="24h">Last 24h</option>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+        <option value="365d">All year</option>
+      </select>
+      <span class="ops-log-count" id="ops-audit-count"></span>
+    </div>
+    <div id="ops-audit-table-wrap" class="ops-log-table-wrap"></div>
+    <div class="ops-log-pagination" id="ops-audit-pagination"></div>`;
+
+  const actionEl = document.getElementById('ops-audit-action-type');
+  if (actionEl) actionEl.value = opsAuditFilters.action_type;
+  const sinceEl = document.getElementById('ops-audit-since');
+  if (sinceEl) sinceEl.value = opsAuditFilters.since;
+
+  const searchEl = document.getElementById('ops-audit-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', () => {
+      clearTimeout(opsAuditDebounceTimer);
+      opsAuditDebounceTimer = setTimeout(() => {
+        opsAuditFilters.search = searchEl.value;
+        opsAuditFilters.page = 1;
+        opsAuditLoadAndRender();
+      }, 300);
+    });
+  }
+
+  opsAuditLoadAndRender();
+}
+
+// ── OPERATIONS ERROR LOG ───────────────────────────────────────────────────
+
+function opsErrorsTypeColor(type) {
+  if (!type) return 'opa-slate';
+  if (type.startsWith('openai_')) return 'opa-rose';
+  if (type.startsWith('profile_')) return 'opa-amber';
+  return 'opa-slate';
+}
+
+function opsErrorsSkeleton() {
+  const r = () => `<tr class="data-row">
+    <td><div class="ops-log-skel" style="width:55px"></div></td>
+    <td><div class="ops-log-skel" style="width:130px;border-radius:20px"></div></td>
+    <td><div class="ops-log-skel" style="width:220px"></div></td>
+    <td><div class="ops-log-skel" style="width:130px"></div></td>
+  </tr>`;
+  return `<table class="ops-log-table"><thead><tr>
+    <th>Time</th><th>Error Type</th><th>Message</th><th>User</th>
+  </tr></thead><tbody>${Array(8).fill(0).map(r).join('')}</tbody></table>`;
+}
+
+function opsErrorsToggleRow(id) {
+  const wasOpen = opsErrorsExpandedId === id;
+  if (opsErrorsExpandedId !== null) {
+    const prev = document.querySelector(`#ops-errors-table .data-row[data-id="${opsErrorsExpandedId}"]`);
+    const prevExp = document.querySelector(`#ops-errors-table .expand-row[data-parent="${opsErrorsExpandedId}"]`);
+    if (prev) prev.classList.remove('expanded');
+    if (prevExp) prevExp.classList.remove('visible');
+    opsErrorsExpandedId = null;
+  }
+  if (!wasOpen) {
+    const row = document.querySelector(`#ops-errors-table .data-row[data-id="${id}"]`);
+    const expRow = document.querySelector(`#ops-errors-table .expand-row[data-parent="${id}"]`);
+    if (row) row.classList.add('expanded');
+    if (expRow) expRow.classList.add('visible');
+    opsErrorsExpandedId = id;
+  }
+}
+
+function opsErrorsRender(data) {
+  opsErrorsExpandedId = null;
+  const countEl = document.getElementById('ops-errors-count');
+  if (countEl) countEl.textContent = `${data.total.toLocaleString()} error${data.total !== 1 ? 's' : ''}`;
+  const tableWrap = document.getElementById('ops-errors-table-wrap');
+  if (!tableWrap) return;
+
+  if (!data.items.length) {
+    const hasFilters = opsErrorsFilters.search || opsErrorsFilters.error_type;
+    tableWrap.innerHTML = `<div class="ops-log-empty">
+      <i class="fa-solid fa-circle-check" style="color:rgba(16,185,129,.4)"></i>
+      <p>No errors logged${hasFilters ? ' matching these filters' : ' in this period'}.</p>
+      ${hasFilters ? '<button class="users-empty-clear-btn" onclick="opsErrorsClearFilters()">Clear filters</button>' : ''}
+    </div>`;
+    document.getElementById('ops-errors-pagination').innerHTML = '';
+    return;
+  }
+
+  const rows = data.items.map(item => {
+    const metaStr = item.metadata ? JSON.stringify(item.metadata, null, 2) : null;
+    const msgExcerpt = (item.message || '').slice(0, 80) + ((item.message || '').length > 80 ? '…' : '');
+    return `<tr class="data-row" data-id="${item.id}" onclick="opsErrorsToggleRow(${item.id})" title="${escHtml(item.created_at)}">
+      <td style="white-space:nowrap"><span title="${escHtml(item.created_at)}">${escHtml(item.created_at_relative)}</span></td>
+      <td><span class="ops-action-pill ${opsErrorsTypeColor(item.error_type)}">${escHtml(item.error_type)}</span></td>
+      <td style="font-size:12px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(msgExcerpt)}</td>
+      <td style="font-size:12px;color:rgba(255,255,255,.58)">${escHtml(item.user_email || '—')}</td>
+    </tr>
+    <tr class="expand-row" data-parent="${item.id}">
+      <td colspan="4"><div class="ops-log-meta-wrap">
+        <div style="font-size:12.5px;color:rgba(255,255,255,.78);margin-bottom:${metaStr ? '10px' : '0'};line-height:1.6;word-break:break-word">${escHtml(item.message || '')}</div>
+        ${metaStr ? `<pre class="ops-log-meta-pre">${escHtml(metaStr)}</pre>` : ''}
+      </div></td>
+    </tr>`;
+  }).join('');
+
+  tableWrap.innerHTML = `<table class="ops-log-table" id="ops-errors-table">
+    <thead><tr><th>Time</th><th>Error Type</th><th>Message</th><th>User</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+
+  const pagEl = document.getElementById('ops-errors-pagination');
+  if (pagEl) pagEl.innerHTML = logPagination(data, 'opsErrorsGoPage');
+}
+
+function opsErrorsPushUrl() {
+  const p = new URLSearchParams();
+  if (opsErrorsFilters.page > 1)       p.set('page', opsErrorsFilters.page);
+  if (opsErrorsFilters.search)          p.set('q', opsErrorsFilters.search);
+  if (opsErrorsFilters.error_type)      p.set('error_type', opsErrorsFilters.error_type);
+  if (opsErrorsFilters.since !== '7d')  p.set('since', opsErrorsFilters.since);
+  const qs = p.toString();
+  history.pushState({section: 'ops-errors', params: null}, '', '/admin-dashboard/operations/errors/' + (qs ? '?' + qs : ''));
+}
+
+async function opsErrorsLoadAndRender() {
+  opsErrorsPushUrl();
+  const tableWrap = document.getElementById('ops-errors-table-wrap');
+  if (tableWrap) tableWrap.innerHTML = opsErrorsSkeleton();
+  const pagEl = document.getElementById('ops-errors-pagination');
+  if (pagEl) pagEl.innerHTML = '';
+  const countEl = document.getElementById('ops-errors-count');
+  if (countEl) countEl.textContent = '';
+
+  const p = new URLSearchParams();
+  p.set('page', opsErrorsFilters.page);
+  p.set('page_size', '50');
+  p.set('since', opsErrorsFilters.since || '7d');
+  if (opsErrorsFilters.search)     p.set('q', opsErrorsFilters.search);
+  if (opsErrorsFilters.error_type) p.set('error_type', opsErrorsFilters.error_type);
+
+  try {
+    const r = await fetch('/api/admin/ops/errors?' + p.toString(), {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    opsErrorsRender(await r.json());
+  } catch(e) {
+    if (tableWrap) tableWrap.innerHTML = `<div class="ops-log-empty">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <p>Failed to load error log. Check your connection or try again.</p>
+      <button class="users-empty-clear-btn" onclick="opsErrorsLoadAndRender()">Retry</button>
+    </div>`;
+  }
+}
+
+function opsErrorsFilter() {
+  const typeEl  = document.getElementById('ops-errors-error-type');
+  const sinceEl = document.getElementById('ops-errors-since');
+  if (typeEl)  opsErrorsFilters.error_type = typeEl.value;
+  if (sinceEl) opsErrorsFilters.since = sinceEl.value;
+  opsErrorsFilters.page = 1;
+  opsErrorsLoadAndRender();
+}
+
+function opsErrorsGoPage(page) {
+  opsErrorsFilters.page = page;
+  opsErrorsLoadAndRender();
+}
+
+function opsErrorsClearFilters() {
+  opsErrorsFilters = {page: 1, search: '', error_type: '', since: '7d'};
+  const s = document.getElementById('ops-errors-search');     if (s) s.value = '';
+  const t = document.getElementById('ops-errors-error-type'); if (t) t.value = '';
+  const n = document.getElementById('ops-errors-since');      if (n) n.value = '7d';
+  opsErrorsLoadAndRender();
+}
+
+async function opsErrorsMount() {
+  const sp = new URLSearchParams(window.location.search);
+  opsErrorsFilters = {
+    page:       parseInt(sp.get('page') || '1', 10),
+    search:     sp.get('q') || '',
+    error_type: sp.get('error_type') || '',
+    since:      sp.get('since') || '7d',
+  };
+
+  const content = document.getElementById('ops-errors-content');
+  if (!content) return;
+  content.innerHTML = `
+    <div class="ops-log-topbar">
+      <div class="ops-log-search-wrap">
+        <i class="fa-solid fa-magnifying-glass ops-log-search-icon"></i>
+        <input type="text" id="ops-errors-search" class="ops-log-search"
+               placeholder="Search error type or message…"
+               value="${escHtml(opsErrorsFilters.search)}" autocomplete="off">
+      </div>
+      <select id="ops-errors-error-type" class="ops-log-select" onchange="opsErrorsFilter()">
+        <option value="">All error types</option>
+        <option value="openai_chat_send">openai_chat_send</option>
+        <option value="openai_agent_generate">openai_agent_generate</option>
+        <option value="profile_save">profile_save</option>
+      </select>
+      <select id="ops-errors-since" class="ops-log-select" onchange="opsErrorsFilter()">
+        <option value="24h">Last 24h</option>
+        <option value="7d">Last 7 days</option>
+        <option value="30d">Last 30 days</option>
+        <option value="90d">Last 90 days</option>
+        <option value="365d">All year</option>
+      </select>
+      <span class="ops-log-count" id="ops-errors-count"></span>
+    </div>
+    <div id="ops-errors-table-wrap" class="ops-log-table-wrap"></div>
+    <div class="ops-log-pagination" id="ops-errors-pagination"></div>`;
+
+  const typeEl = document.getElementById('ops-errors-error-type');
+  if (typeEl) typeEl.value = opsErrorsFilters.error_type;
+  const sinceEl = document.getElementById('ops-errors-since');
+  if (sinceEl) sinceEl.value = opsErrorsFilters.since;
+
+  const searchEl = document.getElementById('ops-errors-search');
+  if (searchEl) {
+    searchEl.addEventListener('input', () => {
+      clearTimeout(opsErrorsDebounceTimer);
+      opsErrorsDebounceTimer = setTimeout(() => {
+        opsErrorsFilters.search = searchEl.value;
+        opsErrorsFilters.page = 1;
+        opsErrorsLoadAndRender();
+      }, 300);
+    });
+  }
+
+  opsErrorsLoadAndRender();
 }
 // ── END OPERATIONS ──────────────────────────────────────────────────────────
 
