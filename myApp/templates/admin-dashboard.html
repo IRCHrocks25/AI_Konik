@@ -458,6 +458,75 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
 .icon-picker-cell.selected{border-color:rgba(139,92,246,.7);background:rgba(139,92,246,.2);color:#c4b5fd}
 .icon-picker-empty{text-align:center;padding:32px 20px;color:rgba(255,255,255,.35);font-size:13px}
 .icon-picker-ft{padding:10px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:flex-end;flex-shrink:0}
+
+/* ── OPERATIONS sub-tabs ── */
+.ops-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:24px}
+.ops-tab{
+  display:flex;align-items:center;gap:7px;
+  padding:10px 18px;font-size:13px;font-weight:500;
+  color:rgba(255,255,255,.5);border:none;background:none;cursor:pointer;
+  border-bottom:3px solid transparent;margin-bottom:-1px;
+  transition:color .15s,background .15s,border-color .15s;
+}
+.ops-tab:hover{color:rgba(255,255,255,.85);background:rgba(255,255,255,.05)}
+.ops-tab.active{color:#fff;border-bottom-color:#8b5cf6}
+.ops-subpanel.hidden{display:none}
+
+/* ── OPERATIONS summary ── */
+.ops-summary-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.ops-refresh-indicator{display:flex;align-items:center;gap:10px}
+.ops-updated{font-size:12px;color:rgba(255,255,255,.45)}
+.ops-refresh-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border:1px solid rgba(255,255,255,.2);border-radius:8px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s}
+.ops-refresh-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.35)}
+.ops-refresh-btn.spinning i{animation:spin .7s linear infinite}
+.ops-health-card{background:linear-gradient(150deg,rgba(255,255,255,.12),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:20px 24px;margin-bottom:20px}
+.ops-health-head{display:flex;align-items:center;gap:10px;font-size:15px;font-weight:600;color:#fff;margin-bottom:14px}
+.ops-health-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ops-health-dot.ok{background:#34d399}
+.ops-health-dot.warning{background:#fbbf24}
+.ops-health-dot.error{background:#fb7185}
+.ops-health-row{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px}
+.ops-health-row:last-child{border-bottom:none}
+.ops-health-name{flex:1;color:rgba(255,255,255,.82)}
+.ops-health-detail{font-size:12px;color:rgba(255,255,255,.48)}
+.ops-health-pill{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.ops-health-pill.ok{background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.ops-health-pill.warning{background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.ops-health-pill.error{background:rgba(244,63,94,.2);color:#fb7185;border:1px solid rgba(244,63,94,.3)}
+.ops-section-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:12px}
+.ops-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+@media(max-width:900px){.ops-stats-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.ops-stats-grid{grid-template-columns:1fr}}
+.ops-stat-tile{background:linear-gradient(150deg,rgba(255,255,255,.11),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:18px 20px;transition:transform .18s,box-shadow .18s,border-color .18s}
+.ops-stat-tile.clickable{cursor:pointer}
+.ops-stat-tile.clickable:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(0,0,0,.22);border-color:rgba(255,255,255,.28)}
+.ops-stat-tile .ost-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.ops-stat-tile .ost-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.ops-stat-tile .ost-label{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:rgba(255,255,255,.48);text-align:right}
+.ops-stat-tile .ost-value{font-family:'DM Serif Display',serif;font-size:32px;line-height:1;color:#fff;margin-bottom:4px}
+.ops-stat-tile .ost-sub{font-size:11.5px;color:rgba(255,255,255,.48)}
+.ops-stats-grid.muted .ops-stat-tile{background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border-color:rgba(255,255,255,.1)}
+.ops-stats-grid.muted .ops-stat-tile .ost-value{font-size:26px;color:rgba(255,255,255,.82)}
+
+/* ── OPERATIONS token usage ── */
+.ops-tokens-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px}
+.ops-tokens-title{font-size:16px;font-weight:600;color:#fff;flex:1;min-width:0}
+.ops-tokens-range{display:flex;gap:0;background:rgba(255,255,255,.06);border-radius:8px;border:1px solid rgba(255,255,255,.12);overflow:hidden}
+.ops-tokens-range-btn{padding:6px 14px;font-size:12.5px;font-weight:500;cursor:pointer;border:none;background:none;color:rgba(255,255,255,.6);font-family:inherit;transition:background .13s,color .13s}
+.ops-tokens-range-btn:hover{background:rgba(255,255,255,.09);color:rgba(255,255,255,.9)}
+.ops-tokens-range-btn.active{background:rgba(139,92,246,.35);color:#fff}
+.ops-tokens-total{font-size:13px;color:rgba(255,255,255,.55);white-space:nowrap}
+.ops-tokens-chart-wrap{background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:18px 20px;margin-bottom:18px;position:relative;height:320px;display:flex;align-items:stretch}
+.ops-tokens-chart-wrap canvas{width:100%!important}
+.ops-tokens-chart-empty{display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.35);width:100%}
+.ops-tokens-table-wrap{background:linear-gradient(150deg,rgba(255,255,255,.07),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.12);border-radius:16px;overflow:hidden}
+.ops-tokens-table{width:100%;border-collapse:collapse;font-size:13px}
+.ops-tokens-table th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.ops-tokens-table td{padding:10px 14px;color:rgba(255,255,255,.82);border-bottom:1px solid rgba(255,255,255,.07)}
+.ops-tokens-table tr:last-child td{border-bottom:none}
+.ops-tokens-table tbody tr:nth-child(even){background:rgba(255,255,255,.03)}
+.ops-tokens-table tfoot tr{background:rgba(139,92,246,.08)}
+.ops-tokens-table tfoot td{color:#fff;font-weight:600;border-top:1px solid rgba(139,92,246,.22);border-bottom:none}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -524,11 +593,14 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
       <button class="admin-sidebar-link" data-section="operations" data-path="/admin-dashboard/operations/">
         <span class="si"><i class="fa-solid fa-shield-halved"></i></span> Overview
       </button>
-      <button class="admin-sidebar-link sub" data-section="errors" data-path="/admin-dashboard/operations/errors/">
-        <span class="si"><i class="fa-solid fa-triangle-exclamation"></i></span> Error Log
+      <button class="admin-sidebar-link sub" data-section="ops-tokens" data-path="/admin-dashboard/operations/tokens/">
+        <span class="si"><i class="fa-solid fa-coins"></i></span> Token Usage
       </button>
-      <button class="admin-sidebar-link sub" data-section="audit" data-path="/admin-dashboard/operations/audit/">
+      <button class="admin-sidebar-link sub" data-section="ops-audit" data-path="/admin-dashboard/operations/audit/">
         <span class="si"><i class="fa-solid fa-scroll"></i></span> Audit Log
+      </button>
+      <button class="admin-sidebar-link sub" data-section="ops-errors" data-path="/admin-dashboard/operations/errors/">
+        <span class="si"><i class="fa-solid fa-triangle-exclamation"></i></span> Error Log
       </button>
     </div>
   </aside>
@@ -709,39 +781,41 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
     <div id="panel-operations" class="admin-panel">
       <div class="admin-panel-header">
         <h1>Operations</h1>
-        <p>System health overview, error trends, and admin audit trail.</p>
+        <p>System health overview, token usage trends, and admin audit trail.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-shield-halved"></i></div>
-        <h3>Operations Dashboard</h3>
-        <p>Chart.js error trend charts, health check endpoint status, and a filterable audit log viewer — coming in Phase 11.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 11</span>
+      <div class="ops-tabs">
+        <button class="ops-tab" data-subpanel="ops-summary" data-path="/admin-dashboard/operations/">
+          <i class="fa-solid fa-gauge-high"></i> Summary
+        </button>
+        <button class="ops-tab" data-subpanel="ops-tokens" data-path="/admin-dashboard/operations/tokens/">
+          <i class="fa-solid fa-coins"></i> Token Usage
+        </button>
+        <button class="ops-tab" data-subpanel="ops-audit" data-path="/admin-dashboard/operations/audit/">
+          <i class="fa-solid fa-scroll"></i> Audit Log
+        </button>
+        <button class="ops-tab" data-subpanel="ops-errors" data-path="/admin-dashboard/operations/errors/">
+          <i class="fa-solid fa-triangle-exclamation"></i> Error Log
+        </button>
       </div>
-    </div>
-
-    <div id="panel-errors" class="admin-panel">
-      <div class="admin-panel-header">
-        <h1>Error Log</h1>
-        <p>Recent error events with type filters and user context.</p>
+      <div id="ops-summary" class="ops-subpanel">
+        <div id="ops-summary-content"></div>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <h3>Error Log Viewer</h3>
-        <p>Filterable, paginated view of ErrorLog records — coming in Phase 11.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 11</span>
+      <div id="ops-tokens" class="ops-subpanel hidden">
+        <div id="ops-tokens-content"></div>
       </div>
-    </div>
-
-    <div id="panel-audit" class="admin-panel">
-      <div class="admin-panel-header">
-        <h1>Audit Log</h1>
-        <p>Every admin action, who did it, and when.</p>
+      <div id="ops-audit" class="ops-subpanel hidden">
+        <div class="placeholder-card">
+          <div class="ph-icon"><i class="fa-solid fa-scroll"></i></div>
+          <h3>Audit Log Viewer</h3>
+          <p>Filterable, paginated admin action log — coming in Chunk 11.4</p>
+        </div>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-scroll"></i></div>
-        <h3>Audit Log Viewer</h3>
-        <p>Chronological admin action log with actor, target, and metadata — coming in Phase 11.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 11</span>
+      <div id="ops-errors" class="ops-subpanel hidden">
+        <div class="placeholder-card">
+          <div class="ph-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+          <h3>Error Log Viewer</h3>
+          <p>Filterable, paginated error event log — coming in Chunk 11.4</p>
+        </div>
       </div>
     </div>
 
@@ -756,6 +830,7 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 // ── PULSE ──────────────────────────────────────────────────────────────────
 let pulseInterval = null;
@@ -885,19 +960,20 @@ function stopPulseRefresh() {
 // ── END PULSE ───────────────────────────────────────────────────────────────
 
 const _STATIC_SECTIONS = {
-  '/admin-dashboard/':                    'pulse',
-  '/admin-dashboard/pulse/':              'pulse',
-  '/admin-dashboard/users/':              'users',
-  '/admin-dashboard/content/':            'agents',
-  '/admin-dashboard/content/agents/':     'agents',
-  '/admin-dashboard/content/prompts/':    'prompts',
-  '/admin-dashboard/content/industries/': 'industries',
-  '/admin-dashboard/content/events/':     'events',
-  '/admin-dashboard/content/tools/':      'tools',
-  '/admin-dashboard/content/banners/':    'banners',
-  '/admin-dashboard/operations/':         'operations',
-  '/admin-dashboard/operations/errors/':  'errors',
-  '/admin-dashboard/operations/audit/':   'audit',
+  '/admin-dashboard/':                        'pulse',
+  '/admin-dashboard/pulse/':                  'pulse',
+  '/admin-dashboard/users/':                  'users',
+  '/admin-dashboard/content/':                'agents',
+  '/admin-dashboard/content/agents/':         'agents',
+  '/admin-dashboard/content/prompts/':        'prompts',
+  '/admin-dashboard/content/industries/':     'industries',
+  '/admin-dashboard/content/events/':         'events',
+  '/admin-dashboard/content/tools/':          'tools',
+  '/admin-dashboard/content/banners/':        'banners',
+  '/admin-dashboard/operations/':             'operations',
+  '/admin-dashboard/operations/tokens/':      'ops-tokens',
+  '/admin-dashboard/operations/audit/':       'ops-audit',
+  '/admin-dashboard/operations/errors/':      'ops-errors',
 };
 
 function getInitSection(pathname) {
@@ -914,15 +990,67 @@ function getInitSection(pathname) {
   return _STATIC_SECTIONS[pathname] || 'pulse';
 }
 
+// Keys that all resolve to panel-operations — showSection activates the right sub-tab.
+const _OPS_KEYS = new Set(['operations', 'ops-summary', 'ops-tokens', 'ops-audit', 'ops-errors']);
+
+// Ops lifecycle state (declared here so showSection can reference them before ops functions load)
+let opsSummaryInterval = null;
+let opsSummaryTimestampInterval = null;
+let opsSummaryLoadedAt = null;
+let opsCurrentSubpanel = null;
+let opsTokensChart = null;
+let opsTokensDays = 30;
+
+function opsSubpanelTeardown(key) {
+  if (key === 'ops-summary') {
+    if (opsSummaryInterval) { clearInterval(opsSummaryInterval); opsSummaryInterval = null; }
+    if (opsSummaryTimestampInterval) { clearInterval(opsSummaryTimestampInterval); opsSummaryTimestampInterval = null; }
+  }
+  if (key === 'ops-tokens') {
+    if (opsTokensChart) { opsTokensChart.destroy(); opsTokensChart = null; }
+  }
+}
+
+function opsShowSubpanel(key) {
+  const subKey = (key === 'operations') ? 'ops-summary' : key;
+
+  // Teardown outgoing subpanel
+  if (opsCurrentSubpanel && opsCurrentSubpanel !== subKey) {
+    opsSubpanelTeardown(opsCurrentSubpanel);
+  }
+
+  document.querySelectorAll('.ops-tab').forEach(t => t.classList.toggle('active', t.dataset.subpanel === subKey));
+  document.querySelectorAll('.ops-subpanel').forEach(p => p.classList.toggle('hidden', p.id !== subKey));
+
+  opsCurrentSubpanel = subKey;
+
+  if (subKey === 'ops-summary') opsSummaryMount();
+  if (subKey === 'ops-tokens') opsTokensMount();
+}
+
 function showSection(key, params) {
   document.querySelectorAll('.admin-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.admin-sidebar-link').forEach(l => l.classList.remove('active'));
+  stopPulseRefresh();
+
+  // Clean up ops state when navigating away from operations section entirely
+  if (!_OPS_KEYS.has(key) && opsCurrentSubpanel) {
+    opsSubpanelTeardown(opsCurrentSubpanel);
+    opsCurrentSubpanel = null;
+  }
+
+  if (_OPS_KEYS.has(key)) {
+    document.getElementById('panel-operations').classList.add('active');
+    opsShowSubpanel(key);
+    document.querySelectorAll('.admin-sidebar-link[data-section="operations"]').forEach(l => l.classList.add('active'));
+    return;
+  }
+
   const panel = document.getElementById('panel-' + key);
   if (panel) panel.classList.add('active');
   // For nested routes, keep the parent sidebar link highlighted.
   const sidebarKey = (key === 'agent-edit') ? 'agents' : key;
   document.querySelectorAll('.admin-sidebar-link[data-section="' + sidebarKey + '"]').forEach(l => l.classList.add('active'));
-  stopPulseRefresh();
   if (key === 'pulse') startPulseRefresh();
   if (key === 'users') usersMount();
   if (key === 'user-detail' && params && params.userId) userDetailMount(params.userId);
@@ -959,6 +1087,302 @@ window.addEventListener('popstate', e => {
     else showSection(r);
   }
 });
+
+// Ops sub-tab click handlers — pushState so back/forward navigates between sub-tabs
+document.querySelectorAll('.ops-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const subKey = tab.dataset.subpanel;
+    history.pushState({section: subKey, params: null}, '', tab.dataset.path);
+    opsShowSubpanel(subKey);
+  });
+});
+
+// ── OPERATIONS SUMMARY ─────────────────────────────────────────────────────
+
+function fmtK(n) {
+  n = Number(n);
+  if (n >= 1e6) return (n / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
+
+function opsSummaryUpdateTimestamp() {
+  const el = document.getElementById('ops-summary-updated');
+  if (!el || !opsSummaryLoadedAt) return;
+  const secs = Math.round((Date.now() - opsSummaryLoadedAt) / 1000);
+  el.textContent = secs < 5 ? 'Updated just now' : `Updated ${secs}s ago`;
+}
+
+function opsSummaryRender(data) {
+  const h = data.health;
+  const t = data.today;
+  const w = data.week;
+
+  function pillHtml(status) {
+    const labels = {ok: 'OK', warning: 'WARNING', error: 'ERROR'};
+    return `<span class="ops-health-pill ${status}">${labels[status] || escHtml(status)}</span>`;
+  }
+
+  const healthRows = h.checks.map(c => `
+    <div class="ops-health-row">
+      <span class="ops-health-name">${escHtml(c.name)}</span>
+      ${pillHtml(c.status)}
+      <span class="ops-health-detail">${escHtml(c.detail)}</span>
+    </div>`).join('');
+
+  function tile(icon, colorCls, label, value, sub, clickCode) {
+    const cls = 'ops-stat-tile' + (clickCode ? ' clickable' : '');
+    const onclick = clickCode ? ` onclick="${clickCode}"` : '';
+    return `<div class="${cls}"${onclick}>
+      <div class="ost-top">
+        <div class="ost-icon ${colorCls}"><i class="fa-solid ${icon}"></i></div>
+        <span class="ost-label">${escHtml(label)}</span>
+      </div>
+      <div class="ost-value">${value}</div>
+      <div class="ost-sub">${sub}</div>
+    </div>`;
+  }
+
+  const toTokens = "opsShowSubpanel('ops-tokens');history.pushState({section:'ops-tokens',params:null},'','/admin-dashboard/operations/tokens/')";
+  const toErrors = "opsShowSubpanel('ops-errors');history.pushState({section:'ops-errors',params:null},'','/admin-dashboard/operations/errors/')";
+  const toAudit  = "opsShowSubpanel('ops-audit');history.pushState({section:'ops-audit',params:null},'','/admin-dashboard/operations/audit/')";
+
+  const todayGrid = `<div class="ops-stats-grid">
+    ${tile('fa-comments',          'pi-cyan',   'Messages sent',  fmtNum(t.messages_sent),  'Today',                  null)}
+    ${tile('fa-coins',             'pi-amber',  'Tokens used',    fmtK(t.tokens_used),       `$${Number(t.estimated_cost_usd).toFixed(4)} est. today`, toTokens)}
+    ${tile('fa-triangle-exclamation','pi-rose', 'Errors',         fmtNum(t.errors),           'Today',                  toErrors)}
+    ${tile('fa-shield-halved',     'pi-purple', 'Admin actions',  fmtNum(t.admin_actions),   'Today',                  toAudit)}
+  </div>`;
+
+  const weekGrid = `<div class="ops-stats-grid muted">
+    ${tile('fa-comments',          'pi-cyan',   'Messages sent',  fmtNum(w.messages_sent),  'Last 7 days', null)}
+    ${tile('fa-coins',             'pi-amber',  'Tokens used',    fmtK(w.tokens_used),       `$${Number(w.estimated_cost_usd).toFixed(4)} est. · last 7 days`, null)}
+    ${tile('fa-triangle-exclamation','pi-rose', 'Errors',         fmtNum(w.errors),           'Last 7 days', null)}
+    ${tile('fa-shield-halved',     'pi-purple', 'Admin actions',  fmtNum(w.admin_actions),   'Last 7 days', null)}
+  </div>`;
+
+  return `<div class="ops-summary-header">
+    <div></div>
+    <div class="ops-refresh-indicator">
+      <span class="ops-updated" id="ops-summary-updated"></span>
+      <button class="ops-refresh-btn" id="ops-summary-refresh-btn" onclick="opsSummaryRefresh()">
+        <i class="fa-solid fa-arrows-rotate"></i> Refresh
+      </button>
+    </div>
+  </div>
+  <div class="ops-health-card">
+    <div class="ops-health-head">
+      <div class="ops-health-dot ${escHtml(h.status)}"></div>
+      System Health
+    </div>
+    ${healthRows || '<div style="font-size:13px;color:rgba(255,255,255,.4)">Loading health checks…</div>'}
+  </div>
+  <div class="ops-section-label">Today</div>
+  ${todayGrid}
+  <div class="ops-section-label">This Week</div>
+  ${weekGrid}`;
+}
+
+async function opsSummaryRefresh() {
+  const btn = document.getElementById('ops-summary-refresh-btn');
+  if (btn) btn.classList.add('spinning');
+  try {
+    const r = await fetch('/api/admin/ops/summary', {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    const el = document.getElementById('ops-summary-content');
+    if (el) el.innerHTML = opsSummaryRender(data);
+    opsSummaryLoadedAt = Date.now();
+    opsSummaryUpdateTimestamp();
+  } catch(e) {
+    // fail silently on background refresh to avoid blanking a live panel
+  } finally {
+    const b = document.getElementById('ops-summary-refresh-btn');
+    if (b) b.classList.remove('spinning');
+  }
+}
+
+async function opsSummaryMount() {
+  const el = document.getElementById('ops-summary-content');
+  if (el) el.innerHTML = '<div style="padding:40px;text-align:center;color:rgba(255,255,255,.4)"><i class="fa-solid fa-circle-notch fa-spin"></i> Loading…</div>';
+  try {
+    const r = await fetch('/api/admin/ops/summary', {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    if (el) el.innerHTML = opsSummaryRender(data);
+    opsSummaryLoadedAt = Date.now();
+    opsSummaryUpdateTimestamp();
+  } catch(e) {
+    if (el) el.innerHTML = `<div class="pulse-error-state">
+      <p>Couldn't load operations summary. Check your connection or try again.</p>
+      <button class="pulse-retry-btn" onclick="opsSummaryMount()"><i class="fa-solid fa-rotate-right"></i> Retry</button>
+    </div>`;
+    return;
+  }
+  if (opsSummaryInterval) { clearInterval(opsSummaryInterval); opsSummaryInterval = null; }
+  opsSummaryInterval = setInterval(opsSummaryRefresh, 60000);
+  if (opsSummaryTimestampInterval) { clearInterval(opsSummaryTimestampInterval); opsSummaryTimestampInterval = null; }
+  opsSummaryTimestampInterval = setInterval(opsSummaryUpdateTimestamp, 5000);
+}
+
+// ── OPERATIONS TOKEN USAGE ─────────────────────────────────────────────────
+
+function opsTokensRangeChange(days) {
+  opsTokensDays = days;
+  document.querySelectorAll('.ops-tokens-range-btn').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.days) === days);
+  });
+  opsTokensLoadAndRender(days);
+}
+
+function opsTokensRender(data, days) {
+  const { days: rows, totals } = data;
+  const hasData = rows.some(r => r.tokens > 0);
+
+  const totalEl = document.getElementById('ops-tokens-total');
+  if (totalEl) {
+    totalEl.textContent = `Last ${days} days: ${fmtK(totals.tokens)} tokens · ${fmtNum(totals.messages)} messages · $${Number(totals.cost_usd).toFixed(4)}`;
+  }
+
+  const canvas   = document.getElementById('ops-tokens-canvas');
+  const emptyEl  = document.getElementById('ops-tokens-chart-empty');
+  const loadEl   = document.getElementById('ops-tokens-loading');
+  if (loadEl) loadEl.style.display = 'none';
+
+  if (opsTokensChart) { opsTokensChart.destroy(); opsTokensChart = null; }
+
+  if (!hasData) {
+    if (canvas)  canvas.style.display  = 'none';
+    if (emptyEl) { emptyEl.textContent = 'No token usage in this period'; emptyEl.style.display = 'flex'; }
+  } else {
+    if (emptyEl) emptyEl.style.display = 'none';
+    if (canvas)  canvas.style.display  = 'block';
+
+    const labels = rows.map(r => {
+      const d = new Date(r.date + 'T12:00:00Z');
+      return d.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+    });
+
+    opsTokensChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Tokens',
+          data: rows.map(r => r.tokens),
+          borderColor: '#8b5cf6',
+          backgroundColor: 'rgba(139,92,246,0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.4,
+          pointRadius: rows.length > 45 ? 0 : 3,
+          pointHoverRadius: 5,
+          pointBackgroundColor: '#8b5cf6',
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: (items) => rows[items[0].dataIndex].date,
+              label: (item) => {
+                const row = rows[item.dataIndex];
+                return [`Tokens: ${fmtNum(row.tokens)}`, `Messages: ${fmtNum(row.messages)}`, `Cost: $${Number(row.cost_usd).toFixed(6)}`];
+              },
+            },
+            backgroundColor: 'rgba(26,26,46,0.95)',
+            borderColor: 'rgba(139,92,246,0.4)',
+            borderWidth: 1,
+            titleColor: '#fff',
+            bodyColor: 'rgba(255,255,255,0.7)',
+            padding: 10,
+          },
+        },
+        scales: {
+          x: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 11 }, maxTicksLimit: 10 },
+          },
+          y: {
+            grid: { color: 'rgba(255,255,255,0.05)' },
+            ticks: { color: 'rgba(255,255,255,0.4)', font: { size: 11 }, callback: v => fmtK(v) },
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }
+
+  const tbody = document.getElementById('ops-tokens-tbody');
+  const tfoot = document.getElementById('ops-tokens-tfoot');
+  if (tbody) {
+    tbody.innerHTML = [...rows].reverse().map(r => `<tr>
+      <td>${escHtml(r.date)}</td>
+      <td>${fmtNum(r.tokens)}</td>
+      <td>${fmtNum(r.messages)}</td>
+      <td>$${Number(r.cost_usd).toFixed(6)}</td>
+    </tr>`).join('');
+  }
+  if (tfoot) {
+    tfoot.innerHTML = `<tr>
+      <td><strong>Total (${days} days)</strong></td>
+      <td>${fmtNum(totals.tokens)}</td>
+      <td>${fmtNum(totals.messages)}</td>
+      <td>$${Number(totals.cost_usd).toFixed(6)}</td>
+    </tr>`;
+  }
+}
+
+async function opsTokensLoadAndRender(days) {
+  if (opsTokensChart) { opsTokensChart.destroy(); opsTokensChart = null; }
+  const canvas  = document.getElementById('ops-tokens-canvas');
+  const emptyEl = document.getElementById('ops-tokens-chart-empty');
+  const loadEl  = document.getElementById('ops-tokens-loading');
+  if (canvas)  canvas.style.display  = 'none';
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (loadEl)  { loadEl.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>&nbsp;Loading chart data…'; loadEl.style.display = 'flex'; }
+  try {
+    const r = await fetch(`/api/admin/ops/token-usage?days=${days}`, {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    opsTokensRender(await r.json(), days);
+  } catch(e) {
+    if (loadEl) loadEl.style.display = 'none';
+    if (emptyEl) { emptyEl.textContent = 'Failed to load token data. Try again.'; emptyEl.style.display = 'flex'; }
+  }
+}
+
+function opsTokensMount() {
+  opsTokensDays = 30;
+  const el = document.getElementById('ops-tokens-content');
+  if (!el) return;
+  el.innerHTML = `
+    <div class="ops-tokens-controls">
+      <span class="ops-tokens-title">Token Usage</span>
+      <div class="ops-tokens-range">
+        <button class="ops-tokens-range-btn" data-days="7"  onclick="opsTokensRangeChange(7)">7 days</button>
+        <button class="ops-tokens-range-btn active" data-days="30" onclick="opsTokensRangeChange(30)">30 days</button>
+        <button class="ops-tokens-range-btn" data-days="90" onclick="opsTokensRangeChange(90)">90 days</button>
+      </div>
+      <span class="ops-tokens-total" id="ops-tokens-total">Loading…</span>
+    </div>
+    <div class="ops-tokens-chart-wrap">
+      <canvas id="ops-tokens-canvas" style="display:none"></canvas>
+      <div class="ops-tokens-chart-empty" id="ops-tokens-chart-empty" style="display:none"></div>
+      <div class="ops-tokens-chart-empty" id="ops-tokens-loading" style="display:flex"><i class="fa-solid fa-circle-notch fa-spin"></i>&nbsp;Loading chart data…</div>
+    </div>
+    <div class="ops-tokens-table-wrap">
+      <table class="ops-tokens-table">
+        <thead><tr><th>Date</th><th>Tokens</th><th>Messages</th><th>Cost</th></tr></thead>
+        <tbody id="ops-tokens-tbody"></tbody>
+        <tfoot id="ops-tokens-tfoot"></tfoot>
+      </table>
+    </div>`;
+  opsTokensLoadAndRender(30);
+}
+// ── END OPERATIONS ──────────────────────────────────────────────────────────
 
 // ── USERS ──────────────────────────────────────────────────────────────────
 let usersDebounceTimer = null;
