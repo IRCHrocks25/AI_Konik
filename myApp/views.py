@@ -1,6 +1,7 @@
 import csv
 import importlib
 import io
+import json as _json
 import logging
 import os
 import re
@@ -10,6 +11,7 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
+from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
@@ -510,6 +512,19 @@ def api_profile(request):
     return JsonResponse({"success": True})
 
 
+_HEX_COLOR_RE = re.compile(r"^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$")
+
+
+def _is_valid_hex_color(value):
+    """True iff value is a hex color: #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.
+
+    Hex-only validation defends against stored XSS via the accent_bg field —
+    rejecting anything that could end up in a style attribute or CSS custom
+    property as raw user input.
+    """
+    return bool(_HEX_COLOR_RE.match(str(value or "").strip()))
+
+
 def _serialize_agent(agent, include_prompts=False):
     data = {
         "id": agent.id,
@@ -583,22 +598,74 @@ def api_admin_agents(request):
             return JsonResponse({"error": "Invalid name"}, status=400)
         if Agent.objects.filter(Q(name__iexact=name) | Q(slug=slug)).exists():
             return JsonResponse({"error": "Agent already exists"}, status=409)
-        agent = Agent.objects.create(
-            name=name,
-            slug=slug,
-            industry=industry,
-            description=description,
-            icon_class=str(payload.get("icon_class", "fa-robot")).strip() or "fa-robot",
-            accent_bg=str(payload.get("accent_bg", "#EEF2FF")).strip() or "#EEF2FF",
-            tag=str(payload.get("tag", "")).strip(),
-            usage_count=_to_non_negative_int(payload.get("usage_count", 0), default=0),
-            is_featured=bool(payload.get("is_featured", False)),
-            is_active=bool(payload.get("is_active", True)),
-            sort_order=_to_non_negative_int(payload.get("sort_order", 100), default=100),
+
+        accent_bg = str(payload.get("accent_bg", "#EEF2FF")).strip() or "#EEF2FF"
+        if not _is_valid_hex_color(accent_bg):
+            return JsonResponse({"error": "accent_bg must be a hex color like #RRGGBB"}, status=400)
+
+        # hints / use_cases are optional on POST. Old /agent-admin/ flow omits them
+        # and creates AgentPrompts via the separate /api/admin/agents/<id>/prompts
+        # endpoint instead — that path is preserved. New admin-dashboard flow
+        # supplies both arrays here so creation is one round-trip.
+        raw_hints = payload.get("hints") or []
+        raw_use_cases = payload.get("use_cases") or []
+        if not isinstance(raw_hints, list) or not isinstance(raw_use_cases, list):
+            return JsonResponse({"error": "hints and use_cases must be arrays"}, status=400)
+        hints = [str(h).strip() for h in raw_hints if str(h).strip()][:8]
+        use_cases = [str(u).strip() for u in raw_use_cases if str(u).strip()][:8]
+
+        with transaction.atomic():
+            agent = Agent.objects.create(
+                name=name,
+                slug=slug,
+                industry=industry,
+                description=description,
+                icon_class=str(payload.get("icon_class", "fa-robot")).strip() or "fa-robot",
+                accent_bg=accent_bg,
+                tag=str(payload.get("tag", "")).strip(),
+                usage_count=_to_non_negative_int(payload.get("usage_count", 0), default=0),
+                is_featured=bool(payload.get("is_featured", False)),
+                is_active=bool(payload.get("is_active", True)),
+                sort_order=_to_non_negative_int(payload.get("sort_order", 100), default=100),
+            )
+            AgentPrompt.objects.bulk_create(
+                [
+                    AgentPrompt(agent=agent, prompt_type="hint", content=h, sort_order=(i + 1) * 10)
+                    for i, h in enumerate(hints)
+                ]
+                + [
+                    AgentPrompt(agent=agent, prompt_type="use_case", content=u, sort_order=(i + 1) * 10)
+                    for i, u in enumerate(use_cases)
+                ]
+            )
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="agent.create",
+            target_type="agent",
+            target_id=agent.id,
+            metadata={
+                "name": agent.name,
+                "industry": agent.industry,
+                "hints_count": len(hints),
+                "use_cases_count": len(use_cases),
+            },
         )
         return JsonResponse(_serialize_agent(agent, include_prompts=True), status=201)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# Field → max-length cap for PATCH text updates. industry/description checked
+# at save time the same way as POST. Caps are generous; UI enforces tighter
+# practical limits.
+_AGENT_PATCH_TEXT_FIELDS = {
+    "name": 160,
+    "industry": 100,
+    "description": 4000,
+    "tag": 120,
+    "icon_class": 80,
+}
 
 
 @csrf_exempt
@@ -609,10 +676,272 @@ def api_admin_agent_detail(request, agent_id):
     agent = Agent.objects.filter(id=agent_id).first()
     if not agent:
         return JsonResponse({"error": "Agent not found"}, status=404)
+
     if request.method == "DELETE":
-        agent.delete()
+        agent_name = agent.name
+        prompts_count = agent.prompts.count()
+        agent.delete()  # FK CASCADE removes AgentPrompt rows
+        record_admin_action(
+            admin=request.current_user,
+            action_type="agent.delete",
+            target_type="agent",
+            target_id=agent_id,
+            metadata={"name": agent_name, "prompts_deleted": prompts_count},
+        )
         return JsonResponse({"deleted": True})
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        updates = {}
+
+        for field, limit in _AGENT_PATCH_TEXT_FIELDS.items():
+            if field not in payload:
+                continue
+            val = str(payload[field]).strip()
+            if field in ("name", "industry", "description") and not val:
+                errors[field] = "Cannot be empty."
+                continue
+            if len(val) > limit:
+                errors[field] = f"Too long (max {limit})."
+                continue
+            if field == "industry":
+                val = val.lower()
+            updates[field] = val
+
+        # Re-slug when name changes; reject collisions with other agents.
+        if "name" in updates and updates["name"] != agent.name:
+            new_slug = slugify(updates["name"])
+            if not new_slug:
+                errors["name"] = "Invalid name."
+            elif Agent.objects.filter(
+                Q(name__iexact=updates["name"]) | Q(slug=new_slug)
+            ).exclude(id=agent.id).exists():
+                errors["name"] = "Another agent with this name already exists."
+            else:
+                updates["slug"] = new_slug
+
+        if "accent_bg" in payload:
+            val = str(payload["accent_bg"]).strip()
+            if not _is_valid_hex_color(val):
+                errors["accent_bg"] = "Must be a hex color like #RRGGBB."
+            else:
+                updates["accent_bg"] = val
+
+        for bool_field in ("is_featured", "is_active"):
+            if bool_field in payload:
+                if not isinstance(payload[bool_field], bool):
+                    errors[bool_field] = "Must be a boolean."
+                else:
+                    updates[bool_field] = payload[bool_field]
+
+        for int_field in ("usage_count", "sort_order"):
+            if int_field in payload:
+                updates[int_field] = _to_non_negative_int(
+                    payload[int_field], default=getattr(agent, int_field)
+                )
+
+        replace_hints = "hints" in payload
+        replace_use_cases = "use_cases" in payload
+        new_hints = []
+        new_use_cases = []
+        if replace_hints:
+            if not isinstance(payload["hints"], list):
+                errors["hints"] = "Must be an array."
+            else:
+                new_hints = [str(h).strip() for h in payload["hints"] if str(h).strip()][:8]
+        if replace_use_cases:
+            if not isinstance(payload["use_cases"], list):
+                errors["use_cases"] = "Must be an array."
+            else:
+                new_use_cases = [str(u).strip() for u in payload["use_cases"] if str(u).strip()][:8]
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        changed_fields = list(updates.keys())
+        with transaction.atomic():
+            if updates:
+                for field, value in updates.items():
+                    setattr(agent, field, value)
+                agent.save(update_fields=changed_fields + ["updated_at"])
+            if replace_hints:
+                agent.prompts.filter(prompt_type="hint").delete()
+                AgentPrompt.objects.bulk_create([
+                    AgentPrompt(agent=agent, prompt_type="hint", content=h, sort_order=(i + 1) * 10)
+                    for i, h in enumerate(new_hints)
+                ])
+                changed_fields.append("hints")
+            if replace_use_cases:
+                agent.prompts.filter(prompt_type="use_case").delete()
+                AgentPrompt.objects.bulk_create([
+                    AgentPrompt(agent=agent, prompt_type="use_case", content=u, sort_order=(i + 1) * 10)
+                    for i, u in enumerate(new_use_cases)
+                ])
+                changed_fields.append("use_cases")
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="agent.update",
+            target_type="agent",
+            target_id=agent.id,
+            metadata={"changed_fields": changed_fields},
+        )
+        agent.refresh_from_db()
+        return JsonResponse(_serialize_agent(agent, include_prompts=True))
+
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# Fixed prompt template for agent AI generation. Single user message — no
+# system prompt — because this is one-shot structured generation, not a chat.
+# Curly braces around the JSON example are doubled so str.format leaves them
+# untouched. Token cost: ~250 prompt + ~400 response ≈ 650 per call.
+_AGENT_GENERATION_PROMPT_TEMPLATE = """You are configuring a new AI agent for AI KONIK, a business assistant platform.
+
+Agent details:
+- Name: {name}
+- Industry: {industry}
+- Description: {description}
+- Tag: {tag}
+
+Generate suggestions in valid JSON. Strict requirements:
+
+1. "hints" — array of EXACTLY 4 short example user queries (5-12 words each, imperative voice). These appear as quick-start buttons in the chat UI.
+
+2. "use_cases" — array of EXACTLY 4 longer example requests (15-30 words each, more detailed than hints). These appear as previewable examples.
+
+3. "accent_bg" — exactly one hex color in #RRGGBB format. Choose a soft pastel that fits the industry's emotional register:
+   - legal/finance → cool blues like #EEF2FF
+   - healthcare → gentle greens like #ECFDF5
+   - marketing/design → warm pinks like #FFF1F2
+   - technology → light blues like #F0F9FF
+   - real estate → light violets like #F5F3FF
+   - accounting → mint greens like #ECFDF5
+   - logistics/manufacturing → warm neutrals like #FFF7ED or #F8FAFC
+   - other → fall back to a neutral cool tone like #F1F5F9
+
+Return ONLY this JSON structure, with NO markdown fences and NO explanation:
+
+{{
+  "hints": ["...", "...", "...", "..."],
+  "use_cases": ["...", "...", "...", "..."],
+  "accent_bg": "#XXXXXX"
+}}"""
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_agent_generate(request):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    name = str(payload.get("name", "")).strip()
+    industry = str(payload.get("industry", "")).strip()
+    description = str(payload.get("description", "")).strip()
+    tag = str(payload.get("tag", "")).strip()
+
+    if not name or not industry or not description:
+        return JsonResponse(
+            {"error": "name, industry, and description are required"}, status=400
+        )
+    if len(name) > 200:
+        return JsonResponse({"error": "name must be ≤200 characters"}, status=400)
+    if len(description) > 1000:
+        return JsonResponse({"error": "description must be ≤1000 characters"}, status=400)
+
+    prompt_text = _AGENT_GENERATION_PROMPT_TEMPLATE.format(
+        name=name, industry=industry, description=description, tag=tag or "(none)",
+    )
+
+    # Audit the attempt before calling OpenAI so failures are still recorded.
+    record_admin_action(
+        admin=request.current_user,
+        action_type="agent.generate",
+        target_type="agent",
+        metadata={"name_input": name, "industry_input": industry},
+    )
+
+    try:
+        raw_text, _ = get_openai_reply([{"role": "user", "content": prompt_text}])
+    except Exception as exc:
+        logger.exception("Agent generate failed: %s", exc)
+        log_error(
+            error_type="openai_agent_generate",
+            message=str(exc),
+            user=request.current_user,
+            metadata={"name_input": name},
+        )
+        return JsonResponse({"error": "Generation failed. Please try again."}, status=502)
+
+    cleaned = (raw_text or "").strip()
+    # Defensive: strip ```json fences if model added them despite instructions.
+    if cleaned.startswith("```"):
+        cleaned = re.sub(r"^```(?:json)?\s*", "", cleaned)
+        cleaned = re.sub(r"\s*```$", "", cleaned)
+
+    try:
+        data = _json.loads(cleaned)
+    except (ValueError, TypeError):
+        return JsonResponse(
+            {"error": "Generation produced invalid output, please retry."},
+            status=502,
+        )
+
+    warnings = []
+    hints_out = []
+    use_cases_out = []
+    accent_out = ""
+
+    raw_hints = data.get("hints") if isinstance(data, dict) else None
+    if (
+        isinstance(raw_hints, list)
+        and len(raw_hints) == 4
+        and all(isinstance(h, str) and h.strip() for h in raw_hints)
+    ):
+        hints_out = [h.strip() for h in raw_hints]
+    else:
+        warnings.append("hints")
+
+    raw_use_cases = data.get("use_cases") if isinstance(data, dict) else None
+    if (
+        isinstance(raw_use_cases, list)
+        and len(raw_use_cases) == 4
+        and all(isinstance(u, str) and u.strip() for u in raw_use_cases)
+    ):
+        use_cases_out = [u.strip() for u in raw_use_cases]
+    else:
+        warnings.append("use_cases")
+
+    raw_accent = data.get("accent_bg", "") if isinstance(data, dict) else ""
+    if isinstance(raw_accent, str) and _is_valid_hex_color(raw_accent.strip()):
+        accent_out = raw_accent.strip()
+    else:
+        warnings.append("accent_bg")
+
+    # If every field failed validation the model output is fundamentally broken;
+    # return 502 so admin retries instead of starting from a blank slate.
+    if len(warnings) == 3:
+        return JsonResponse(
+            {"error": "Generation produced unusable output, please retry."},
+            status=502,
+        )
+
+    return JsonResponse({
+        "hints": hints_out,
+        "use_cases": use_cases_out,
+        "accent_bg": accent_out,
+        "warnings": warnings,
+    })
 
 
 @csrf_exempt

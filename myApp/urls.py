@@ -30,6 +30,8 @@ urlpatterns = [
     path("admin-dashboard/users/<int:user_id>/", views.admin_dashboard, name="admin_dashboard_user_detail"),
     path("admin-dashboard/content/", views.admin_dashboard, name="admin_dashboard_content"),
     path("admin-dashboard/content/agents/", views.admin_dashboard, name="admin_dashboard_agents"),
+    path("admin-dashboard/content/agents/new/", views.admin_dashboard, name="admin_dashboard_agent_new"),
+    path("admin-dashboard/content/agents/<int:agent_id>/", views.admin_dashboard, name="admin_dashboard_agent_edit"),
     path("admin-dashboard/content/prompts/", views.admin_dashboard, name="admin_dashboard_prompts"),
     path("admin-dashboard/content/industries/", views.admin_dashboard, name="admin_dashboard_industries"),
     path("admin-dashboard/content/events/", views.admin_dashboard, name="admin_dashboard_events"),
@@ -90,6 +92,7 @@ urlpatterns = [
     path("api/chat/messages/<int:message_id>/feedback", views.api_message_feedback, name="api_message_feedback"),
     path("api/admin/pulse", views.api_pulse, name="api_admin_pulse"),
     path("api/admin/agents", views.api_admin_agents, name="api_admin_agents"),
+    path("api/admin/agents/generate", views.api_admin_agent_generate, name="api_admin_agent_generate"),
     path("api/admin/agents/<int:agent_id>", views.api_admin_agent_detail, name="api_admin_agent_detail"),
     path(
         "api/admin/agents/<int:agent_id>/prompts",
