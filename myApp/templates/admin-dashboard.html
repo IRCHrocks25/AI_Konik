@@ -364,6 +364,77 @@ textarea.ud-inp{resize:vertical;min-height:70px;line-height:1.6}
 .agents-empty-state i{font-size:36px;color:rgba(255,255,255,.22);display:block;margin-bottom:14px}
 .agents-empty-state p{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:14px}
 .agents-count{font-size:12.5px;color:rgba(255,255,255,.45)}
+
+/* ── AGENT EDIT FORM ── */
+.ae-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+.ae-header-left{display:flex;flex-direction:column;gap:6px}
+.ae-title{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;margin:0}
+.ae-shell{display:grid;grid-template-columns:1fr 340px;gap:24px;align-items:start}
+@media(max-width:960px){.ae-shell{grid-template-columns:1fr}}
+.ae-form-col{display:flex;flex-direction:column;gap:16px}
+.ae-preview-col{position:sticky;top:96px}
+.ae-card{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:20px 22px}
+.ae-card-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);margin-bottom:16px}
+.ae-field{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.ae-field:last-child{margin-bottom:0}
+.ae-label{font-size:12.5px;font-weight:500;color:#cbd5e1}
+.ae-preview-wrap{background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:14px;margin-top:4px}
+.ae-inp{width:100%;padding:9px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;font-family:inherit;font-size:13px;box-sizing:border-box;transition:border-color .15s,background .15s}
+.ae-inp:focus{outline:none;border-color:rgba(168,85,247,.55);background:rgba(255,255,255,.11)}
+.ae-inp::placeholder{color:rgba(255,255,255,.3)}
+.ae-inp.error{border-color:rgba(244,63,94,.5)}
+select.ae-inp{appearance:none;-webkit-appearance:none;cursor:pointer;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='rgba(255,255,255,0.45)' d='M5 7L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+select.ae-inp option{background:#1e1b2e;color:#fff}
+textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
+.ae-field-err{font-size:11px;color:#f87171;min-height:15px;margin-top:2px}
+.ae-char-hint{font-size:11px;color:rgba(255,255,255,.35);margin-top:2px;text-align:right}
+.ae-gen-btn{width:100%;padding:12px 20px;border-radius:12px;border:none;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .15s,transform .12s}
+.ae-gen-btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+.ae-gen-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.ae-gen-sub{font-size:12px;color:rgba(255,255,255,.45);text-align:center;margin-top:8px}
+.ae-prompt-list{display:flex;flex-direction:column;gap:8px}
+.ae-prompt-row{display:flex;align-items:flex-start;gap:8px}
+.ae-prompt-row .ae-inp{flex:1}
+.ae-prompt-remove{flex-shrink:0;width:28px;height:28px;border-radius:6px;border:1px solid rgba(244,63,94,.3);background:rgba(244,63,94,.1);color:#fb7185;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;transition:background .15s;margin-top:1px;padding:0}
+.ae-prompt-remove:hover{background:rgba(244,63,94,.2)}
+.ae-add-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:1px solid rgba(139,92,246,.35);background:rgba(139,92,246,.1);color:#c4b5fd;font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;transition:background .15s;margin-top:6px}
+.ae-add-btn:hover:not(:disabled){background:rgba(139,92,246,.2)}
+.ae-add-btn:disabled{opacity:.4;cursor:not-allowed}
+.ae-prompt-helper{font-size:11px;color:rgba(255,255,255,.35);margin-top:6px}
+.ae-color-row{display:flex;align-items:center;gap:10px}
+.ae-color-swatch-wrap{position:relative;width:36px;height:36px;border-radius:8px;border:1px solid rgba(255,255,255,.2);overflow:hidden;flex-shrink:0;cursor:pointer}
+.ae-toggle-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.ae-toggle-lbl{display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(255,255,255,.78);cursor:pointer;user-select:none}
+.ae-toggle{width:34px;height:18px;border-radius:9px;appearance:none;-webkit-appearance:none;background:rgba(255,255,255,.2);cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.ae-toggle:checked{background:#8b5cf6}
+.ae-toggle::after{content:'';position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:transform .2s}
+.ae-toggle:checked::after{transform:translateX(16px)}
+.ae-icon-btn{display:flex;align-items:center;gap:10px;padding:9px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;font-size:13px;cursor:pointer;font-family:inherit;transition:border-color .15s,background .15s;width:100%;text-align:left}
+.ae-icon-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.35)}
+.ae-icon-preview{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.ae-stub-grid{display:none;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px;padding:10px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.ae-stub-icon{border-radius:8px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.06);color:rgba(255,255,255,.75);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s;padding:8px;width:100%}
+.ae-stub-icon:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3)}
+.ae-stub-icon.selected{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.25);color:#c4b5fd}
+.ae-actions-row{display:flex;align-items:center;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.ae-save-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 22px;border-radius:10px;border:none;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:#fff;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s,transform .12s}
+.ae-save-btn:hover:not(:disabled){opacity:.9;transform:translateY(-1px)}
+.ae-save-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.ae-cancel-btn{display:inline-flex;align-items:center;gap:7px;padding:10px 18px;border-radius:10px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);font-family:inherit;font-size:14px;font-weight:500;cursor:pointer;transition:background .15s,color .15s}
+.ae-cancel-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.ae-del-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px;border:1px solid rgba(244,63,94,.4);background:rgba(244,63,94,.12);color:#fb7185;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:background .15s}
+.ae-del-btn:hover{background:rgba(244,63,94,.22)}
+.ae-preview-label{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px}
+.ae-pcard{border-radius:20px;padding:22px 20px 18px;transition:background .3s;min-height:240px;border:1px solid rgba(255,255,255,.2)}
+.ae-pcard-icon-wrap{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;background:rgba(255,255,255,.25);color:rgba(0,0,0,.55);margin-bottom:14px}
+.ae-pcard-name{font-family:'DM Serif Display',serif;font-size:19px;color:#1a1a2e;line-height:1.2;margin-bottom:7px;word-break:break-word}
+.ae-pcard-pills{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.ae-pcard-pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid rgba(0,0,0,.15);background:rgba(255,255,255,.35);color:rgba(0,0,0,.65)}
+.ae-pcard-desc{font-size:12.5px;color:rgba(0,0,0,.65);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
+.ae-pcard-hints{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.ae-pcard-hint{font-size:11.5px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.3);color:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.5)}
+.ae-pcard-footer{font-size:11px;color:rgba(0,0,0,.45);border-top:1px solid rgba(0,0,0,.1);padding-top:10px;margin-top:2px}
+.ae-skel-line{background:rgba(255,255,255,.08);border-radius:6px;animation:shimmer 1.2s ease-in-out infinite alternate}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -1770,25 +1841,593 @@ async function agentsPerformDelete(id) {
   }
 }
 
-// ── AGENT EDIT (full form arrives in Chunk 6.4) ──────────────────────────────
-function agentEditMount(params) {
+// ── AGENT EDIT ────────────────────────────────────────────────────────────────
+let aeIsCreate = true;
+let aeAgentId = null;
+let aeHints = [];
+let aeUseCases = [];
+let aeIconClass = 'fa-robot';
+let aeAccentBg = '#EEF2FF';
+let aeIconPickerOpen = false;
+let aeSaving = false;
+let aeGenerating = false;
+
+const INDUSTRY_OPTIONS = [
+  // TODO Phase 8: Replace with fetch('/api/industries')
+  {value:'technology', label:'Technology'},
+  {value:'healthcare', label:'Healthcare'},
+  {value:'finance', label:'Finance'},
+  {value:'accounting', label:'Accounting'},
+  {value:'manufacturing', label:'Manufacturing'},
+  {value:'logistics', label:'Logistics'},
+  {value:'realestate', label:'Real Estate'},
+  {value:'legal', label:'Legal'},
+  {value:'marketing', label:'Marketing'},
+];
+
+const AE_STUB_ICONS = [
+  // TODO Chunk 6.5: Replace with full 88-icon FA modal picker
+  'fa-robot','fa-brain','fa-wand-magic-sparkles','fa-bolt','fa-star',
+  'fa-heart','fa-lightbulb','fa-rocket','fa-shield-halved','fa-chart-line',
+];
+
+async function agentEditMount(params) {
+  aeIsCreate = params.mode === 'create';
+  aeAgentId = aeIsCreate ? null : (params.agentId || null);
+  aeHints = [];
+  aeUseCases = [];
+  aeIconClass = 'fa-robot';
+  aeAccentBg = '#EEF2FF';
+  aeIconPickerOpen = false;
+  aeSaving = false;
+  aeGenerating = false;
+
   const el = document.getElementById('agent-edit-content');
   if (!el) return;
-  const isCreate = params.mode === 'create';
-  const idLabel = isCreate ? 'New agent' : ('Edit agent #' + escHtml(String(params.agentId || '')));
-  el.innerHTML = `
-    <button class="ud-back-link" onclick="navigateTo('/admin-dashboard/content/agents/','agents')">
-      <i class="fa-solid fa-arrow-left"></i> Back to agents
-    </button>
-    <div class="ud-breadcrumb">${idLabel}</div>
-    <div class="ud-loaded-at">${isCreate ? 'Create form' : 'Edit form'}</div>
-    <div class="placeholder-card">
-      <div class="ph-icon"><i class="fa-solid fa-pen-to-square"></i></div>
-      <h3>Form: Chunk 6.4 placeholder</h3>
-      <p>The full create/edit form with hints, use cases, color picker, OpenAI generate button, and FA icon picker arrives in Chunk 6.4.</p>
-      <span class="ph-badge"><i class="fa-solid fa-clock"></i> Chunk 6.4</span>
-    </div>
-  `;
+
+  if (aeIsCreate) {
+    aeRenderFull(null);
+    return;
+  }
+
+  // Show skeleton while loading
+  const skelBc = 'Edit agent #' + escHtml(String(aeAgentId));
+  el.innerHTML = (
+    '<button class="ud-back-link" id="ae-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to agents</button>' +
+    '<div class="ud-breadcrumb">' + skelBc + '</div>' +
+    '<div class="ae-header-row">' +
+      '<div class="ae-skel-line" style="width:180px;height:26px"></div>' +
+      '<div class="ae-skel-line" style="width:220px;height:36px"></div>' +
+    '</div>' +
+    '<div class="ae-shell">' +
+      '<div style="display:flex;flex-direction:column;gap:20px">' +
+        '<div class="ae-card"><div class="ae-skel-line" style="height:44px"></div></div>' +
+        '<div class="ae-card">' +
+          '<div class="ae-skel-line" style="width:60%;height:14px;margin-bottom:12px"></div>' +
+          '<div class="ae-skel-line" style="height:36px;margin-bottom:14px"></div>' +
+          '<div class="ae-skel-line" style="width:40%;height:14px;margin-bottom:12px"></div>' +
+          '<div class="ae-skel-line" style="height:36px;margin-bottom:14px"></div>' +
+          '<div class="ae-skel-line" style="width:50%;height:14px;margin-bottom:12px"></div>' +
+          '<div class="ae-skel-line" style="height:80px"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div><div class="ae-skel-line" style="height:240px;border-radius:20px"></div></div>' +
+    '</div>'
+  );
+
+  // Try cache first, then fetch
+  let agentData = agentsAllItems.length ? agentsAllItems.find(a => a.id === aeAgentId) : null;
+  if (!agentData) {
+    try {
+      const r = await fetch('/api/admin/agents', {credentials: 'same-origin'});
+      if (r.ok) {
+        const d = await r.json();
+        agentsAllItems = d.items || [];
+        agentData = agentsAllItems.find(a => a.id === aeAgentId) || null;
+      }
+    } catch(e) {}
+  }
+  if (!agentData) {
+    udToast('Agent not found.', 'error');
+    navigateTo('/admin-dashboard/content/agents/', 'agents');
+    return;
+  }
+
+  aeIconClass = agentData.icon_class || 'fa-robot';
+  aeAccentBg = agentData.accent_bg || '#EEF2FF';
+  aeHints = (agentData.hints || []).map(h => h.content || h);
+  aeUseCases = (agentData.use_cases || []).map(u => u.content || u);
+  aeRenderFull(agentData);
+}
+
+function aeRenderFull(agentData) {
+  const el = document.getElementById('agent-edit-content');
+  if (!el) return;
+
+  const breadcrumb = aeIsCreate ? 'New agent' : ('Edit agent #' + escHtml(String(aeAgentId)));
+  const nameVal = agentData ? escHtml(agentData.name || '') : '';
+  const industryVal = agentData ? (agentData.industry || '') : '';
+  const descVal = agentData ? escHtml(agentData.description || '') : '';
+  const tagVal = agentData ? escHtml(agentData.tag || '') : '';
+  const isActive = agentData ? agentData.is_active !== false : true;
+  const isFeatured = agentData ? !!agentData.is_featured : false;
+
+  let industryOpts = '<option value="">— Select industry —</option>';
+  for (let i = 0; i < INDUSTRY_OPTIONS.length; i++) {
+    const o = INDUSTRY_OPTIONS[i];
+    industryOpts += '<option value="' + escHtml(o.value) + '"' + (o.value === industryVal ? ' selected' : '') + '>' + escHtml(o.label) + '</option>';
+  }
+
+  let stubIconsHtml = '';
+  for (let i = 0; i < AE_STUB_ICONS.length; i++) {
+    const ic = AE_STUB_ICONS[i];
+    stubIconsHtml += '<button class="ae-stub-icon' + (ic === aeIconClass ? ' selected' : '') + '" data-icon="' + escHtml(ic) + '" type="button"><i class="fa-solid ' + escHtml(ic) + '"></i></button>';
+  }
+
+  const deleteBtn = aeIsCreate ? '' : (
+    '<button class="ae-del-btn" id="ae-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete</button>'
+  );
+
+  const html = (
+    '<button class="ud-back-link" id="ae-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to agents</button>' +
+    '<div class="ud-breadcrumb">' + breadcrumb + '</div>' +
+    '<div class="ae-header-row">' +
+      '<h2 style="margin:0;font-size:1.2rem;font-weight:700">' + (aeIsCreate ? 'New Agent' : 'Edit Agent') + '</h2>' +
+      '<div class="ae-actions-row">' +
+        deleteBtn +
+        '<button class="ae-cancel-btn" id="ae-cancel-btn" type="button"><i class="fa-solid fa-xmark"></i> Cancel</button>' +
+        '<button class="ae-save-btn" id="ae-save-btn" type="button"><i class="fa-solid fa-floppy-disk"></i> Save agent</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="ae-shell">' +
+
+      '<div class="ae-form-col">' +
+
+        '<div class="ae-card">' +
+          '<p style="margin:0 0 10px;font-size:.8rem;color:rgba(255,255,255,.55)">Enter a name and industry, then generate description, hints, and use cases with AI.</p>' +
+          '<button class="ae-gen-btn" id="ae-gen-btn" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI</button>' +
+        '</div>' +
+
+        '<div class="ae-card">' +
+          '<div class="ae-card-title">Core Fields</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ae-name">Name <span style="color:#f87171">*</span></label>' +
+            '<input class="ae-inp" id="ae-name" type="text" maxlength="160" placeholder="e.g. Sales Advisor" value="' + nameVal + '">' +
+            '<div class="ae-field-err" id="ae-err-name"></div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ae-industry">Industry <span style="color:#f87171">*</span></label>' +
+            '<select class="ae-inp" id="ae-industry">' + industryOpts + '</select>' +
+            '<div class="ae-field-err" id="ae-err-industry"></div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ae-tag">Tag / Badge</label>' +
+            '<input class="ae-inp" id="ae-tag" type="text" maxlength="120" placeholder="e.g. Popular" value="' + tagVal + '">' +
+            '<div class="ae-field-err" id="ae-err-tag"></div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ae-description">Description <span style="color:#f87171">*</span></label>' +
+            '<textarea class="ae-inp" id="ae-description" rows="4" maxlength="4000" placeholder="What does this agent do?">' + descVal + '</textarea>' +
+            '<div class="ae-field-err" id="ae-err-description"></div>' +
+          '</div>' +
+          '<div class="ae-toggle-row">' +
+            '<label class="ae-toggle-lbl"><input type="checkbox" class="ae-toggle" id="ae-is-active"' + (isActive ? ' checked' : '') + '> Active</label>' +
+            '<label class="ae-toggle-lbl"><input type="checkbox" class="ae-toggle" id="ae-is-featured"' + (isFeatured ? ' checked' : '') + '> Featured</label>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="ae-card">' +
+          '<div class="ae-card-title">Appearance</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label">Icon</label>' +
+            '<button class="ae-icon-btn" id="ae-icon-btn" type="button">' +
+              '<i class="fa-solid ' + escHtml(aeIconClass) + ' ae-icon-preview" id="ae-icon-preview-i" style="font-size:14px"></i>' +
+              '<span id="ae-icon-class-label">' + escHtml(aeIconClass) + '</span>' +
+              '<i class="fa-solid fa-chevron-down" style="margin-left:auto;opacity:.45;font-size:11px"></i>' +
+            '</button>' +
+            '<div class="ae-stub-grid" id="ae-stub-grid">' + stubIconsHtml + '</div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ae-hex-input">Accent Color</label>' +
+            '<div class="ae-color-row">' +
+              '<div class="ae-color-swatch-wrap" id="ae-color-swatch-wrap" style="background:' + escHtml(aeAccentBg) + '">' +
+                '<input type="color" id="ae-color-native" value="' + escHtml(aeAccentBg.slice(0,7)) + '" style="position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer;border:none;padding:0">' +
+              '</div>' +
+              '<input class="ae-inp" id="ae-hex-input" type="text" maxlength="9" placeholder="#EEF2FF" value="' + escHtml(aeAccentBg) + '" style="flex:1">' +
+            '</div>' +
+            '<div class="ae-field-err" id="ae-err-accent_bg"></div>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="ae-card">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+            '<div class="ae-card-title" style="margin-bottom:0">Hint Prompts</div>' +
+            '<button class="ae-add-btn" id="ae-add-hint-btn" type="button">+ Add</button>' +
+          '</div>' +
+          '<div class="ae-prompt-list" id="ae-hints-list"></div>' +
+          '<div class="ae-field-err" id="ae-err-hints"></div>' +
+        '</div>' +
+
+        '<div class="ae-card">' +
+          '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">' +
+            '<div class="ae-card-title" style="margin-bottom:0">Use Cases</div>' +
+            '<button class="ae-add-btn" id="ae-add-uc-btn" type="button">+ Add</button>' +
+          '</div>' +
+          '<div class="ae-prompt-list" id="ae-uc-list"></div>' +
+          '<div class="ae-field-err" id="ae-err-use_cases"></div>' +
+        '</div>' +
+
+      '</div>' +
+
+      '<div class="ae-preview-col">' +
+        '<div class="ae-preview-label">Live Preview</div>' +
+        '<div class="ae-preview-wrap"><div id="ae-preview-card" class="ae-pcard"></div></div>' +
+      '</div>' +
+
+    '</div>'
+  );
+
+  el.innerHTML = html;
+  aeRenderHintsList();
+  aeRenderUseCasesList();
+  aeUpdatePreview();
+  aeBindAll();
+}
+
+function aeRenderHintsList() {
+  const el = document.getElementById('ae-hints-list');
+  if (!el) return;
+  if (!aeHints.length) {
+    el.innerHTML = '<div style="font-size:.8rem;color:rgba(255,255,255,.3);padding:4px 0">No hint prompts yet.</div>';
+    aeUpdateAddHintBtnState();
+    return;
+  }
+  let html = '';
+  for (let i = 0; i < aeHints.length; i++) {
+    html += (
+      '<div class="ae-prompt-row" data-idx="' + i + '">' +
+        '<input class="ae-inp ae-hint-inp" type="text" maxlength="500" placeholder="Short hint prompt…" value="' + escHtml(aeHints[i]) + '">' +
+        '<button class="ae-prompt-remove" data-idx="' + i + '" type="button" title="Remove"><i class="fa-solid fa-xmark"></i></button>' +
+      '</div>'
+    );
+  }
+  el.innerHTML = html;
+  aeBindHintsList();
+  aeUpdateAddHintBtnState();
+}
+
+function aeRenderUseCasesList() {
+  const el = document.getElementById('ae-uc-list');
+  if (!el) return;
+  if (!aeUseCases.length) {
+    el.innerHTML = '<div style="font-size:.8rem;color:rgba(255,255,255,.3);padding:4px 0">No use cases yet.</div>';
+    aeUpdateAddUcBtnState();
+    return;
+  }
+  let html = '';
+  for (let i = 0; i < aeUseCases.length; i++) {
+    html += (
+      '<div class="ae-prompt-row" data-idx="' + i + '">' +
+        '<textarea class="ae-inp ae-uc-inp" rows="2" maxlength="1000" placeholder="Detailed use case…">' + escHtml(aeUseCases[i]) + '</textarea>' +
+        '<button class="ae-prompt-remove" data-idx="' + i + '" type="button" title="Remove"><i class="fa-solid fa-xmark"></i></button>' +
+      '</div>'
+    );
+  }
+  el.innerHTML = html;
+  aeBindUseCasesList();
+  aeUpdateAddUcBtnState();
+}
+
+function aeBindHintsList() {
+  const list = document.getElementById('ae-hints-list');
+  if (!list) return;
+  list.querySelectorAll('.ae-hint-inp').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const idx = parseInt(inp.closest('.ae-prompt-row').dataset.idx, 10);
+      aeHints[idx] = inp.value;
+    });
+  });
+  list.querySelectorAll('.ae-prompt-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx, 10);
+      aeHints.splice(idx, 1);
+      aeRenderHintsList();
+    });
+  });
+}
+
+function aeBindUseCasesList() {
+  const list = document.getElementById('ae-uc-list');
+  if (!list) return;
+  list.querySelectorAll('.ae-uc-inp').forEach(ta => {
+    ta.addEventListener('input', () => {
+      const idx = parseInt(ta.closest('.ae-prompt-row').dataset.idx, 10);
+      aeUseCases[idx] = ta.value;
+    });
+  });
+  list.querySelectorAll('.ae-prompt-remove').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const idx = parseInt(btn.dataset.idx, 10);
+      aeUseCases.splice(idx, 1);
+      aeRenderUseCasesList();
+    });
+  });
+}
+
+function aeUpdateAddHintBtnState() {
+  const btn = document.getElementById('ae-add-hint-btn');
+  if (btn) btn.disabled = aeHints.length >= 8;
+}
+
+function aeUpdateAddUcBtnState() {
+  const btn = document.getElementById('ae-add-uc-btn');
+  if (btn) btn.disabled = aeUseCases.length >= 8;
+}
+
+function aeUpdatePreview() {
+  const card = document.getElementById('ae-preview-card');
+  if (!card) return;
+  const name = ((document.getElementById('ae-name') || {}).value || 'Agent Name');
+  const desc = ((document.getElementById('ae-description') || {}).value || '');
+  const tag = ((document.getElementById('ae-tag') || {}).value || '');
+  const bg = aeAccentBg || '#EEF2FF';
+  card.style.background = bg;
+
+  let textColor = '#1a1a2e';
+  try {
+    const h = bg.replace('#', '');
+    if (h.length >= 6) {
+      const rv = parseInt(h.slice(0,2), 16);
+      const gv = parseInt(h.slice(2,4), 16);
+      const bv = parseInt(h.slice(4,6), 16);
+      if ((0.299*rv + 0.587*gv + 0.114*bv) / 255 < 0.45) textColor = '#f1f5f9';
+    }
+  } catch(e) {}
+
+  const pillsHtml = tag ? ('<div class="ae-pcard-pills"><span class="ae-pcard-pill" style="color:' + textColor + '">' + escHtml(tag) + '</span></div>') : '';
+  const hintsHtml = aeHints.length
+    ? '<div class="ae-pcard-hints">' + aeHints.slice(0,2).map(h => '<div class="ae-pcard-hint" style="color:' + textColor + '">' + escHtml((h || '').slice(0,60)) + '</div>').join('') + '</div>'
+    : '';
+
+  card.innerHTML = (
+    '<div class="ae-pcard-icon-wrap" style="color:' + textColor + '">' +
+      '<i class="fa-solid ' + escHtml(aeIconClass) + '"></i>' +
+    '</div>' +
+    pillsHtml +
+    '<div class="ae-pcard-name" style="color:' + textColor + '">' + escHtml(name) + '</div>' +
+    (desc ? '<div class="ae-pcard-desc" style="color:' + textColor + ';opacity:.75">' + escHtml(desc) + '</div>' : '') +
+    hintsHtml +
+    '<div class="ae-pcard-footer" style="color:' + textColor + '">' +
+      (aeIsCreate ? 'New agent' : 'Agent #' + escHtml(String(aeAgentId || ''))) +
+    '</div>'
+  );
+}
+
+function aeRefreshIconBtn() {
+  const i = document.getElementById('ae-icon-preview-i');
+  const lbl = document.getElementById('ae-icon-class-label');
+  if (i) i.className = 'fa-solid ' + aeIconClass + ' ae-icon-preview';
+  if (lbl) lbl.textContent = aeIconClass;
+}
+
+function aeBindAll() {
+  const backBtn = document.getElementById('ae-back-btn');
+  const cancelBtn = document.getElementById('ae-cancel-btn');
+  const saveBtn = document.getElementById('ae-save-btn');
+  const genBtn = document.getElementById('ae-gen-btn');
+  const delBtn = document.getElementById('ae-del-btn');
+  const iconBtn = document.getElementById('ae-icon-btn');
+  const stubGrid = document.getElementById('ae-stub-grid');
+  const colorNative = document.getElementById('ae-color-native');
+  const hexInput = document.getElementById('ae-hex-input');
+  const swatchWrap = document.getElementById('ae-color-swatch-wrap');
+  const addHintBtn = document.getElementById('ae-add-hint-btn');
+  const addUcBtn = document.getElementById('ae-add-uc-btn');
+
+  if (backBtn) backBtn.addEventListener('click', () => navigateTo('/admin-dashboard/content/agents/', 'agents'));
+  if (cancelBtn) cancelBtn.addEventListener('click', () => navigateTo('/admin-dashboard/content/agents/', 'agents'));
+  if (saveBtn) saveBtn.addEventListener('click', aeSave);
+  if (genBtn) genBtn.addEventListener('click', aeGenerate);
+  if (delBtn) delBtn.addEventListener('click', aeDeleteAgent);
+
+  if (colorNative) {
+    colorNative.addEventListener('input', () => {
+      aeAccentBg = colorNative.value;
+      if (swatchWrap) swatchWrap.style.background = aeAccentBg;
+      if (hexInput) hexInput.value = aeAccentBg;
+      aeUpdatePreview();
+    });
+  }
+  if (hexInput) {
+    hexInput.addEventListener('input', () => {
+      const v = hexInput.value.trim();
+      if (/^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(v)) {
+        aeAccentBg = v;
+        if (swatchWrap) swatchWrap.style.background = v;
+        if (colorNative) colorNative.value = v.length === 7 ? v : aeAccentBg.slice(0,7);
+        aeUpdatePreview();
+      }
+    });
+  }
+
+  if (iconBtn && stubGrid) {
+    iconBtn.addEventListener('click', () => {
+      aeIconPickerOpen = !aeIconPickerOpen;
+      stubGrid.style.display = aeIconPickerOpen ? 'grid' : 'none';
+    });
+    stubGrid.querySelectorAll('.ae-stub-icon').forEach(btn => {
+      btn.addEventListener('click', () => {
+        aeIconClass = btn.dataset.icon;
+        aeIconPickerOpen = false;
+        stubGrid.style.display = 'none';
+        stubGrid.querySelectorAll('.ae-stub-icon').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        aeRefreshIconBtn();
+        aeUpdatePreview();
+      });
+    });
+  }
+
+  ['ae-name', 'ae-description', 'ae-tag'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', aeUpdatePreview);
+  });
+
+  if (addHintBtn) addHintBtn.addEventListener('click', () => {
+    if (aeHints.length >= 8) return;
+    aeHints.push('');
+    aeRenderHintsList();
+  });
+  if (addUcBtn) addUcBtn.addEventListener('click', () => {
+    if (aeUseCases.length >= 8) return;
+    aeUseCases.push('');
+    aeRenderUseCasesList();
+  });
+}
+
+function aeShowFieldErrors(errors) {
+  document.querySelectorAll('.ae-field-err').forEach(el => { el.textContent = ''; });
+  if (!errors) return;
+  Object.keys(errors).forEach(field => {
+    const el = document.getElementById('ae-err-' + field);
+    if (el) el.textContent = errors[field];
+  });
+}
+
+async function aeGenerate() {
+  if (aeGenerating) return;
+  const name = ((document.getElementById('ae-name') || {}).value || '').trim();
+  if (!name) { udToast('Enter a name before generating.', 'error'); return; }
+  const industry = ((document.getElementById('ae-industry') || {}).value || '');
+  const description = ((document.getElementById('ae-description') || {}).value || '').trim();
+  const tag = ((document.getElementById('ae-tag') || {}).value || '').trim();
+  aeGenerating = true;
+  const genBtn = document.getElementById('ae-gen-btn');
+  if (genBtn) { genBtn.disabled = true; genBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…'; }
+  try {
+    const r = await fetch('/api/admin/agents/generate', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, industry, description, tag}),
+    });
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Generation failed.', 'error'); return; }
+    if (data.description) {
+      const dEl = document.getElementById('ae-description');
+      if (dEl) dEl.value = data.description;
+    }
+    if (data.hints && data.hints.length) { aeHints = data.hints; aeRenderHintsList(); }
+    if (data.use_cases && data.use_cases.length) { aeUseCases = data.use_cases; aeRenderUseCasesList(); }
+    if (data.accent_bg) {
+      aeAccentBg = data.accent_bg;
+      const sw = document.getElementById('ae-color-swatch-wrap');
+      const hi = document.getElementById('ae-hex-input');
+      const cn = document.getElementById('ae-color-native');
+      if (sw) sw.style.background = aeAccentBg;
+      if (hi) hi.value = aeAccentBg;
+      if (cn) cn.value = aeAccentBg.slice(0,7);
+    }
+    aeUpdatePreview();
+    const missing = [];
+    if (!data.description) missing.push('description');
+    if (!data.hints || !data.hints.length) missing.push('hints');
+    if (!data.use_cases || !data.use_cases.length) missing.push('use cases');
+    if (missing.length && missing.length < 3) {
+      udToast('Generated (skipped: ' + missing.join(', ') + ').', 'warning');
+    } else if (!missing.length) {
+      udToast('Generated successfully!', 'success');
+    }
+  } catch(e) {
+    udToast('Generation request failed.', 'error');
+  } finally {
+    aeGenerating = false;
+    if (genBtn) { genBtn.disabled = false; genBtn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Generate with AI'; }
+  }
+}
+
+async function aeSave() {
+  if (aeSaving) return;
+  const name = ((document.getElementById('ae-name') || {}).value || '').trim();
+  const industry = ((document.getElementById('ae-industry') || {}).value || '').trim();
+  const description = ((document.getElementById('ae-description') || {}).value || '').trim();
+  const cliErr = {};
+  if (!name) cliErr.name = 'Required.';
+  if (!industry) cliErr.industry = 'Required.';
+  if (!description) cliErr.description = 'Required.';
+  if (Object.keys(cliErr).length) { aeShowFieldErrors(cliErr); return; }
+  const hexVal = ((document.getElementById('ae-hex-input') || {}).value || aeAccentBg).trim();
+  if (hexVal && !/^#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(hexVal)) {
+    aeShowFieldErrors({accent_bg: 'Enter a valid hex color (e.g. #EEF2FF).'}); return;
+  }
+  aeShowFieldErrors(null);
+  aeSaving = true;
+  const saveBtn = document.getElementById('ae-save-btn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…'; }
+  const payload = {
+    name,
+    industry,
+    description,
+    tag: ((document.getElementById('ae-tag') || {}).value || ''),
+    icon_class: aeIconClass,
+    accent_bg: hexVal || aeAccentBg,
+    is_active: !!((document.getElementById('ae-is-active') || {}).checked),
+    is_featured: !!((document.getElementById('ae-is-featured') || {}).checked),
+    hints: aeHints.filter(h => h.trim()),
+    use_cases: aeUseCases.filter(u => u.trim()),
+  };
+  try {
+    const url = aeIsCreate ? '/api/admin/agents' : '/api/admin/agents/' + aeAgentId;
+    const method = aeIsCreate ? 'POST' : 'PATCH';
+    const r = await fetch(url, {
+      method,
+      credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (r.status === 400 && data.errors) { aeShowFieldErrors(data.errors); return; }
+    if (!r.ok) { udToast(data.error || 'Save failed.', 'error'); return; }
+    agentsAllItems = [];
+    udToast(aeIsCreate ? 'Agent created!' : 'Agent saved!', 'success');
+    navigateTo('/admin-dashboard/content/agents/', 'agents');
+  } catch(e) {
+    udToast('Save request failed.', 'error');
+  } finally {
+    aeSaving = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save agent'; }
+  }
+}
+
+function aeDeleteAgent() {
+  if (!aeAgentId) return;
+  const agent = agentsAllItems.find(a => a.id === aeAgentId);
+  const agentName = agent ? escHtml(agent.name) : ('Agent #' + escHtml(String(aeAgentId)));
+  const promptsCount = agent ? agentsCountPrompts(agent) : 0;
+  const promptsLine = promptsCount > 0
+    ? 'This will also delete <strong>' + promptsCount + '</strong> attached prompt' + (promptsCount !== 1 ? 's' : '') + '.'
+    : 'This agent has no attached prompts.';
+  udShowModal('<div class="ud-modal">' +
+    '<div class="ud-modal-title">Delete &ldquo;' + agentName + '&rdquo;?</div>' +
+    '<div class="ud-modal-body">' + promptsLine + '<br><br>This action cannot be undone.</div>' +
+    '<div class="ud-modal-actions">' +
+      '<button class="ud-act-btn" onclick="udCloseModal()">Cancel</button>' +
+      '<button class="ud-act-btn danger" onclick="aePerformDelete()"><i class="fa-solid fa-trash"></i> Delete agent</button>' +
+    '</div>' +
+  '</div>');
+}
+
+async function aePerformDelete() {
+  udCloseModal();
+  try {
+    const r = await fetch('/api/admin/agents/' + aeAgentId, {method: 'DELETE', credentials: 'same-origin'});
+    if (!r.ok) { udToast('Delete failed.', 'error'); return; }
+    agentsAllItems = [];
+    udToast('Agent deleted.', 'success');
+    navigateTo('/admin-dashboard/content/agents/', 'agents');
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
 }
 // ── END AGENTS ──────────────────────────────────────────────────────────────
 

@@ -591,8 +591,15 @@ def api_admin_agents(request):
         name = str(payload.get("name", "")).strip()
         industry = str(payload.get("industry", "")).strip().lower()
         description = str(payload.get("description", "")).strip()
-        if not name or not industry or not description:
-            return JsonResponse({"error": "name, industry, and description are required"}, status=400)
+        errors = {}
+        if not name:
+            errors['name'] = 'Required.'
+        if not industry:
+            errors['industry'] = 'Required.'
+        if not description:
+            errors['description'] = 'Required.'
+        if errors:
+            return JsonResponse({'errors': errors}, status=400)
         slug = slugify(name)
         if not slug:
             return JsonResponse({"error": "Invalid name"}, status=400)
