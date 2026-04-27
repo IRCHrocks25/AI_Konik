@@ -365,6 +365,49 @@ textarea.ud-inp{resize:vertical;min-height:70px;line-height:1.6}
 .agents-empty-state p{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:14px}
 .agents-count{font-size:12.5px;color:rgba(255,255,255,.45)}
 
+/* ── PROMPTS panel ── */
+.pr-topbar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+.pr-search-wrap{position:relative;flex:1;min-width:200px}
+.pr-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.4);font-size:13px;pointer-events:none}
+.pr-search-input{width:100%;padding:9px 14px 9px 36px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:10px;color:#fff;font-size:13px;outline:none;transition:border-color .15s,background .15s;box-sizing:border-box;font-family:inherit}
+.pr-search-input::placeholder{color:rgba(255,255,255,.35)}
+.pr-search-input:focus{border-color:rgba(139,92,246,.5);background:rgba(255,255,255,.11)}
+.pr-filter-select{padding:8px 26px 8px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;color:rgba(255,255,255,.82);font-size:12.5px;cursor:pointer;outline:none;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='rgba(255,255,255,0.45)' d='M5 7L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.pr-filter-select:hover{background:rgba(255,255,255,.11)}
+.pr-filter-select option{background:#1e1b2e;color:#fff}
+.pr-create-btn{display:flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid rgba(139,92,246,.45);border-radius:10px;background:rgba(139,92,246,.18);color:#c4b5fd;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s;font-family:inherit}
+.pr-create-btn:hover{background:rgba(139,92,246,.3);border-color:rgba(139,92,246,.65)}
+.pr-import-btn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border:1px solid rgba(255,255,255,.2);border-radius:10px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.8);font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap;text-decoration:none;transition:background .15s;font-family:inherit}
+.pr-import-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.pr-table-wrap{background:linear-gradient(150deg,rgba(255,255,255,.1),rgba(255,255,255,.04));border:1px solid rgba(255,255,255,.15);border-radius:16px;overflow:hidden;margin-bottom:14px}
+.pr-table{width:100%;border-collapse:collapse;font-size:13px}
+.pr-table th{padding:11px 14px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);border-bottom:1px solid rgba(255,255,255,.1);white-space:nowrap}
+.pr-table td{padding:10px 14px;color:rgba(255,255,255,.85);border-bottom:1px solid rgba(255,255,255,.07);vertical-align:middle}
+.pr-table tr:last-child td{border-bottom:none}
+.pr-table tbody tr{cursor:pointer;transition:background .13s}
+.pr-table tbody tr:hover{background:rgba(255,255,255,.06)}
+.pr-title-cell{font-weight:500;color:#fff;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pr-cat-pill{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:11px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.65);border:1px solid rgba(255,255,255,.12);max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:middle}
+.spill-approved{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.spill-pending{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(245,158,11,.2);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.pr-row-actions{text-align:right;white-space:nowrap}
+.pr-empty-state{padding:48px 32px;text-align:center}
+.pr-empty-state i{font-size:36px;color:rgba(255,255,255,.22);display:block;margin-bottom:14px}
+.pr-empty-state p{font-size:14px;color:rgba(255,255,255,.55);margin-bottom:14px}
+.pr-count{font-size:12.5px;color:rgba(255,255,255,.45);margin-bottom:8px}
+
+/* ── PROMPT EDIT FORM ── */
+.pe-shell{max-width:720px}
+.pe-req{color:#fb7185;margin-left:2px}
+.pe-helper{font-size:11px;color:rgba(255,255,255,.35);margin-top:3px}
+.pe-combobox-wrap{position:relative}
+.pe-combobox-dropdown{position:absolute;top:100%;left:0;right:0;z-index:200;background:#1e1b2e;border:1px solid rgba(255,255,255,.2);border-radius:8px;margin-top:4px;max-height:220px;overflow-y:auto;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.pe-combobox-item{padding:9px 13px;font-size:12.5px;color:rgba(255,255,255,.85);cursor:pointer;transition:background .12s}
+.pe-combobox-item:hover{background:rgba(139,92,246,.2);color:#fff}
+.pe-combobox-empty{padding:9px 13px;font-size:12.5px;color:rgba(255,255,255,.38);font-style:italic}
+.pe-skel-field{background:rgba(255,255,255,.09);border-radius:8px;height:38px;animation:shimmer 1.2s ease-in-out infinite alternate;margin-bottom:14px}
+.pe-skel-textarea{background:rgba(255,255,255,.09);border-radius:8px;height:180px;animation:shimmer 1.2s ease-in-out infinite alternate;margin-bottom:14px}
+
 /* ── AGENT EDIT FORM ── */
 .ae-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:22px;flex-wrap:wrap}
 .ae-header-left{display:flex;flex-direction:column;gap:6px}
@@ -752,14 +795,35 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
     <div id="panel-prompts" class="admin-panel">
       <div class="admin-panel-header">
         <h1>Prompts</h1>
-        <p>Review, approve, and manage the community prompt library.</p>
+        <p>Create, edit, and manage the community prompt library.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-book-open"></i></div>
-        <h3>Prompt Management</h3>
-        <p>Inline editing, status toggles, and moderation queue — coming in Phase 7.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 7</span>
+      <div class="pr-topbar">
+        <div class="pr-search-wrap">
+          <i class="fa-solid fa-magnifying-glass pr-search-icon"></i>
+          <input type="text" id="pr-search" class="pr-search-input" placeholder="Search title, body, or category…" autocomplete="off">
+        </div>
+        <select id="pr-industry-filter" class="pr-filter-select">
+          <option value="">All industries</option>
+        </select>
+        <select id="pr-status-filter" class="pr-filter-select">
+          <option value="">All statuses</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+        </select>
+        <button class="pr-create-btn" onclick="promptsOpenCreate()">
+          <i class="fa-solid fa-plus"></i> Create new prompt
+        </button>
+        <a class="pr-import-btn" href="/prompt-import/" target="_blank">
+          <i class="fa-solid fa-file-import"></i> Bulk import
+        </a>
       </div>
+      <div id="pr-count" class="pr-count"></div>
+      <div id="pr-table-wrap" class="pr-table-wrap"></div>
+      <div id="pr-pagination" class="users-pagination" style="margin-top:8px"></div>
+    </div>
+
+    <div id="panel-prompt-edit" class="admin-panel">
+      <div id="prompt-edit-content"></div>
     </div>
 
     <div id="panel-industries" class="admin-panel">
@@ -1015,6 +1079,12 @@ function getInitSection(pathname) {
   if ((m = pathname.match(/^\/admin-dashboard\/content\/agents\/(\d+)\/?$/))) {
     return ['agent-edit', {mode: 'edit', agentId: parseInt(m[1], 10)}];
   }
+  if (pathname === '/admin-dashboard/content/prompts/new/') {
+    return ['prompt-edit', {mode: 'create'}];
+  }
+  if ((m = pathname.match(/^\/admin-dashboard\/content\/prompts\/(\d+)\/?$/))) {
+    return ['prompt-edit', {mode: 'edit', promptId: parseInt(m[1], 10)}];
+  }
   return _STATIC_SECTIONS[pathname] || 'pulse';
 }
 
@@ -1085,13 +1155,15 @@ function showSection(key, params) {
   const panel = document.getElementById('panel-' + key);
   if (panel) panel.classList.add('active');
   // For nested routes, keep the parent sidebar link highlighted.
-  const sidebarKey = (key === 'agent-edit') ? 'agents' : key;
+  const sidebarKey = (key === 'agent-edit') ? 'agents' : (key === 'prompt-edit') ? 'prompts' : key;
   document.querySelectorAll('.admin-sidebar-link[data-section="' + sidebarKey + '"]').forEach(l => l.classList.add('active'));
   if (key === 'pulse') startPulseRefresh();
   if (key === 'users') usersMount();
   if (key === 'user-detail' && params && params.userId) userDetailMount(params.userId);
   if (key === 'agents') agentsMount();
   if (key === 'agent-edit') agentEditMount(params || {});
+  if (key === 'prompts') promptsMount();
+  if (key === 'prompt-edit') promptEditMount(params || {});
 }
 
 function navigateTo(path, section, params) {
@@ -3416,6 +3488,470 @@ async function aePerformDelete() {
   }
 }
 // ── END AGENTS ──────────────────────────────────────────────────────────────
+
+// ── PROMPTS ──────────────────────────────────────────────────────────────────
+let promptsMounted = false;
+let promptsCurrentPage = 1;
+let promptsDebounceTimer = null;
+let promptsFilters = {search: '', industry: '', status: ''};
+
+function promptsStatusPill(status) {
+  if (status === 'approved') return '<span class="spill-approved">Approved</span>';
+  if (status === 'pending') return '<span class="spill-pending">Pending</span>';
+  return '<span class="spill-off">' + escHtml(status) + '</span>';
+}
+
+function promptsRenderSkeleton() {
+  let rows = '';
+  for (let i = 0; i < 8; i++) {
+    rows += '<tr>' +
+      '<td><div class="users-skel-cell" style="width:' + (100 + (i % 4) * 40) + 'px"></div></td>' +
+      '<td><div class="users-skel-cell" style="width:70px"></div></td>' +
+      '<td><div class="users-skel-cell" style="width:90px"></div></td>' +
+      '<td><div class="users-skel-cell" style="width:60px"></div></td>' +
+      '<td><div class="users-skel-cell" style="width:30px"></div></td>' +
+      '<td></td>' +
+    '</tr>';
+  }
+  return '<table class="pr-table"><thead><tr>' +
+    '<th>Title</th><th>Industry</th><th>Category</th><th>Status</th><th>Used</th><th></th>' +
+    '</tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+function promptsRenderRow(p) {
+  const rawCat = p.category || '';
+  const cat = rawCat.length > 25 ? rawCat.slice(0, 24) + '…' : (rawCat || '—');
+  const ind = p.industry ? p.industry.charAt(0).toUpperCase() + p.industry.slice(1) : '—';
+  return '<tr onclick="promptsOpenEdit(' + p.id + ')">' +
+    '<td><div class="pr-title-cell">' + escHtml(p.title) + '</div></td>' +
+    '<td>' + escHtml(ind) + '</td>' +
+    '<td><span class="pr-cat-pill" title="' + escHtml(rawCat) + '">' + escHtml(cat) + '</span></td>' +
+    '<td>' + promptsStatusPill(p.status) + '</td>' +
+    '<td>' + (p.usage_count || 0) + '</td>' +
+    '<td class="pr-row-actions" onclick="event.stopPropagation()">' +
+      '<button class="ag-row-btn" onclick="promptsOpenEdit(' + p.id + ')"><i class="fa-solid fa-pen-to-square"></i> Edit</button>' +
+      ' <button class="ag-row-btn danger" onclick="promptsConfirmDelete(' + p.id + ',' + JSON.stringify(escHtml(p.title)) + ')"><i class="fa-solid fa-trash"></i> Delete</button>' +
+    '</td>' +
+  '</tr>';
+}
+
+function promptsPaginationHtml(data) {
+  const p = data.page, pages = data.pages;
+  let h = '<button class="upag-btn" ' + (p <= 1 ? 'disabled' : '') + ' onclick="promptsLoad(' + (p - 1) + ')"><i class="fa-solid fa-chevron-left"></i></button>';
+  const lo = Math.max(1, p - 2), hi = Math.min(pages, p + 2);
+  if (lo > 1) { h += '<button class="upag-btn" onclick="promptsLoad(1)">1</button>'; if (lo > 2) h += '<span style="color:rgba(255,255,255,.4);padding:0 4px">…</span>'; }
+  for (let i = lo; i <= hi; i++) h += '<button class="upag-btn' + (i === p ? ' active' : '') + '" onclick="promptsLoad(' + i + ')">' + i + '</button>';
+  if (hi < pages) { if (hi < pages - 1) h += '<span style="color:rgba(255,255,255,.4);padding:0 4px">…</span>'; h += '<button class="upag-btn" onclick="promptsLoad(' + pages + ')">' + pages + '</button>'; }
+  h += '<button class="upag-btn" ' + (p >= pages ? 'disabled' : '') + ' onclick="promptsLoad(' + (p + 1) + ')"><i class="fa-solid fa-chevron-right"></i></button>';
+  return h;
+}
+
+async function promptsLoad(page) {
+  if (page !== undefined) promptsCurrentPage = page;
+  const wrap = document.getElementById('pr-table-wrap');
+  const countEl = document.getElementById('pr-count');
+  const pagEl = document.getElementById('pr-pagination');
+  if (wrap) wrap.innerHTML = promptsRenderSkeleton();
+  if (countEl) countEl.textContent = '';
+  if (pagEl) pagEl.innerHTML = '';
+
+  const params = new URLSearchParams({page: String(promptsCurrentPage), page_size: '50'});
+  if (promptsFilters.search) params.set('search', promptsFilters.search);
+  if (promptsFilters.industry) params.set('industry', promptsFilters.industry);
+  if (promptsFilters.status) params.set('status', promptsFilters.status);
+
+  try {
+    const r = await fetch('/api/admin/prompts?' + params.toString(), {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || r.status);
+
+    if (countEl) countEl.textContent = data.total.toLocaleString() + ' prompt' + (data.total === 1 ? '' : 's') + ' found';
+
+    if (!data.items.length) {
+      const hasFilters = !!(promptsFilters.search || promptsFilters.industry || promptsFilters.status);
+      if (wrap) wrap.innerHTML = '<div class="pr-empty-state">' +
+        '<i class="fa-solid fa-book-open"></i>' +
+        '<p>' + (hasFilters ? 'No prompts match these filters.' : 'No prompts yet. Create one or bulk import.') + '</p>' +
+        (hasFilters ? '<button class="users-empty-clear-btn" onclick="promptsClearFilters()">Clear filters</button>' : '') +
+        '</div>';
+      return;
+    }
+
+    if (wrap) wrap.innerHTML = '<table class="pr-table"><thead><tr>' +
+      '<th>Title</th><th>Industry</th><th>Category</th><th>Status</th><th>Used</th><th></th>' +
+      '</tr></thead><tbody>' + data.items.map(promptsRenderRow).join('') + '</tbody></table>';
+
+    if (pagEl) pagEl.innerHTML = data.pages > 1 ? promptsPaginationHtml(data) : '';
+  } catch (e) {
+    if (wrap) wrap.innerHTML = '<div class="pr-empty-state">' +
+      '<i class="fa-solid fa-triangle-exclamation"></i>' +
+      '<p>Failed to load prompts.</p>' +
+      '<button class="users-empty-clear-btn" onclick="promptsLoad()">Retry</button>' +
+      '</div>';
+  }
+}
+
+function promptsClearFilters() {
+  promptsFilters = {search: '', industry: '', status: ''};
+  const sEl = document.getElementById('pr-search');
+  const iEl = document.getElementById('pr-industry-filter');
+  const stEl = document.getElementById('pr-status-filter');
+  if (sEl) sEl.value = '';
+  if (iEl) iEl.value = '';
+  if (stEl) stEl.value = '';
+  promptsCurrentPage = 1;
+  promptsLoad();
+}
+
+function promptsMount() {
+  if (!promptsMounted) {
+    promptsMounted = true;
+    const iEl = document.getElementById('pr-industry-filter');
+    if (iEl) {
+      for (let i = 0; i < INDUSTRY_OPTIONS.length; i++) {
+        const o = INDUSTRY_OPTIONS[i];
+        const opt = document.createElement('option');
+        opt.value = o.value;
+        opt.textContent = o.label;
+        iEl.appendChild(opt);
+      }
+    }
+    const sEl = document.getElementById('pr-search');
+    if (sEl) {
+      sEl.addEventListener('input', () => {
+        clearTimeout(promptsDebounceTimer);
+        promptsDebounceTimer = setTimeout(() => {
+          promptsFilters.search = sEl.value.trim();
+          promptsCurrentPage = 1;
+          promptsLoad();
+        }, 300);
+      });
+    }
+    if (iEl) {
+      iEl.addEventListener('change', () => {
+        promptsFilters.industry = iEl.value;
+        promptsCurrentPage = 1;
+        promptsLoad();
+      });
+    }
+    const stEl = document.getElementById('pr-status-filter');
+    if (stEl) {
+      stEl.addEventListener('change', () => {
+        promptsFilters.status = stEl.value;
+        promptsCurrentPage = 1;
+        promptsLoad();
+      });
+    }
+  }
+  promptsLoad();
+}
+
+function promptsOpenCreate() {
+  navigateTo('/admin-dashboard/content/prompts/new/', 'prompt-edit', {mode: 'create'});
+}
+
+function promptsOpenEdit(id) {
+  navigateTo('/admin-dashboard/content/prompts/' + id + '/', 'prompt-edit', {mode: 'edit', promptId: id});
+}
+
+function promptsConfirmDelete(id, title) {
+  udShowModal(
+    '<div class="ud-modal">' +
+      '<div class="ud-modal-title">Delete prompt?</div>' +
+      '<div class="ud-modal-body">Delete <strong>' + title + '</strong>? This cannot be undone.</div>' +
+      '<div class="ud-modal-actions">' +
+        '<button class="ud-act-btn" onclick="udCloseModal()">Cancel</button>' +
+        '<button class="ud-act-btn danger" onclick="promptsDoDelete(' + id + ')">Delete</button>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+async function promptsDoDelete(id) {
+  udCloseModal();
+  try {
+    const r = await fetch('/api/admin/prompts/' + id, {method: 'DELETE', credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    udToast('Prompt deleted.', 'success');
+    navigateTo('/admin-dashboard/content/prompts/', 'prompts', {});
+  } catch (e) {
+    udToast('Failed to delete prompt.', 'error');
+  }
+}
+
+// ── Prompt edit form state ────────────────────────────────────────────────────
+let peCategoryCache = null;
+let peIsCreate = true;
+let pePromptId = null;
+let peSaving = false;
+
+async function peFetchCategories() {
+  if (peCategoryCache !== null) return peCategoryCache;
+  try {
+    const r = await fetch('/api/admin/prompts/categories', {credentials: 'same-origin'});
+    const d = await r.json();
+    peCategoryCache = Array.isArray(d.categories) ? d.categories : [];
+  } catch (e) {
+    peCategoryCache = [];
+  }
+  return peCategoryCache;
+}
+
+function peBuildForm(promptData) {
+  let industryOpts = '<option value="">— Select industry —</option>';
+  for (let i = 0; i < INDUSTRY_OPTIONS.length; i++) {
+    const o = INDUSTRY_OPTIONS[i];
+    const sel = (promptData && promptData.industry === o.value) ? ' selected' : '';
+    industryOpts += '<option value="' + escHtml(o.value) + '"' + sel + '>' + escHtml(o.label) + '</option>';
+  }
+  const titleVal   = promptData ? escHtml(promptData.title    || '') : '';
+  const catVal     = promptData ? escHtml(promptData.category || '') : '';
+  const bodyVal    = promptData ? escHtml(promptData.body     || '') : '';
+  const statusVal  = promptData ? (promptData.status || 'approved') : 'approved';
+  const rawTitle   = promptData && promptData.title ? promptData.title : '';
+  const truncTitle = rawTitle.length > 48 ? rawTitle.slice(0, 48) + '…' : rawTitle;
+  const delBtn     = peIsCreate ? '' :
+    '<button class="ae-del-btn" id="pe-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete prompt</button>';
+  return (
+    '<button class="ud-back-link" id="pe-back-btn"><i class="fa-solid fa-arrow-left"></i> Back to prompts</button>' +
+    '<div class="ud-breadcrumb">' + (peIsCreate ? 'Create new prompt' : 'Edit: ' + escHtml(truncTitle)) + '</div>' +
+    '<div class="ae-header-row" style="margin-bottom:20px"><div></div>' +
+      '<div class="ae-actions-row">' + delBtn +
+        '<button class="ae-cancel-btn" id="pe-cancel-btn" type="button"><i class="fa-solid fa-xmark"></i> Cancel</button>' +
+        '<button class="ae-save-btn" id="pe-save-btn" type="button"><i class="fa-solid fa-floppy-disk"></i> ' +
+          (peIsCreate ? 'Save prompt' : 'Save changes') +
+        '</button>' +
+      '</div>' +
+    '</div>' +
+    '<div class="pe-shell">' +
+      '<div class="ae-card"><div class="ae-card-title">Prompt Details</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="pe-title">Title <span class="pe-req">*</span></label>' +
+          '<input class="ae-inp" id="pe-title" type="text" maxlength="255" value="' + titleVal + '"' +
+            ' placeholder="e.g. Review this contract for liability exposure" autocomplete="off">' +
+          '<div class="ae-field-err" id="pe-title-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="pe-industry">Industry <span class="pe-req">*</span></label>' +
+          '<select class="ae-inp" id="pe-industry">' + industryOpts + '</select>' +
+          '<div class="ae-field-err" id="pe-industry-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="pe-category">Category</label>' +
+          '<div class="pe-combobox-wrap" id="pe-cat-wrap">' +
+            '<input class="ae-inp" id="pe-category" type="text" maxlength="100" value="' + catVal + '"' +
+              ' placeholder="e.g. Contracts, Clinical Documentation, Drafting" autocomplete="off">' +
+            '<div class="pe-combobox-dropdown" id="pe-cat-dropdown" style="display:none"></div>' +
+          '</div>' +
+          '<div class="pe-helper">Pick from existing or create a new one</div>' +
+          '<div class="ae-field-err" id="pe-category-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="pe-body">Body <span class="pe-req">*</span></label>' +
+          '<textarea class="ae-inp" id="pe-body" rows="10" maxlength="10000"' +
+            ' placeholder="Write the full prompt text here...">' + bodyVal + '</textarea>' +
+          '<div class="ae-field-err" id="pe-body-err"></div>' +
+        '</div>' +
+        '<div class="ae-field" style="margin-bottom:0">' +
+          '<label class="ae-label" for="pe-status">Status</label>' +
+          '<select class="ae-inp" id="pe-status">' +
+            '<option value="approved"' + (statusVal === 'approved' ? ' selected' : '') + '>Approved</option>' +
+            '<option value="pending"'  + (statusVal === 'pending'  ? ' selected' : '') + '>Pending</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function peShowCombobox(cats, query, dropdown) {
+  if (!dropdown) return;
+  const q = (query || '').toLowerCase().trim();
+  const filtered = q ? cats.filter(function(c) { return c.toLowerCase().includes(q); }) : cats;
+  if (!filtered.length) {
+    dropdown.innerHTML = '<div class="pe-combobox-empty">No matches — type to create a new category</div>';
+  } else {
+    dropdown.innerHTML = filtered.slice(0, 30).map(function(c) {
+      return '<div class="pe-combobox-item" onmousedown="peSelectCategory(this.dataset.c)" data-c="' +
+        escHtml(c) + '">' + escHtml(c) + '</div>';
+    }).join('');
+  }
+  dropdown.style.display = 'block';
+}
+
+function peSelectCategory(cat) {
+  const inp = document.getElementById('pe-category');
+  const dd  = document.getElementById('pe-cat-dropdown');
+  if (inp) inp.value = cat;
+  if (dd)  dd.style.display = 'none';
+}
+
+function peComboboxOutsideHandler(e) {
+  const wrap = document.getElementById('pe-cat-wrap');
+  if (!wrap) return;
+  if (!wrap.contains(e.target)) {
+    const dd = document.getElementById('pe-cat-dropdown');
+    if (dd) dd.style.display = 'none';
+  }
+}
+
+function peRenderFieldErrors(errors) {
+  const fields = ['title', 'industry', 'category', 'body', 'status'];
+  for (let i = 0; i < fields.length; i++) {
+    const f   = fields[i];
+    const inp = document.getElementById('pe-' + f);
+    const err = document.getElementById('pe-' + f + '-err');
+    if (errors[f]) {
+      if (inp) inp.classList.add('error');
+      if (err) err.textContent = errors[f];
+    } else {
+      if (inp) inp.classList.remove('error');
+      if (err) err.textContent = '';
+    }
+  }
+  for (let i = 0; i < fields.length; i++) {
+    if (errors[fields[i]]) {
+      const inp = document.getElementById('pe-' + fields[i]);
+      if (inp) { inp.focus(); break; }
+    }
+  }
+}
+
+function peValidate() {
+  const title    = ((document.getElementById('pe-title')    || {}).value || '');
+  const body     = ((document.getElementById('pe-body')     || {}).value || '');
+  const industry = ((document.getElementById('pe-industry') || {}).value || '');
+  const category = ((document.getElementById('pe-category') || {}).value || '');
+  const errors   = {};
+  if (!title.trim())       errors.title    = 'Required.';
+  else if (title.length > 255)   errors.title    = 'Too long (max 255).';
+  if (!body.trim())        errors.body     = 'Required.';
+  else if (body.length > 10000)  errors.body     = 'Too long (max 10,000).';
+  if (!industry)           errors.industry = 'Required.';
+  if (category.length > 100)     errors.category = 'Too long (max 100).';
+  return errors;
+}
+
+async function peSave() {
+  if (peSaving) return;
+  const errors = peValidate();
+  if (Object.keys(errors).length) { peRenderFieldErrors(errors); return; }
+  peRenderFieldErrors({});
+  peSaving = true;
+  const saveBtn = document.getElementById('pe-save-btn');
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…'; }
+  const payload = {
+    title:    ((document.getElementById('pe-title')    || {}).value || '').trim(),
+    body:     ((document.getElementById('pe-body')     || {}).value || '').trim(),
+    industry: ((document.getElementById('pe-industry') || {}).value || ''),
+    category: ((document.getElementById('pe-category') || {}).value || '').trim(),
+    status:   ((document.getElementById('pe-status')   || {}).value || 'approved'),
+  };
+  try {
+    const url = peIsCreate ? '/api/admin/prompts' : '/api/admin/prompts/' + pePromptId;
+    const r = await fetch(url, {
+      method: peIsCreate ? 'POST' : 'PATCH',
+      credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    const data = await r.json();
+    if (r.status === 400 && data.errors) { peRenderFieldErrors(data.errors); return; }
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    peCategoryCache = null; // invalidate so new categories appear immediately
+    udToast(peIsCreate ? 'Prompt created.' : 'Prompt saved.', 'success');
+    navigateTo('/admin-dashboard/content/prompts/', 'prompts', {});
+  } catch (e) {
+    udToast("Couldn't save prompt.", 'error');
+  } finally {
+    peSaving = false;
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> ' + (peIsCreate ? 'Save prompt' : 'Save changes');
+    }
+  }
+}
+
+function peWireEvents() {
+  const backBtn   = document.getElementById('pe-back-btn');
+  const cancelBtn = document.getElementById('pe-cancel-btn');
+  const saveBtn   = document.getElementById('pe-save-btn');
+  const delBtn    = document.getElementById('pe-del-btn');
+  const catInput  = document.getElementById('pe-category');
+  const catDrop   = document.getElementById('pe-cat-dropdown');
+  if (backBtn)   backBtn.addEventListener('click',   function() { navigateTo('/admin-dashboard/content/prompts/', 'prompts', {}); });
+  if (cancelBtn) cancelBtn.addEventListener('click', function() { navigateTo('/admin-dashboard/content/prompts/', 'prompts', {}); });
+  if (saveBtn)   saveBtn.addEventListener('click',   peSave);
+  if (delBtn) {
+    delBtn.addEventListener('click', function() {
+      const title = ((document.getElementById('pe-title') || {}).value || 'this prompt');
+      promptsConfirmDelete(pePromptId, escHtml(title));
+    });
+  }
+  if (catInput && catDrop) {
+    catInput.addEventListener('focus', async function() {
+      peShowCombobox(await peFetchCategories(), catInput.value, catDrop);
+    });
+    catInput.addEventListener('input', async function() {
+      peShowCombobox(await peFetchCategories(), catInput.value, catDrop);
+    });
+    catInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') catDrop.style.display = 'none';
+    });
+    catInput.addEventListener('blur', function() {
+      setTimeout(function() { if (catDrop) catDrop.style.display = 'none'; }, 150);
+    });
+  }
+  document.addEventListener('click', peComboboxOutsideHandler);
+}
+
+async function promptEditMount(params) {
+  peIsCreate  = params.mode === 'create';
+  pePromptId  = peIsCreate ? null : (params.promptId || null);
+  peSaving    = false;
+  document.removeEventListener('click', peComboboxOutsideHandler);
+  const content = document.getElementById('prompt-edit-content');
+  if (!content) return;
+  if (peIsCreate) {
+    content.innerHTML = peBuildForm(null);
+    peWireEvents();
+    peFetchCategories(); // pre-warm cache
+  } else {
+    content.innerHTML = (
+      '<button class="ud-back-link" id="pe-back-skel"><i class="fa-solid fa-arrow-left"></i> Back to prompts</button>' +
+      '<div class="ud-breadcrumb">Loading…</div>' +
+      '<div class="pe-shell"><div class="ae-card"><div class="ae-card-title">Prompt Details</div>' +
+        '<div class="pe-skel-field"></div>' +
+        '<div class="pe-skel-field" style="width:60%"></div>' +
+        '<div class="pe-skel-field" style="width:70%"></div>' +
+        '<div class="pe-skel-textarea"></div>' +
+        '<div class="pe-skel-field" style="width:40%"></div>' +
+      '</div></div>'
+    );
+    const skelBack = document.getElementById('pe-back-skel');
+    if (skelBack) skelBack.addEventListener('click', function() {
+      navigateTo('/admin-dashboard/content/prompts/', 'prompts', {});
+    });
+    try {
+      const r    = await fetch('/api/admin/prompts/' + pePromptId, {credentials: 'same-origin'});
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || String(r.status));
+      content.innerHTML = peBuildForm(data);
+      peWireEvents();
+      peFetchCategories();
+    } catch (e) {
+      content.innerHTML = (
+        '<button class="ud-back-link" id="pe-back-err"><i class="fa-solid fa-arrow-left"></i> Back to prompts</button>' +
+        '<div class="ae-card" style="margin-top:16px"><p style="color:#fb7185;font-size:14px">Failed to load prompt.</p></div>'
+      );
+      const errBack = document.getElementById('pe-back-err');
+      if (errBack) errBack.addEventListener('click', function() {
+        navigateTo('/admin-dashboard/content/prompts/', 'prompts', {});
+      });
+    }
+  }
+}
+// ── END PROMPTS ──────────────────────────────────────────────────────────────
 
 // Profile menu toggle
 const pmToggle = document.getElementById('profile-menu-toggle');

@@ -1186,6 +1186,224 @@ def api_admin_import_prompts(request):
     )
 
 
+def _serialize_prompt(prompt):
+    return {
+        "id": prompt.id,
+        "title": prompt.title,
+        "body": prompt.body,
+        "industry": prompt.industry,
+        "category": prompt.category,
+        "status": prompt.status,
+        "usage_count": prompt.usage_count,
+        "saved_count": getattr(prompt, "saved_count", 0),
+        "created_by_id": prompt.created_by_id,
+        "created_at": prompt.created_at.isoformat(),
+    }
+
+
+_PROMPT_STATUS_VALUES = {"approved", "pending"}
+
+_PROMPT_PATCH_TEXT_FIELDS = {
+    "title": 255,
+    "body": 50000,
+    "industry": 100,
+    "category": 100,
+}
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_prompts(request):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if request.method == "GET":
+        try:
+            page = max(1, int(request.GET.get("page", 1) or 1))
+        except (ValueError, TypeError):
+            page = 1
+        try:
+            page_size = min(200, max(1, int(request.GET.get("page_size", 50) or 50)))
+        except (ValueError, TypeError):
+            page_size = 50
+
+        search = request.GET.get("search", "").strip()
+        industry = request.GET.get("industry", "").strip().lower()
+        status_filter = request.GET.get("status", "").strip()
+        sort = request.GET.get("sort", "created_desc").strip()
+
+        qs = Prompt.objects.annotate(saved_count=Count("saved_by"))
+
+        if search:
+            qs = qs.filter(
+                Q(title__icontains=search)
+                | Q(body__icontains=search)
+                | Q(category__icontains=search)
+            )
+        if industry:
+            qs = qs.filter(industry__iexact=INDUSTRY_MAP.get(industry, industry))
+        if status_filter:
+            qs = qs.filter(status=status_filter)
+
+        sort_map = {
+            "created_desc": "-created_at",
+            "created_asc": "created_at",
+            "title_asc": "title",
+            "saved_count_desc": "-saved_count",
+        }
+        qs = qs.order_by(sort_map.get(sort, "-created_at"))
+
+        total = qs.count()
+        pages = max(1, (total + page_size - 1) // page_size)
+        page = min(page, pages)
+        offset = (page - 1) * page_size
+
+        return JsonResponse({
+            "items": [_serialize_prompt(p) for p in qs[offset: offset + page_size]],
+            "page": page,
+            "page_size": page_size,
+            "total": total,
+            "pages": pages,
+        })
+
+    if request.method == "POST":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        title = str(payload.get("title", "")).strip()
+        body = str(payload.get("body", "")).strip()
+        industry = str(payload.get("industry", "")).strip()
+        category = str(payload.get("category", "")).strip() or "General"
+        status_val = str(payload.get("status", "approved")).strip()
+
+        errors = {}
+        if not title:
+            errors["title"] = "Required."
+        elif len(title) > 255:
+            errors["title"] = "Too long (max 255)."
+        if not body:
+            errors["body"] = "Required."
+        elif len(body) > 50000:
+            errors["body"] = "Too long (max 50,000)."
+        if not industry:
+            errors["industry"] = "Required."
+        if len(category) > 100:
+            errors["category"] = "Too long (max 100)."
+        if status_val not in _PROMPT_STATUS_VALUES:
+            errors["status"] = "Must be 'approved' or 'pending'."
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        prompt = Prompt.objects.create(
+            title=title,
+            body=body,
+            industry=_normalize_industry(industry),
+            category=category,
+            status=status_val,
+            created_by=request.current_user,
+        )
+        record_admin_action(
+            admin=request.current_user,
+            action_type="prompt.create",
+            target_type="prompt",
+            target_id=prompt.id,
+            metadata={"title": prompt.title, "industry": prompt.industry},
+        )
+        prompt.saved_count = 0
+        return JsonResponse(_serialize_prompt(prompt), status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_prompt_detail(request, prompt_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    prompt = Prompt.objects.filter(id=prompt_id).annotate(saved_count=Count("saved_by")).first()
+    if not prompt:
+        return JsonResponse({"error": "Prompt not found"}, status=404)
+
+    if request.method == "GET":
+        return JsonResponse(_serialize_prompt(prompt))
+
+    if request.method == "DELETE":
+        prompt_title = prompt.title
+        prompt.delete()
+        record_admin_action(
+            admin=request.current_user,
+            action_type="prompt.delete",
+            target_type="prompt",
+            target_id=prompt_id,
+            metadata={"title": prompt_title},
+        )
+        return JsonResponse({"deleted": True})
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        updates = {}
+
+        for field, limit in _PROMPT_PATCH_TEXT_FIELDS.items():
+            if field not in payload:
+                continue
+            val = str(payload[field]).strip()
+            if field in ("title", "body", "industry") and not val:
+                errors[field] = "Cannot be empty."
+                continue
+            if len(val) > limit:
+                errors[field] = f"Too long (max {limit})."
+                continue
+            if field == "industry":
+                val = _normalize_industry(val)
+            updates[field] = val
+
+        if "status" in payload:
+            val = str(payload["status"]).strip()
+            if val not in _PROMPT_STATUS_VALUES:
+                errors["status"] = "Must be 'approved' or 'pending'."
+            else:
+                updates["status"] = val
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        changed_fields = list(updates.keys())
+        if updates:
+            for field, value in updates.items():
+                setattr(prompt, field, value)
+            prompt.save(update_fields=changed_fields)
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="prompt.update",
+            target_type="prompt",
+            target_id=prompt.id,
+            metadata={"changed_fields": changed_fields},
+        )
+        prompt = Prompt.objects.filter(id=prompt_id).annotate(saved_count=Count("saved_by")).first()
+        return JsonResponse(_serialize_prompt(prompt))
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@login_required_api
+def api_admin_prompts_categories(request):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    categories = list(
+        Prompt.objects.exclude(category="")
+        .values_list("category", flat=True)
+        .distinct()
+        .order_by("category")
+    )
+    return JsonResponse({"categories": categories})
+
+
 @login_required_api
 def api_dashboard(request):
     user = request.current_user
