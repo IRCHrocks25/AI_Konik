@@ -22,8 +22,26 @@ python manage.py test myApp.tests.ClassName.test_method
 ```
 
 Notes:
-- `createsuperuser` is required to access `/agent-admin/` and `/prompt-import/`.
+- `createsuperuser` is required to access `/admin-dashboard/` and `/prompt-import/`.
 - Keep migrations scoped to `myApp` unless intentionally changing other apps.
+
+## Build Phase Status
+
+Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 11
+Remaining phases: 8, 9, 10
+
+Phase summary:
+- **1a/1b** — Auth (CustomUser, session), core pages, shared.css design system
+- **2** — Agent catalog + chat runtime
+- **3** — Prompts library
+- **4** — User profile + AI personalization system
+- **5** — Billing page
+- **6** — Admin dashboard shell + Agents CRUD
+- **7** — Admin dashboard Prompts CRUD (list + create/edit form with category combobox)
+- **8 (TODO)** — Industries CRUD in admin dashboard; replace hardcoded `INDUSTRY_OPTIONS` with `/api/industries`
+- **9 (TODO)** — Events CRUD in admin dashboard
+- **10 (TODO)** — Tools CRUD in admin dashboard
+- **11** — Admin dashboard: Users section (list, detail, suspend/unsuspend, impersonate, export)
 
 ## Environment Variables
 
@@ -66,7 +84,7 @@ Bridge behavior in `api_login` (`views.py`):
 
 Admin gate source of truth:
 - `_is_admin_user` checks matching Django auth user `is_superuser`.
-- Protected areas: `/agent-admin/`, `/prompt-import/`, all `/api/admin/*`.
+- Protected areas: `/admin-dashboard/`, `/prompt-import/`, all `/api/admin/*`.
 
 When editing auth, keep this bridge intact.
 
@@ -84,14 +102,47 @@ If you add a page, update all three or legacy links/bookmarks may break.
 Special case:
 - `/courses/` and `/courses.html` always redirect off-site to `https://courseforge.katek-ai.com/`.
 
-### 3) Agents / Prompts Data Model
+### 3) Admin Dashboard Architecture
+
+The primary admin UI is the SPA at `/admin-dashboard/` (`admin-dashboard.html`).
+
+Sections (sidebar navigation):
+- **PULSE** — platform stats, recent activity
+- **USERS** — list, detail, suspend/unsuspend, impersonate, CSV export
+- **CONTENT**
+  - Agents — full CRUD (Phase 6)
+  - Prompts — full CRUD (Phase 7)
+  - Industries — placeholder (Phase 8 TODO)
+  - Events — placeholder (Phase 9 TODO)
+  - Tools — placeholder (Phase 10 TODO)
+  - Banners — placeholder (future)
+- **OPERATIONS** — Summary, Token Usage, Audit Log, Error Log
+
+Dual admin role:
+- `/admin-dashboard/*` — primary admin UI for all ongoing content/user management
+- `/prompt-import/` — special-purpose bulk CSV/XLSX import tool; kept separate because it handles large file uploads with a dedicated UX
+
+`/agent-admin/` has been **removed** (Phase 12). All agent management is now in `/admin-dashboard/content/agents/`.
+
+Key architecture notes:
+- **Audit log privacy**: `record_admin_action` stores field NAMES only, never field values.
+- **Impersonation**: sets `impersonating_user_id` + `impersonation_expires` (30-min TTL) in session; `get_current_user` swaps identity transparently; `api_admin_stop_impersonation` clears both keys.
+- **`INDUSTRY_OPTIONS`**: hardcoded constant in `admin-dashboard.html` with a `// TODO Phase 8` comment — will be replaced by `/api/industries` when Phase 8 lands.
+- **Prompt category combobox**: fetches from `/api/admin/prompts/categories` (distinct values from DB, cached client-side in `peCategoryCache`). Free-text entry also allowed — typed value saves as-is.
+- **`accent_bg` hex validator**: in `api_admin_agent_detail` PATCH, `accent_bg` is validated against `/^#[0-9a-fA-F]{3,8}$/` before save.
+- **SPA routing**: `navigateTo(path, section, params)` + `showSection(key, params)` handle all panel switches and URL pushState.
+
+### 4) Agents / Prompts Data Model
 
 Two related domains:
 - `Prompt` / `SavedPrompt`: library shown on `/prompts/`
-  - admin bulk import via `api_admin_import_prompts`
+  - admin bulk import via `api_admin_import_prompts` (`/prompt-import/`)
   - supports CSV/XLSX ingestion and header normalization (`HEADER_ALIASES`)
+  - managed one-by-one via `/admin-dashboard/content/prompts/`
+  - `category` field: free-form hierarchical string (94 distinct values in seed data); tags from bulk import are embedded in `body` as `[Tags: ...]` — there is no separate tags field
+  - `saved_count` is a computed annotation (`Count('saved_by')`), not a model field; serializer uses `getattr(prompt, "saved_count", 0)` to handle non-annotated queries
 - `Agent` / `AgentPrompt`: agent catalog and attached prompts
-  - managed via `/agent-admin/`
+  - managed via `/admin-dashboard/content/agents/`
   - delivered to UI via `/api/agents`
 
 Seeding behavior:
@@ -102,7 +153,7 @@ Seeding behavior:
 Input normalization:
 - Use `INDUSTRY_MAP` (`views.py`) for free-text industry normalization.
 
-### 4) Chat Runtime Flow
+### 5) Chat Runtime Flow
 
 Core endpoint: `POST /api/chat/sessions/<id>/send`
 1. Persist user message.
@@ -167,7 +218,7 @@ Keep this behavior consistent when adding endpoints.
 - All authenticated app pages use `class="dark-app"` on `<body>` and rely on `shared.css` for theme.
 - Auth pages (login, register) use `class="auth-layout"` on `<body>`.
 - Public landing page (`index.html`) and bulk import (`prompt-import.html`) use `shared.css` with no body class — they remain light-themed.
-- `agent-admin.html` is **intentionally NOT linked to shared.css**. It is a standalone light-themed admin tool with its own design language and cyan primary color (`#0891b2`). This is a deliberate visual outlier — do not "consolidate" it without an explicit design decision to unify admin into the app theme.
+- `admin-dashboard.html` uses `shared.css` with `class="dark-app"` — it is part of the main app theme.
 
 ## Safe Change Checklist
 
@@ -181,4 +232,4 @@ Before finishing a change:
   - verify admin access still keys off Django superuser
 - If touching uploads/chat:
   - preserve behavior where upload extraction is separate from message persistence
-- Run relevant tests and smoke-check key pages (`/agents/`, `/prompts/`, `/agent-admin/`, `/prompt-import/`).
+- Run relevant tests and smoke-check key pages (`/agents/`, `/prompts/`, `/admin-dashboard/`, `/prompt-import/`).

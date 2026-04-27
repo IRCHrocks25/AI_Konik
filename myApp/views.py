@@ -155,7 +155,6 @@ LEGACY_PATH_REDIRECTS = {
     "login.html": "/login/",
     "register.html": "/register/",
     "prompt-import.html": "/prompt-import/",
-    "agent-admin.html": "/agent-admin/",
 }
 
 
@@ -251,15 +250,6 @@ def prompt_import_dashboard(request):
     if not _is_admin_user(user):
         return redirect("prompts")
     return render(request, "prompt-import.html")
-
-
-def agent_admin_dashboard(request):
-    user = get_current_user(request)
-    if not user:
-        return redirect("login")
-    if not _is_admin_user(user):
-        return redirect("agents")
-    return render(request, "agent-admin.html")
 
 
 @csrf_exempt
@@ -611,10 +601,9 @@ def api_admin_agents(request):
         if not _is_valid_hex_color(accent_bg):
             return JsonResponse({"error": "accent_bg must be a hex color like #RRGGBB"}, status=400)
 
-        # hints / use_cases are optional on POST. Old /agent-admin/ flow omits them
-        # and creates AgentPrompts via the separate /api/admin/agents/<id>/prompts
-        # endpoint instead — that path is preserved. New admin-dashboard flow
-        # supplies both arrays here so creation is one round-trip.
+        # hints / use_cases are optional on POST — the separate /api/admin/agents/<id>/prompts
+        # endpoint also creates AgentPrompts and is preserved for backwards compatibility.
+        # The admin-dashboard flow supplies both arrays here so creation is one round-trip.
         raw_hints = payload.get("hints") or []
         raw_use_cases = payload.get("use_cases") or []
         if not isinstance(raw_hints, list) or not isinstance(raw_use_cases, list):
