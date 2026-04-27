@@ -435,6 +435,29 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
 .ae-pcard-hint{font-size:11.5px;padding:6px 10px;border-radius:8px;background:rgba(255,255,255,.3);color:rgba(0,0,0,.7);border:1px solid rgba(255,255,255,.5)}
 .ae-pcard-footer{font-size:11px;color:rgba(0,0,0,.45);border-top:1px solid rgba(0,0,0,.1);padding-top:10px;margin-top:2px}
 .ae-skel-line{background:rgba(255,255,255,.08);border-radius:6px;animation:shimmer 1.2s ease-in-out infinite alternate}
+/* ── ICON PICKER MODAL ── */
+.icon-picker-modal{background:#1a1a2e;border:1px solid rgba(255,255,255,.2);border-radius:16px;width:620px;max-width:100%;max-height:75vh;display:flex;flex-direction:column;box-shadow:0 20px 60px rgba(0,0,0,.5);overflow:hidden}
+.icon-picker-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0}
+.icon-picker-title{font-size:15px;font-weight:600;color:#fff;margin:0}
+.icon-picker-close{width:28px;height:28px;border-radius:6px;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;padding:0;transition:background .15s,color .15s}
+.icon-picker-close:hover{background:rgba(255,255,255,.15);color:#fff}
+.icon-picker-search-wrap{padding:12px 20px;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.icon-picker-search{width:100%;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:#fff;font-family:inherit;font-size:13px;box-sizing:border-box;transition:border-color .15s}
+.icon-picker-search:focus{outline:none;border-color:rgba(168,85,247,.55)}
+.icon-picker-search::placeholder{color:rgba(255,255,255,.35)}
+.icon-picker-body{overflow-y:auto;padding:14px 20px;flex:1;min-height:0}
+.icon-picker-body::-webkit-scrollbar{width:5px}
+.icon-picker-body::-webkit-scrollbar-track{background:transparent}
+.icon-picker-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:3px}
+.icon-picker-category{margin-bottom:16px}
+.icon-picker-category:last-child{margin-bottom:0}
+.icon-picker-category-title{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:8px}
+.icon-picker-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:5px}
+.icon-picker-cell{border-radius:7px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.05);color:rgba(255,255,255,.65);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;aspect-ratio:1;transition:background .12s,border-color .12s,color .12s;padding:0}
+.icon-picker-cell:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#fff}
+.icon-picker-cell.selected{border-color:rgba(139,92,246,.7);background:rgba(139,92,246,.2);color:#c4b5fd}
+.icon-picker-empty{text-align:center;padding:32px 20px;color:rgba(255,255,255,.35);font-size:13px}
+.icon-picker-ft{padding:10px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:flex-end;flex-shrink:0}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -1848,7 +1871,6 @@ let aeHints = [];
 let aeUseCases = [];
 let aeIconClass = 'fa-robot';
 let aeAccentBg = '#EEF2FF';
-let aeIconPickerOpen = false;
 let aeSaving = false;
 let aeGenerating = false;
 
@@ -1865,10 +1887,18 @@ const INDUSTRY_OPTIONS = [
   {value:'marketing', label:'Marketing'},
 ];
 
-const AE_STUB_ICONS = [
-  // TODO Chunk 6.5: Replace with full 88-icon FA modal picker
-  'fa-robot','fa-brain','fa-wand-magic-sparkles','fa-bolt','fa-star',
-  'fa-heart','fa-lightbulb','fa-rocket','fa-shield-halved','fa-chart-line',
+const ICON_CATEGORIES = [
+  {name:'Legal & Compliance', icons:['fa-scale-balanced','fa-gavel','fa-file-contract','fa-shield-halved','fa-handshake','fa-user-tie','fa-stamp','fa-book-bookmark']},
+  {name:'Healthcare', icons:['fa-stethoscope','fa-heart-pulse','fa-hospital','fa-user-doctor','fa-prescription-bottle','fa-pills','fa-notes-medical','fa-syringe']},
+  {name:'Finance & Accounting', icons:['fa-sack-dollar','fa-chart-line','fa-coins','fa-piggy-bank','fa-calculator','fa-receipt','fa-credit-card','fa-money-bill-trend-up']},
+  {name:'Marketing', icons:['fa-bullhorn','fa-magnet','fa-chart-pie','fa-envelope-open-text','fa-share-nodes','fa-rocket','fa-bullseye','fa-fire']},
+  {name:'Sales & CRM', icons:['fa-handshake-angle','fa-phone','fa-headset','fa-people-arrows','fa-user-plus','fa-funnel-dollar','fa-comments-dollar','fa-ranking-star']},
+  {name:'Technology', icons:['fa-laptop-code','fa-server','fa-database','fa-cloud','fa-microchip','fa-code','fa-bug','fa-wifi']},
+  {name:'Design & Content', icons:['fa-palette','fa-pen-nib','fa-image','fa-video','fa-music','fa-camera','fa-paintbrush','fa-pen-fancy']},
+  {name:'Operations', icons:['fa-truck','fa-boxes-stacked','fa-warehouse','fa-route','fa-clipboard-check','fa-gears','fa-industry','fa-people-carry-box']},
+  {name:'HR & People', icons:['fa-users','fa-user-group','fa-id-badge','fa-graduation-cap','fa-clipboard-user','fa-briefcase','fa-building-user','fa-user-clock']},
+  {name:'Real Estate', icons:['fa-house','fa-key','fa-building','fa-map-location-dot','fa-bed','fa-city','fa-house-chimney-window','fa-warehouse-full']},
+  {name:'General', icons:['fa-robot','fa-brain','fa-lightbulb','fa-toolbox','fa-flag-checkered','fa-star','fa-circle-question','fa-magnifying-glass']},
 ];
 
 async function agentEditMount(params) {
@@ -1878,7 +1908,6 @@ async function agentEditMount(params) {
   aeUseCases = [];
   aeIconClass = 'fa-robot';
   aeAccentBg = '#EEF2FF';
-  aeIconPickerOpen = false;
   aeSaving = false;
   aeGenerating = false;
 
@@ -1958,12 +1987,6 @@ function aeRenderFull(agentData) {
     industryOpts += '<option value="' + escHtml(o.value) + '"' + (o.value === industryVal ? ' selected' : '') + '>' + escHtml(o.label) + '</option>';
   }
 
-  let stubIconsHtml = '';
-  for (let i = 0; i < AE_STUB_ICONS.length; i++) {
-    const ic = AE_STUB_ICONS[i];
-    stubIconsHtml += '<button class="ae-stub-icon' + (ic === aeIconClass ? ' selected' : '') + '" data-icon="' + escHtml(ic) + '" type="button"><i class="fa-solid ' + escHtml(ic) + '"></i></button>';
-  }
-
   const deleteBtn = aeIsCreate ? '' : (
     '<button class="ae-del-btn" id="ae-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete</button>'
   );
@@ -2025,7 +2048,6 @@ function aeRenderFull(agentData) {
               '<span id="ae-icon-class-label">' + escHtml(aeIconClass) + '</span>' +
               '<i class="fa-solid fa-chevron-down" style="margin-left:auto;opacity:.45;font-size:11px"></i>' +
             '</button>' +
-            '<div class="ae-stub-grid" id="ae-stub-grid">' + stubIconsHtml + '</div>' +
           '</div>' +
           '<div class="ae-field">' +
             '<label class="ae-label" for="ae-hex-input">Accent Color</label>' +
@@ -2210,6 +2232,99 @@ function aeRefreshIconBtn() {
   if (lbl) lbl.textContent = aeIconClass;
 }
 
+function aeOpenIconPicker() {
+  const existing = document.getElementById('ip-overlay');
+  if (existing) existing.remove();
+
+  const ov = document.createElement('div');
+  ov.id = 'ip-overlay';
+  ov.className = 'ud-modal-overlay';
+  document.body.appendChild(ov);
+
+  function buildBody(filter) {
+    const f = (filter || '').trim().toLowerCase();
+    let html = '';
+    let any = false;
+    for (let ci = 0; ci < ICON_CATEGORIES.length; ci++) {
+      const cat = ICON_CATEGORIES[ci];
+      const catHit = !f || cat.name.toLowerCase().includes(f);
+      const icons = catHit ? cat.icons : cat.icons.filter(ic => ic.replace('fa-', '').includes(f));
+      if (!icons.length) continue;
+      any = true;
+      let grid = '';
+      for (let ii = 0; ii < icons.length; ii++) {
+        const ic = icons[ii];
+        grid += '<button class="icon-picker-cell' + (ic === aeIconClass ? ' selected' : '') + '" data-icon="' + escHtml(ic) + '" type="button" title="' + escHtml(ic) + '"><i class="fa-solid ' + escHtml(ic) + '"></i></button>';
+      }
+      html += (
+        '<div class="icon-picker-category">' +
+          '<div class="icon-picker-category-title">' + escHtml(cat.name) + '</div>' +
+          '<div class="icon-picker-grid">' + grid + '</div>' +
+        '</div>'
+      );
+    }
+    if (!any) {
+      html = '<div class="icon-picker-empty">No icons match &ldquo;' + escHtml(filter || '') + '&rdquo;</div>';
+    }
+    return html;
+  }
+
+  ov.innerHTML = (
+    '<div class="icon-picker-modal">' +
+      '<div class="icon-picker-hd">' +
+        '<span class="icon-picker-title">Choose an icon</span>' +
+        '<button class="icon-picker-close" id="ip-close" type="button"><i class="fa-solid fa-xmark"></i></button>' +
+      '</div>' +
+      '<div class="icon-picker-search-wrap">' +
+        '<input class="icon-picker-search" id="ip-search" type="text" placeholder="Search icons or categories…" autocomplete="off">' +
+      '</div>' +
+      '<div class="icon-picker-body" id="ip-body">' + buildBody('') + '</div>' +
+      '<div class="icon-picker-ft">' +
+        '<button class="ae-cancel-btn" id="ip-cancel" type="button">Cancel</button>' +
+      '</div>' +
+    '</div>'
+  );
+
+  function closeIp() {
+    ov.remove();
+    document.removeEventListener('keydown', escHandler);
+  }
+
+  function bindCells() {
+    const body = document.getElementById('ip-body');
+    if (!body) return;
+    body.querySelectorAll('.icon-picker-cell').forEach(btn => {
+      btn.addEventListener('click', () => {
+        aeIconClass = btn.dataset.icon;
+        aeRefreshIconBtn();
+        aeUpdatePreview();
+        closeIp();
+      });
+    });
+  }
+
+  const escHandler = (e) => { if (e.key === 'Escape') closeIp(); };
+  ov.addEventListener('click', (e) => { if (e.target === ov) closeIp(); });
+  document.addEventListener('keydown', escHandler);
+
+  const closeBtn = document.getElementById('ip-close');
+  const cancelBtn = document.getElementById('ip-cancel');
+  const searchInp = document.getElementById('ip-search');
+
+  if (closeBtn) closeBtn.addEventListener('click', closeIp);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeIp);
+
+  if (searchInp) {
+    searchInp.addEventListener('input', () => {
+      const body = document.getElementById('ip-body');
+      if (body) { body.innerHTML = buildBody(searchInp.value); bindCells(); }
+    });
+    searchInp.focus();
+  }
+
+  bindCells();
+}
+
 function aeBindAll() {
   const backBtn = document.getElementById('ae-back-btn');
   const cancelBtn = document.getElementById('ae-cancel-btn');
@@ -2217,7 +2332,6 @@ function aeBindAll() {
   const genBtn = document.getElementById('ae-gen-btn');
   const delBtn = document.getElementById('ae-del-btn');
   const iconBtn = document.getElementById('ae-icon-btn');
-  const stubGrid = document.getElementById('ae-stub-grid');
   const colorNative = document.getElementById('ae-color-native');
   const hexInput = document.getElementById('ae-hex-input');
   const swatchWrap = document.getElementById('ae-color-swatch-wrap');
@@ -2250,23 +2364,7 @@ function aeBindAll() {
     });
   }
 
-  if (iconBtn && stubGrid) {
-    iconBtn.addEventListener('click', () => {
-      aeIconPickerOpen = !aeIconPickerOpen;
-      stubGrid.style.display = aeIconPickerOpen ? 'grid' : 'none';
-    });
-    stubGrid.querySelectorAll('.ae-stub-icon').forEach(btn => {
-      btn.addEventListener('click', () => {
-        aeIconClass = btn.dataset.icon;
-        aeIconPickerOpen = false;
-        stubGrid.style.display = 'none';
-        stubGrid.querySelectorAll('.ae-stub-icon').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        aeRefreshIconBtn();
-        aeUpdatePreview();
-      });
-    });
-  }
+  if (iconBtn) iconBtn.addEventListener('click', aeOpenIconPicker);
 
   ['ae-name', 'ae-description', 'ae-tag'].forEach(id => {
     const el = document.getElementById(id);
