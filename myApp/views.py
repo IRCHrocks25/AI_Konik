@@ -13,6 +13,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import transaction
 from django.db.models import Count, Q, Sum
+from django.db.models.functions import TruncDate
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone as dj_tz
@@ -31,7 +32,7 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Prompt, SavedPrompt
+from .models import AdminAction, Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Prompt, SavedPrompt
 from .openai_service import (
     MAX_REQUEST_TOKENS,
     estimate_messages_tokens,
@@ -1244,6 +1245,10 @@ def api_pulse(request):
     cost_today = round(tokens_today * _BLENDED_COST_PER_TOKEN, 4)
     cost_month = round(tokens_month * _BLENDED_COST_PER_TOKEN, 4)
 
+    # NOTE: errors_today uses a rolling 24-hour window (not a calendar day) so the
+    # PULSE tile stays responsive regardless of wall-clock time. The OPERATIONS
+    # summary endpoint (/api/admin/ops/summary) uses calendar-day counts instead,
+    # matching the rest of its per-day aggregation logic.
     errors_today = ErrorLog.objects.filter(created_at__gte=day_ago).count()
     error_by_type = {
         row["error_type"]: row["n"]
@@ -1296,6 +1301,43 @@ def _parse_active_after(value):
         return dt
     except ValueError:
         return None
+
+
+def _parse_since(value, now):
+    """Parse a ?since= param into an aware datetime.
+
+    Accepts: '24h', 'Nd' (e.g. '7d', '30d'), or an ISO date string ('YYYY-MM-DD').
+    Returns None if unparseable (callers should default to a sensible fallback).
+    """
+    if value == "24h":
+        return now - timedelta(hours=24)
+    if value.endswith("d"):
+        try:
+            return now - timedelta(days=int(value[:-1]))
+        except ValueError:
+            pass
+    try:
+        from datetime import date as _date
+        d = _date.fromisoformat(value)
+        return dj_tz.make_aware(datetime(d.year, d.month, d.day))
+    except (ValueError, AttributeError):
+        pass
+    return None
+
+
+def _relative_time(dt, now):
+    """Return a human-readable relative timestamp string."""
+    seconds = int((now - dt).total_seconds())
+    if seconds < 60:
+        return "just now"
+    if seconds < 3600:
+        m = seconds // 60
+        return f"{m} minute{'s' if m != 1 else ''} ago"
+    if seconds < 86400:
+        h = seconds // 3600
+        return f"{h} hour{'s' if h != 1 else ''} ago"
+    d = seconds // 86400
+    return f"{d} day{'s' if d != 1 else ''} ago"
 
 
 def _build_user_queryset(params):
@@ -1829,6 +1871,247 @@ def api_admin_stop_impersonation(request):
             metadata={"target_user_id": impersonated_user_id},
         )
     return JsonResponse({"ok": True, "redirect": "/admin-dashboard/"})
+
+
+# ---------------------------------------------------------------------------
+# OPERATIONS endpoints
+# ---------------------------------------------------------------------------
+
+@csrf_exempt
+@login_required_api
+def api_admin_ops_summary(request):
+    """OPERATIONS — summary stats card.
+
+    "today" uses calendar-day filtering; "week" uses a rolling 7-day window.
+    Both differ from /api/admin/pulse which uses a rolling 24-hour window for
+    errors so its tile stays accurate regardless of wall-clock time.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    now = dj_tz.now()
+    today = now.date()
+    day_ago = now - timedelta(hours=24)
+    week_ago = now - timedelta(days=7)
+
+    # today (calendar day)
+    messages_today = ChatMessage.objects.filter(role="user", created_at__date=today).count()
+    tokens_today = (
+        ChatMessage.objects.filter(role="assistant", created_at__date=today)
+        .aggregate(total=Sum("token_count"))["total"] or 0
+    )
+    errors_today = ErrorLog.objects.filter(created_at__date=today).count()
+    admin_actions_today = AdminAction.objects.filter(created_at__date=today).count()
+
+    # week (rolling 7 days)
+    messages_week = ChatMessage.objects.filter(role="user", created_at__gte=week_ago).count()
+    tokens_week = (
+        ChatMessage.objects.filter(role="assistant", created_at__gte=week_ago)
+        .aggregate(total=Sum("token_count"))["total"] or 0
+    )
+    errors_week = ErrorLog.objects.filter(created_at__gte=week_ago).count()
+    admin_actions_week = AdminAction.objects.filter(created_at__gte=week_ago).count()
+
+    # health checks
+    checks = []
+
+    try:
+        CustomUser.objects.count()
+        checks.append({"name": "Database", "status": "ok", "detail": "Connected"})
+    except Exception as exc:
+        checks.append({"name": "Database", "status": "error", "detail": str(exc)[:120]})
+
+    openai_errors = ErrorLog.objects.filter(error_type__startswith="openai_", created_at__gte=day_ago).count()
+    oe_status = "ok" if openai_errors == 0 else ("warning" if openai_errors <= 5 else "error")
+    checks.append({
+        "name": "OpenAI errors (last 24h)",
+        "status": oe_status,
+        "detail": f"{openai_errors} error{'s' if openai_errors != 1 else ''}",
+    })
+
+    audit_count = AdminAction.objects.count()
+    checks.append({"name": "Audit log size", "status": "ok", "detail": f"{audit_count} entr{'ies' if audit_count != 1 else 'y'}"})
+
+    error_count = ErrorLog.objects.count()
+    checks.append({"name": "Error log size", "status": "ok", "detail": f"{error_count} entr{'ies' if error_count != 1 else 'y'}"})
+
+    status_rank = {"ok": 0, "warning": 1, "error": 2}
+    overall = max(checks, key=lambda c: status_rank.get(c["status"], 0))["status"]
+
+    return JsonResponse({
+        "health": {"status": overall, "checks": checks},
+        "today": {
+            "messages_sent": messages_today,
+            "tokens_used": tokens_today,
+            "estimated_cost_usd": round(tokens_today * _BLENDED_COST_PER_TOKEN, 6),
+            "errors": errors_today,
+            "admin_actions": admin_actions_today,
+        },
+        "week": {
+            "messages_sent": messages_week,
+            "tokens_used": tokens_week,
+            "estimated_cost_usd": round(tokens_week * _BLENDED_COST_PER_TOKEN, 6),
+            "errors": errors_week,
+            "admin_actions": admin_actions_week,
+        },
+    })
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_ops_token_usage(request):
+    """OPERATIONS — daily token usage for chart rendering.
+
+    Returns exactly ?days=N entries (default 30), newest last, with zero backfill
+    so the chart never has gaps.  The loop runs from (today - N + 1) to today
+    inclusive, giving precisely N days with no off-by-one.
+    """
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    now = dj_tz.now()
+    today = now.date()
+    days_back = min(365, max(1, int(request.GET.get("days", 30))))
+    # start_date is inclusive; today - (N-1) days gives exactly N days in range
+    start_date = today - timedelta(days=days_back - 1)
+
+    rows = (
+        ChatMessage.objects.filter(role="assistant", created_at__date__gte=start_date)
+        .annotate(day=TruncDate("created_at"))
+        .values("day")
+        .annotate(tokens=Sum("token_count"), messages=Count("id"))
+        .order_by("day")
+    )
+
+    by_day = {row["day"]: {"tokens": row["tokens"] or 0, "messages": row["messages"]} for row in rows}
+
+    result = []
+    current = start_date
+    while current <= today:
+        entry = by_day.get(current, {"tokens": 0, "messages": 0})
+        result.append({
+            "date": current.isoformat(),
+            "tokens": entry["tokens"],
+            "messages": entry["messages"],
+            "cost_usd": round(entry["tokens"] * _BLENDED_COST_PER_TOKEN, 6),
+        })
+        current += timedelta(days=1)
+
+    total_tokens = sum(d["tokens"] for d in result)
+    total_messages = sum(d["messages"] for d in result)
+
+    return JsonResponse({
+        "days": result,
+        "totals": {
+            "tokens": total_tokens,
+            "messages": total_messages,
+            "cost_usd": round(total_tokens * _BLENDED_COST_PER_TOKEN, 6),
+        },
+    })
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_ops_audit(request):
+    """OPERATIONS — paginated admin audit log."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    now = dj_tz.now()
+    since_raw = request.GET.get("since", "30d")
+    since_dt = _parse_since(since_raw, now) or (now - timedelta(days=30))
+    action_type = request.GET.get("action_type", "").strip()
+    q = request.GET.get("q", "").strip()
+
+    page = max(1, int(request.GET.get("page", 1)))
+    page_size = min(100, max(1, int(request.GET.get("page_size", 50))))
+
+    qs = (
+        AdminAction.objects.filter(created_at__gte=since_dt)
+        .select_related("admin")
+        .order_by("-created_at")
+    )
+    if action_type:
+        qs = qs.filter(action_type__icontains=action_type)
+    if q:
+        qs = qs.filter(Q(action_type__icontains=q) | Q(target_type__icontains=q))
+
+    total = qs.count()
+    pages = max(1, (total + page_size - 1) // page_size)
+    items_qs = qs[(page - 1) * page_size: page * page_size]
+
+    items = [
+        {
+            "id": a.id,
+            "admin_id": a.admin.id if a.admin else None,
+            "admin_email": a.admin.email if a.admin else None,
+            "admin_display_name": a.admin.display_name if a.admin else None,
+            "action_type": a.action_type,
+            "target_type": a.target_type,
+            "target_id": a.target_id,
+            "metadata": a.metadata,
+            "created_at": a.created_at.isoformat(),
+            "created_at_relative": _relative_time(a.created_at, now),
+        }
+        for a in items_qs
+    ]
+
+    return JsonResponse({"items": items, "page": page, "page_size": page_size, "total": total, "pages": pages})
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_ops_errors(request):
+    """OPERATIONS — paginated error log."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    now = dj_tz.now()
+    since_raw = request.GET.get("since", "7d")
+    since_dt = _parse_since(since_raw, now) or (now - timedelta(days=7))
+    error_type = request.GET.get("error_type", "").strip()
+    q = request.GET.get("q", "").strip()
+
+    page = max(1, int(request.GET.get("page", 1)))
+    page_size = min(100, max(1, int(request.GET.get("page_size", 50))))
+
+    qs = (
+        ErrorLog.objects.filter(created_at__gte=since_dt)
+        .select_related("user")
+        .order_by("-created_at")
+    )
+    if error_type:
+        qs = qs.filter(error_type__icontains=error_type)
+    if q:
+        qs = qs.filter(Q(error_type__icontains=q) | Q(message__icontains=q))
+
+    total = qs.count()
+    pages = max(1, (total + page_size - 1) // page_size)
+    items_qs = qs[(page - 1) * page_size: page * page_size]
+
+    items = [
+        {
+            "id": e.id,
+            "error_type": e.error_type,
+            "message": e.message,
+            "user_email": e.user.email if e.user else None,
+            "user_display_name": e.user.display_name if e.user else None,
+            "metadata": e.metadata,
+            "created_at": e.created_at.isoformat(),
+            "created_at_relative": _relative_time(e.created_at, now),
+        }
+        for e in items_qs
+    ]
+
+    return JsonResponse({"items": items, "page": page, "page_size": page_size, "total": total, "pages": pages})
 
 
 @login_required_api

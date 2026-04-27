@@ -40,6 +40,7 @@ urlpatterns = [
     path("admin-dashboard/operations/", views.admin_dashboard, name="admin_dashboard_operations"),
     path("admin-dashboard/operations/errors/", views.admin_dashboard, name="admin_dashboard_errors"),
     path("admin-dashboard/operations/audit/", views.admin_dashboard, name="admin_dashboard_audit"),
+    path("admin-dashboard/operations/tokens/", views.admin_dashboard, name="admin_dashboard_tokens"),
     path("index.html", legacy_redirect("/index/"), name="legacy_index_html"),
     path("dashboard.html", legacy_redirect("/dashboard/"), name="legacy_dashboard_html"),
     path("agents.html", legacy_redirect("/agents/"), name="legacy_agents_html"),
@@ -112,4 +113,8 @@ urlpatterns = [
     path("api/admin/users/<int:user_id>/unsuspend", views.api_admin_user_unsuspend, name="api_admin_user_unsuspend"),
     path("api/admin/users/<int:user_id>/impersonate", views.api_admin_user_impersonate, name="api_admin_user_impersonate"),
     path("api/admin/stop-impersonation", views.api_admin_stop_impersonation, name="api_admin_stop_impersonation"),
+    path("api/admin/ops/summary", views.api_admin_ops_summary, name="api_admin_ops_summary"),
+    path("api/admin/ops/token-usage", views.api_admin_ops_token_usage, name="api_admin_ops_token_usage"),
+    path("api/admin/ops/audit", views.api_admin_ops_audit, name="api_admin_ops_audit"),
+    path("api/admin/ops/errors", views.api_admin_ops_errors, name="api_admin_ops_errors"),
 ]
