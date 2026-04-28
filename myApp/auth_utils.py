@@ -133,6 +133,14 @@ def login_required_api(view_func):
         user = get_current_user(request)
         if not user:
             return JsonResponse({"error": "Authentication required"}, status=401)
+        if not user.email_verified:
+            return JsonResponse(
+                {
+                    "error": "email_verification_required",
+                    "message": "Please verify your email",
+                },
+                status=403,
+            )
         request.current_user = user
         return view_func(request, *args, **kwargs)
 

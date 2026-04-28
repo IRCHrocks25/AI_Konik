@@ -27,8 +27,8 @@ Notes:
 
 ## Build Phase Status
 
-Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 11
-Remaining phases: 8, 9, 10
+Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
+Remaining phases: none — admin dashboard build complete
 
 Phase summary:
 - **1a/1b** — Auth (CustomUser, session), core pages, shared.css design system
@@ -38,10 +38,11 @@ Phase summary:
 - **5** — Billing page
 - **6** — Admin dashboard shell + Agents CRUD
 - **7** — Admin dashboard Prompts CRUD (list + create/edit form with category combobox)
-- **8 (TODO)** — Industries CRUD in admin dashboard; replace hardcoded `INDUSTRY_OPTIONS` with `/api/industries`
-- **9 (TODO)** — Events CRUD in admin dashboard
-- **10 (TODO)** — Tools CRUD in admin dashboard
+- **8** — Industries CRUD in admin dashboard; `/api/industries` replaces hardcoded `INDUSTRY_OPTIONS`
+- **9** — Events CRUD in admin dashboard
+- **10** — Banners CRUD in admin dashboard + site-wide banner display. Banners are DB-driven via `/api/banners` with rendering across all 12 authenticated templates. Dismissal is client-side via localStorage with `ban-dismiss-<id>` keys. Stacking with impersonation banner handled by body class composition (`body.impersonating` + `body.has-system-banner`).
 - **11** — Admin dashboard: Users section (list, detail, suspend/unsuspend, impersonate, export)
+- **12** — Tools CRUD in admin dashboard; `/agent-admin/` removed, all agent management consolidated into `/admin-dashboard/`
 
 ## Environment Variables
 
@@ -112,10 +113,10 @@ Sections (sidebar navigation):
 - **CONTENT**
   - Agents — full CRUD (Phase 6)
   - Prompts — full CRUD (Phase 7)
-  - Industries — placeholder (Phase 8 TODO)
-  - Events — placeholder (Phase 9 TODO)
-  - Tools — placeholder (Phase 10 TODO)
-  - Banners — placeholder (future)
+  - Industries — full CRUD (Phase 8)
+  - Events — full CRUD (Phase 9)
+  - Tools — full CRUD (Phase 12)
+  - Banners — full CRUD (Phase 10); site-wide display via `applyActiveBanners()` injected into all 12 authenticated templates
 - **OPERATIONS** — Summary, Token Usage, Audit Log, Error Log
 
 Dual admin role:

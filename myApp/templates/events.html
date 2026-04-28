@@ -60,6 +60,45 @@
   </div>
 </nav>
 <script>
+async function applyActiveBanners() {
+  try {
+    const r = await fetch('/api/banners', {credentials: 'same-origin'});
+    if (!r.ok) return;
+    const data = await r.json();
+    const banners = data.banners || [];
+    if (!banners.length) return;
+    const visible = banners.filter(b =>
+      b.is_dismissible
+        ? !localStorage.getItem('ban-dismiss-' + b.id)
+        : true
+    );
+    if (!visible.length) return;
+    renderSystemBanner(visible[0]);
+  } catch (e) {
+    // Fail silently — banners are non-critical
+  }
+}
+function renderSystemBanner(b) {
+  const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]
+  );
+  const banner = document.createElement('div');
+  banner.className = 'system-banner system-banner--' + b.banner_type;
+  banner.id = 'system-banner-' + b.id;
+  let html = '<span class="system-banner__msg">' + escHtml(b.message) + '</span>';
+  if (b.is_dismissible) {
+    html += '<button class="system-banner__dismiss" onclick="dismissSystemBanner(' + b.id + ')" aria-label="Dismiss">&times;</button>';
+  }
+  banner.innerHTML = html;
+  document.body.prepend(banner);
+  document.body.classList.add('has-system-banner');
+}
+function dismissSystemBanner(id) {
+  localStorage.setItem('ban-dismiss-' + id, '1');
+  const el = document.getElementById('system-banner-' + id);
+  if (el) el.remove();
+  document.body.classList.remove('has-system-banner');
+}
 function applyImpersonationBanner(meData) {
   if (!meData || !meData.is_impersonating) return;
   document.body.classList.add('impersonating');
@@ -94,6 +133,7 @@ async function stopImpersonation() {
 fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{
   if(d.is_admin)document.body.classList.add('admin-visible');
   applyImpersonationBanner(d);
+  applyActiveBanners();
 }).catch(()=>{});
 </script>
 

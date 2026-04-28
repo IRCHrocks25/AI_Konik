@@ -92,6 +92,16 @@ class CustomUser(models.Model):
         help_text="Soft-disable account without deletion.",
     )
 
+    # Section 6 — Lifecycle & Verification
+    email_verified = models.BooleanField(default=False, db_index=True)
+    email_verification_token = models.UUIDField(null=True, blank=True, db_index=True)
+    email_verification_sent_at = models.DateTimeField(null=True, blank=True)
+    onboarding_completed = models.BooleanField(default=False)
+    onboarding_industry = models.CharField(max_length=80, blank=True, default="")
+    onboarding_use_cases = models.JSONField(default=list, blank=True)
+    last_lifecycle_email_sent = models.DateTimeField(null=True, blank=True)
+    last_lifecycle_email_kind = models.CharField(max_length=40, blank=True, default="")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

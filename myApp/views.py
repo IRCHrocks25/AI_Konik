@@ -158,6 +158,9 @@ LEGACY_PATH_REDIRECTS = {
     "login.html": "/login/",
     "register.html": "/register/",
     "prompt-import.html": "/prompt-import/",
+    "verify-email-required.html": "/verify-email-required/",
+    "verify-email.html": "/verify-email/",
+    "onboarding.html": "/onboarding/",
 }
 
 
@@ -263,6 +266,34 @@ def register(request):
     return render(request, "register.html")
 
 
+def verify_email_required(request):
+    """Page shown when a logged-in user has not yet verified their email."""
+    user = get_current_user(request)
+    if not user:
+        return redirect("login")
+    if user.email_verified:
+        # Already verified — bounce to onboarding or dashboard depending on state.
+        return redirect("onboarding" if not user.onboarding_completed else "dashboard")
+    return render(request, "verify-email-required.html")
+
+
+def verify_email_page(request):
+    """Public landing for email verification links. Token handled client-side."""
+    return render(request, "verify-email.html")
+
+
+def onboarding_page(request):
+    """3-step onboarding flow. Requires logged-in + verified user."""
+    user = get_current_user(request)
+    if not user:
+        return redirect("login")
+    if not user.email_verified:
+        return redirect("verify_email_required")
+    if user.onboarding_completed:
+        return redirect("dashboard")
+    return render(request, "onboarding.html")
+
+
 def shared_css(request):
     return render(request, "shared.css", content_type="text/css")
 
@@ -318,15 +349,21 @@ def api_register(request):
         email=email,
         industry=industry,
         password_hash=make_password(password),
+        email_verified=False,
+        email_verification_token=uuid.uuid4(),
+        email_verification_sent_at=dj_tz.now(),
     )
-    login_user(request, user)
+    # Best-effort send. Failure is logged but must not crash registration —
+    # the resend-verification endpoint is the user-facing recovery path.
+    try:
+        from .email_service import send_welcome_verification_email
+        send_welcome_verification_email(user, request=request)
+    except Exception as exc:
+        log_error("email_send", f"welcome dispatch raised: {exc!s}", user=user)
     return JsonResponse(
         {
-            "id": user.id,
+            "message": "Check your email to verify",
             "email": user.email,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "industry": user.industry,
         },
         status=201,
     )
@@ -416,6 +453,8 @@ def api_me(request):
         "first_name": user.first_name,
         "last_name": user.last_name,
         "industry": user.industry,
+        "email_verified": bool(user.email_verified),
+        "onboarding_completed": bool(user.onboarding_completed),
         "is_impersonating": is_impersonating,
     }
     if is_impersonating:
@@ -423,6 +462,214 @@ def api_me(request):
         admin_custom = CustomUser.objects.filter(id=admin_id).first()
         result["impersonated_by_email"] = admin_custom.email if admin_custom else None
     return JsonResponse(result)
+
+
+# ── Email verification + onboarding ─────────────────────────────────
+
+# Locked from product spec — must match the chip set rendered on /onboarding/.
+ONBOARDING_USE_CASES = {
+    "Content creation",
+    "Contract review",
+    "Customer support",
+    "Financial analysis",
+    "Meeting prep",
+    "Sales outreach",
+    "Technical documentation",
+    "Market research",
+    "Email management",
+    "Internal training",
+    "Compliance reporting",
+    "Strategic planning",
+}
+
+
+@csrf_exempt
+def api_verify_email(request):
+    """Consume a verification token and flip email_verified=True.
+
+    Intentionally NOT decorated with @login_required_api — verification links
+    are clicked from the email inbox, often before the user has a session.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    token = str(payload.get("token", "")).strip()
+    if not token:
+        return JsonResponse({"error": "missing_token", "message": "Token required"}, status=400)
+
+    try:
+        token_uuid = uuid.UUID(token)
+    except (ValueError, AttributeError, TypeError):
+        return JsonResponse(
+            {"error": "invalid_token", "message": "This link is not valid."},
+            status=400,
+        )
+
+    # Direct DB filter on UUID — no fetch-all-then-compare. Index on the
+    # column makes this O(log n) and the comparison happens inside Postgres,
+    # which removes any timing-attack surface from Python-level compares.
+    user = CustomUser.objects.filter(email_verification_token=token_uuid).first()
+    if not user:
+        return JsonResponse(
+            {"error": "invalid_token", "message": "This link is not valid."},
+            status=400,
+        )
+
+    sent_at = user.email_verification_sent_at
+    from .email_service import TOKEN_TTL
+    if not sent_at or (dj_tz.now() - sent_at) > TOKEN_TTL:
+        return JsonResponse(
+            {
+                "error": "expired",
+                "message": "This link has expired. Please request a new one.",
+            },
+            status=400,
+        )
+
+    user.email_verified = True
+    user.email_verification_token = None
+    user.email_verification_sent_at = None
+    user.save(update_fields=[
+        "email_verified",
+        "email_verification_token",
+        "email_verification_sent_at",
+        "updated_at",
+    ])
+    return JsonResponse({"verified": True, "email": user.email})
+
+
+@csrf_exempt
+def api_resend_verification(request):
+    """Re-issue a verification email.
+
+    Always returns 200 with a generic success body — never reveals whether the
+    address is registered. If the address exists and is unverified, a fresh
+    token is generated and a new email is dispatched. If already verified or
+    not registered, we silently succeed.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    email = str(payload.get("email", "")).strip().lower()
+    generic = JsonResponse({
+        "message": "If that email is registered, a verification message has been sent.",
+    })
+
+    if not email:
+        return generic
+
+    user = CustomUser.objects.filter(email=email).first()
+    if not user or user.email_verified:
+        return generic
+
+    user.email_verification_token = uuid.uuid4()
+    user.email_verification_sent_at = dj_tz.now()
+    user.save(update_fields=[
+        "email_verification_token",
+        "email_verification_sent_at",
+        "updated_at",
+    ])
+    try:
+        from .email_service import send_welcome_verification_email
+        send_welcome_verification_email(user, request=request)
+    except Exception as exc:
+        log_error("email_send", f"resend dispatch raised: {exc!s}", user=user)
+    return generic
+
+
+@csrf_exempt
+@login_required_api
+def api_onboarding_state(request):
+    """Return the current user's onboarding snapshot for the SPA flow."""
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    user = request.current_user
+    return JsonResponse({
+        "completed": bool(user.onboarding_completed),
+        "industry": user.onboarding_industry or "",
+        "use_cases": list(user.onboarding_use_cases or []),
+    })
+
+
+@csrf_exempt
+@login_required_api
+def api_onboarding_complete(request):
+    """Persist onboarding selections and mark the flow complete.
+
+    Two valid shapes:
+      * Skip:    {"industry": "", "industry_other": "", "use_cases": []}
+      * Filled:  {"industry": "<slug or 'other'>", "industry_other": "<free text>",
+                  "use_cases": ["A","B","C"]}  ← exactly 3 chips, all from the
+                                                  locked 12-item set.
+    """
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+    industry = str(payload.get("industry", "")).strip()
+    industry_other = str(payload.get("industry_other", "")).strip()
+    raw_cases = payload.get("use_cases", [])
+    if not isinstance(raw_cases, list):
+        return JsonResponse({"error": "use_cases must be a list"}, status=400)
+    use_cases = [str(c).strip() for c in raw_cases if str(c).strip()]
+
+    is_skip = not industry and not use_cases
+
+    if not is_skip:
+        # Industry: must be either a non-empty value, OR "other" + free text.
+        if industry == "other":
+            if not industry_other:
+                return JsonResponse(
+                    {"error": "industry_other required when industry is 'other'"},
+                    status=400,
+                )
+            stored_industry = industry_other[:80]
+        elif industry:
+            stored_industry = industry[:80]
+        else:
+            return JsonResponse({"error": "industry is required"}, status=400)
+
+        # Use cases: exactly 3 distinct values, each from the locked set.
+        if len(use_cases) != 3:
+            return JsonResponse(
+                {"error": "Pick exactly 3 use cases"}, status=400,
+            )
+        if len(set(use_cases)) != 3:
+            return JsonResponse({"error": "Use cases must be distinct"}, status=400)
+        unknown = [c for c in use_cases if c not in ONBOARDING_USE_CASES]
+        if unknown:
+            return JsonResponse(
+                {"error": f"Unknown use case(s): {', '.join(unknown)}"},
+                status=400,
+            )
+    else:
+        stored_industry = ""
+        use_cases = []
+
+    user = request.current_user
+    user.onboarding_completed = True
+    user.onboarding_industry = stored_industry
+    user.onboarding_use_cases = use_cases
+    user.save(update_fields=[
+        "onboarding_completed",
+        "onboarding_industry",
+        "onboarding_use_cases",
+        "updated_at",
+    ])
+    return JsonResponse({
+        "completed": True,
+        "industry": user.onboarding_industry,
+        "use_cases": list(user.onboarding_use_cases or []),
+        "skipped": is_skip,
+    })
 
 
 def _validate_and_build_profile_updates(payload):
