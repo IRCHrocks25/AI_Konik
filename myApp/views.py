@@ -32,7 +32,7 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import AdminAction, Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Prompt, SavedPrompt
+from .models import AdminAction, Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Industry, Prompt, SavedPrompt
 from .openai_service import (
     MAX_REQUEST_TOKENS,
     estimate_messages_tokens,
@@ -40,7 +40,7 @@ from .openai_service import (
     trim_history_to_budget,
 )
 from .personalization import build_full_system_prompt
-from .seed_data import seed_agents_and_prompts
+from .seed_data import seed_agents_and_prompts, seed_industries
 
 try:
     from openpyxl import load_workbook
@@ -166,6 +166,12 @@ def ensure_seed_prompts():
 
 def ensure_seed_agents():
     seed_agents_and_prompts()
+
+
+def ensure_seed_industries():
+    if Industry.objects.exists():
+        return
+    seed_industries()
 
 
 def home(request):
@@ -2596,3 +2602,198 @@ def api_message_feedback(request, message_id):
     message.feedback = feedback
     message.save(update_fields=["feedback"])
     return JsonResponse({"success": True, "feedback": feedback})
+
+
+# ---------------------------------------------------------------------------
+# INDUSTRIES — public + admin CRUD
+# ---------------------------------------------------------------------------
+
+def _serialize_industry(industry):
+    return {
+        "id": industry.id,
+        "slug": industry.slug,
+        "name": industry.name,
+        "icon_class": industry.icon_class,
+        "sort_order": industry.sort_order,
+        "is_active": industry.is_active,
+        "created_at": industry.created_at.isoformat(),
+        "updated_at": industry.updated_at.isoformat(),
+    }
+
+
+def api_industries(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    ensure_seed_industries()
+    industries = list(Industry.objects.filter(is_active=True).order_by("sort_order", "name"))
+    return JsonResponse({"industries": [_serialize_industry(i) for i in industries]})
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_industries(request):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if request.method == "GET":
+        ensure_seed_industries()
+        qs = Industry.objects.all()
+        search = request.GET.get("search", "").strip()
+        if search:
+            qs = qs.filter(Q(name__icontains=search) | Q(slug__icontains=search))
+        is_active_param = request.GET.get("is_active", "").strip().lower()
+        if is_active_param == "true":
+            qs = qs.filter(is_active=True)
+        elif is_active_param == "false":
+            qs = qs.filter(is_active=False)
+        qs = qs.order_by("sort_order", "name")
+        return JsonResponse({"items": [_serialize_industry(i) for i in qs]})
+
+    if request.method == "POST":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        name = str(payload.get("name", "")).strip()
+        errors = {}
+        if not name:
+            errors["name"] = "Required."
+        elif len(name) > 80:
+            errors["name"] = "Too long (max 80)."
+
+        icon_class = str(payload.get("icon_class", "fa-briefcase")).strip() or "fa-briefcase"
+        if len(icon_class) > 80:
+            errors["icon_class"] = "Too long (max 80)."
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        slug = slugify(name)
+        if not slug:
+            return JsonResponse({"error": "Invalid name — cannot generate slug"}, status=400)
+        if Industry.objects.filter(slug=slug).exists():
+            return JsonResponse({"error": f"Industry with slug '{slug}' already exists"}, status=409)
+
+        sort_order = _to_non_negative_int(payload.get("sort_order", 100), default=100)
+        is_active = payload.get("is_active", True)
+        if not isinstance(is_active, bool):
+            is_active = True
+
+        industry = Industry.objects.create(
+            name=name,
+            slug=slug,
+            icon_class=icon_class,
+            sort_order=sort_order,
+            is_active=is_active,
+        )
+        record_admin_action(
+            admin=request.current_user,
+            action_type="industry.create",
+            target_type="industry",
+            target_id=industry.id,
+            metadata={"name": industry.name, "slug": industry.slug},
+        )
+        return JsonResponse(_serialize_industry(industry), status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_industry_detail(request, industry_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    industry = Industry.objects.filter(id=industry_id).first()
+    if not industry:
+        return JsonResponse({"error": "Industry not found"}, status=404)
+
+    if request.method == "GET":
+        return JsonResponse(_serialize_industry(industry))
+
+    if request.method == "DELETE":
+        agent_count = Agent.objects.filter(industry__iexact=industry.slug).count()
+        prompt_count = Prompt.objects.filter(industry__iexact=industry.slug).count()
+        if agent_count or prompt_count:
+            return JsonResponse(
+                {
+                    "error": (
+                        f"Cannot delete '{industry.name}': {agent_count} agent(s) and "
+                        f"{prompt_count} prompt(s) use this industry. "
+                        "Reassign them or set is_active=false instead."
+                    )
+                },
+                status=409,
+            )
+        industry_name = industry.name
+        industry_slug = industry.slug
+        industry.delete()
+        record_admin_action(
+            admin=request.current_user,
+            action_type="industry.delete",
+            target_type="industry",
+            target_id=industry_id,
+            metadata={"name": industry_name, "slug": industry_slug},
+        )
+        return JsonResponse({"deleted": True})
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        updates = {}
+
+        if "name" in payload:
+            name = str(payload["name"]).strip()
+            if not name:
+                errors["name"] = "Cannot be empty."
+            elif len(name) > 80:
+                errors["name"] = "Too long (max 80)."
+            else:
+                updates["name"] = name
+                new_slug = slugify(name)
+                if not new_slug:
+                    errors["name"] = "Invalid name."
+                elif Industry.objects.filter(slug=new_slug).exclude(id=industry.id).exists():
+                    errors["name"] = "Another industry with this name already exists."
+                else:
+                    updates["slug"] = new_slug
+
+        if "icon_class" in payload:
+            val = str(payload["icon_class"]).strip()
+            if len(val) > 80:
+                errors["icon_class"] = "Too long (max 80)."
+            else:
+                updates["icon_class"] = val or "fa-briefcase"
+
+        if "sort_order" in payload:
+            updates["sort_order"] = _to_non_negative_int(payload["sort_order"], default=industry.sort_order)
+
+        if "is_active" in payload:
+            val = payload["is_active"]
+            if not isinstance(val, bool):
+                errors["is_active"] = "Must be a boolean."
+            else:
+                updates["is_active"] = val
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        changed_fields = list(updates.keys())
+        if updates:
+            for field, value in updates.items():
+                setattr(industry, field, value)
+            industry.save(update_fields=changed_fields + ["updated_at"])
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="industry.update",
+            target_type="industry",
+            target_id=industry.id,
+            metadata={"changed_fields": changed_fields},
+        )
+        industry.refresh_from_db()
+        return JsonResponse(_serialize_industry(industry))
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)

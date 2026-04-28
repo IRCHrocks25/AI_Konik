@@ -2834,18 +2834,17 @@ let aeAccentBg = '#EEF2FF';
 let aeSaving = false;
 let aeGenerating = false;
 
-const INDUSTRY_OPTIONS = [
-  // TODO Phase 8: Replace with fetch('/api/industries')
-  {value:'technology', label:'Technology'},
-  {value:'healthcare', label:'Healthcare'},
-  {value:'finance', label:'Finance'},
-  {value:'accounting', label:'Accounting'},
-  {value:'manufacturing', label:'Manufacturing'},
-  {value:'logistics', label:'Logistics'},
-  {value:'realestate', label:'Real Estate'},
-  {value:'legal', label:'Legal'},
-  {value:'marketing', label:'Marketing'},
-];
+let _industriesCache = [];
+let _industriesFetch = null;
+function loadIndustries() {
+  if (!_industriesFetch) {
+    _industriesFetch = fetch('/api/industries', {credentials: 'same-origin'})
+      .then(function(r) { return r.ok ? r.json() : {industries: []}; })
+      .then(function(d) { _industriesCache = d.industries || []; return _industriesCache; })
+      .catch(function() { _industriesCache = []; return []; });
+  }
+  return _industriesFetch;
+}
 
 const ICON_CATEGORIES = [
   {name:'Legal & Compliance', icons:['fa-scale-balanced','fa-gavel','fa-file-contract','fa-shield-halved','fa-handshake','fa-user-tie','fa-stamp','fa-book-bookmark']},
@@ -2875,6 +2874,7 @@ async function agentEditMount(params) {
   if (!el) return;
 
   if (aeIsCreate) {
+    await loadIndustries();
     aeRenderFull(null);
     return;
   }
@@ -2926,6 +2926,7 @@ async function agentEditMount(params) {
   aeAccentBg = agentData.accent_bg || '#EEF2FF';
   aeHints = (agentData.hints || []).map(h => h.content || h);
   aeUseCases = (agentData.use_cases || []).map(u => u.content || u);
+  await loadIndustries();
   aeRenderFull(agentData);
 }
 
@@ -2942,9 +2943,9 @@ function aeRenderFull(agentData) {
   const isFeatured = agentData ? !!agentData.is_featured : false;
 
   let industryOpts = '<option value="">— Select industry —</option>';
-  for (let i = 0; i < INDUSTRY_OPTIONS.length; i++) {
-    const o = INDUSTRY_OPTIONS[i];
-    industryOpts += '<option value="' + escHtml(o.value) + '"' + (o.value === industryVal ? ' selected' : '') + '>' + escHtml(o.label) + '</option>';
+  for (let i = 0; i < _industriesCache.length; i++) {
+    const o = _industriesCache[i];
+    industryOpts += '<option value="' + escHtml(o.slug) + '"' + (o.slug === industryVal ? ' selected' : '') + '>' + escHtml(o.name) + '</option>';
   }
 
   const deleteBtn = aeIsCreate ? '' : (
@@ -3607,15 +3608,16 @@ function promptsMount() {
   if (!promptsMounted) {
     promptsMounted = true;
     const iEl = document.getElementById('pr-industry-filter');
-    if (iEl) {
-      for (let i = 0; i < INDUSTRY_OPTIONS.length; i++) {
-        const o = INDUSTRY_OPTIONS[i];
+    loadIndustries().then(function(industries) {
+      if (!iEl) return;
+      for (let i = 0; i < industries.length; i++) {
+        const o = industries[i];
         const opt = document.createElement('option');
-        opt.value = o.value;
-        opt.textContent = o.label;
+        opt.value = o.slug;
+        opt.textContent = o.name;
         iEl.appendChild(opt);
       }
-    }
+    });
     const sEl = document.getElementById('pr-search');
     if (sEl) {
       sEl.addEventListener('input', () => {
@@ -3699,10 +3701,10 @@ async function peFetchCategories() {
 
 function peBuildForm(promptData) {
   let industryOpts = '<option value="">— Select industry —</option>';
-  for (let i = 0; i < INDUSTRY_OPTIONS.length; i++) {
-    const o = INDUSTRY_OPTIONS[i];
-    const sel = (promptData && promptData.industry === o.value) ? ' selected' : '';
-    industryOpts += '<option value="' + escHtml(o.value) + '"' + sel + '>' + escHtml(o.label) + '</option>';
+  for (let i = 0; i < _industriesCache.length; i++) {
+    const o = _industriesCache[i];
+    const sel = (promptData && promptData.industry === o.slug) ? ' selected' : '';
+    industryOpts += '<option value="' + escHtml(o.slug) + '"' + sel + '>' + escHtml(o.name) + '</option>';
   }
   const titleVal   = promptData ? escHtml(promptData.title    || '') : '';
   const catVal     = promptData ? escHtml(promptData.category || '') : '';
@@ -3913,6 +3915,7 @@ async function promptEditMount(params) {
   const content = document.getElementById('prompt-edit-content');
   if (!content) return;
   if (peIsCreate) {
+    await loadIndustries();
     content.innerHTML = peBuildForm(null);
     peWireEvents();
     peFetchCategories(); // pre-warm cache
@@ -3933,7 +3936,7 @@ async function promptEditMount(params) {
       navigateTo('/admin-dashboard/content/prompts/', 'prompts', {});
     });
     try {
-      const r    = await fetch('/api/admin/prompts/' + pePromptId, {credentials: 'same-origin'});
+      const [, r] = await Promise.all([loadIndustries(), fetch('/api/admin/prompts/' + pePromptId, {credentials: 'same-origin'})]);
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || String(r.status));
       content.innerHTML = peBuildForm(data);
@@ -4010,6 +4013,7 @@ fetch('/api/auth/me', {credentials: 'same-origin'})
     const av = document.getElementById('profile-menu-toggle');
     if (av) av.textContent = initials;
     applyImpersonationBanner(data);
+    loadIndustries(); // warm cache before any form opens
   })
   .catch(() => {});
 
