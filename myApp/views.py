@@ -35,7 +35,7 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import AdminAction, Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Event, Industry, Prompt, SavedPrompt, Tool
+from .models import AdminAction, Agent, AgentPrompt, Banner, ChatMessage, ChatSession, CustomUser, ErrorLog, Event, Industry, Prompt, SavedPrompt, Tool
 from .openai_service import (
     MAX_REQUEST_TOKENS,
     estimate_messages_tokens,
@@ -3370,5 +3370,221 @@ def api_admin_tool_detail(request, tool_id):
         )
         tool.refresh_from_db()
         return JsonResponse(_serialize_tool(tool))
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# ── BANNERS ───────────────────────────────────────────────────────────────────
+
+def _serialize_banner(banner):
+    return {
+        "id": banner.id,
+        "message": banner.message,
+        "banner_type": banner.banner_type,
+        "start_at": banner.start_at.isoformat(),
+        "end_at": banner.end_at.isoformat(),
+        "is_active": banner.is_active,
+        "is_dismissible": banner.is_dismissible,
+        "created_by_email": banner.created_by.email if banner.created_by else None,
+        "created_at": banner.created_at.isoformat(),
+        "updated_at": banner.updated_at.isoformat(),
+    }
+
+
+@csrf_exempt
+@login_required_api
+def api_banners(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    now = dj_tz.now()
+    banners = list(
+        Banner.objects.filter(
+            is_active=True,
+            start_at__lte=now,
+            end_at__gte=now,
+        ).order_by("-start_at")
+    )
+    return JsonResponse({"banners": [_serialize_banner(b) for b in banners]})
+
+
+_BANNER_TYPES = {"info", "warn", "critical"}
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_banners(request):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if request.method == "GET":
+        qs = Banner.objects.all()
+
+        is_active_param = request.GET.get("is_active", "").strip().lower()
+        if is_active_param == "true":
+            qs = qs.filter(is_active=True)
+        elif is_active_param == "false":
+            qs = qs.filter(is_active=False)
+
+        banner_type_param = request.GET.get("banner_type", "").strip().lower()
+        if banner_type_param in _BANNER_TYPES:
+            qs = qs.filter(banner_type=banner_type_param)
+
+        sort_param = request.GET.get("sort", "-start_at")
+        if sort_param not in {"-start_at", "start_at", "-end_at", "end_at"}:
+            sort_param = "-start_at"
+        qs = qs.order_by(sort_param)
+
+        return JsonResponse({"banners": [_serialize_banner(b) for b in qs]})
+
+    if request.method == "POST":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+
+        message = str(payload.get("message", "")).strip()
+        if not message:
+            errors["message"] = "Required."
+
+        banner_type = str(payload.get("banner_type", "info")).strip().lower()
+        if banner_type not in _BANNER_TYPES:
+            errors["banner_type"] = "Must be info, warn, or critical."
+
+        start_at = _parse_event_date(payload.get("start_at"))
+        if start_at is None:
+            errors["start_at"] = "Required. Use ISO-8601 (e.g. 2026-05-15T14:00)."
+
+        end_at = _parse_event_date(payload.get("end_at"))
+        if end_at is None:
+            errors["end_at"] = "Required. Use ISO-8601 (e.g. 2026-05-15T14:00)."
+
+        if start_at and end_at and start_at >= end_at:
+            errors["end_at"] = "Must be after start time."
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        is_active = payload.get("is_active", True)
+        if not isinstance(is_active, bool):
+            is_active = True
+
+        is_dismissible = payload.get("is_dismissible", True)
+        if not isinstance(is_dismissible, bool):
+            is_dismissible = True
+
+        banner = Banner.objects.create(
+            message=message,
+            banner_type=banner_type,
+            start_at=start_at,
+            end_at=end_at,
+            is_active=is_active,
+            is_dismissible=is_dismissible,
+            created_by=request.current_user,
+        )
+        record_admin_action(
+            admin=request.current_user,
+            action_type="banner.create",
+            target_type="banner",
+            target_id=banner.id,
+            metadata={"banner_type": banner.banner_type},
+        )
+        return JsonResponse(_serialize_banner(banner), status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_banner_detail(request, banner_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    banner = Banner.objects.filter(id=banner_id).first()
+    if not banner:
+        return JsonResponse({"error": "Banner not found"}, status=404)
+
+    if request.method == "GET":
+        return JsonResponse(_serialize_banner(banner))
+
+    if request.method == "DELETE":
+        banner_type = banner.banner_type
+        banner.delete()
+        record_admin_action(
+            admin=request.current_user,
+            action_type="banner.delete",
+            target_type="banner",
+            target_id=banner_id,
+            metadata={"banner_type": banner_type},
+        )
+        return JsonResponse({"deleted": True})
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        updates = {}
+
+        if "message" in payload:
+            val = str(payload["message"]).strip()
+            if not val:
+                errors["message"] = "Cannot be empty."
+            else:
+                updates["message"] = val
+
+        if "banner_type" in payload:
+            val = str(payload["banner_type"]).strip().lower()
+            if val not in _BANNER_TYPES:
+                errors["banner_type"] = "Must be info, warn, or critical."
+            else:
+                updates["banner_type"] = val
+
+        if "start_at" in payload:
+            dt = _parse_event_date(payload["start_at"])
+            if dt is None:
+                errors["start_at"] = "Must be a valid ISO-8601 datetime."
+            else:
+                updates["start_at"] = dt
+
+        if "end_at" in payload:
+            dt = _parse_event_date(payload["end_at"])
+            if dt is None:
+                errors["end_at"] = "Must be a valid ISO-8601 datetime."
+            else:
+                updates["end_at"] = dt
+
+        if "start_at" in updates or "end_at" in updates:
+            new_start = updates.get("start_at", banner.start_at)
+            new_end = updates.get("end_at", banner.end_at)
+            if new_start >= new_end:
+                errors["end_at"] = "Must be after start time."
+
+        for bool_field in ("is_active", "is_dismissible"):
+            if bool_field in payload:
+                val = payload[bool_field]
+                if not isinstance(val, bool):
+                    errors[bool_field] = "Must be a boolean."
+                else:
+                    updates[bool_field] = val
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        changed_fields = list(updates.keys())
+        if updates:
+            for field, value in updates.items():
+                setattr(banner, field, value)
+            banner.save(update_fields=changed_fields + ["updated_at"])
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="banner.update",
+            target_type="banner",
+            target_id=banner.id,
+            metadata={"changed_fields": changed_fields},
+        )
+        banner.refresh_from_db()
+        return JsonResponse(_serialize_banner(banner))
 
     return JsonResponse({"error": "Method not allowed"}, status=405)

@@ -44,6 +44,8 @@ urlpatterns = [
     path("admin-dashboard/content/tools/new/", views.admin_dashboard, name="admin_dashboard_tool_new"),
     path("admin-dashboard/content/tools/<int:tool_id>/", views.admin_dashboard, name="admin_dashboard_tool_edit"),
     path("admin-dashboard/content/banners/", views.admin_dashboard, name="admin_dashboard_banners"),
+    path("admin-dashboard/content/banners/new/", views.admin_dashboard, name="admin_dashboard_banner_new"),
+    path("admin-dashboard/content/banners/<int:banner_id>/", views.admin_dashboard, name="admin_dashboard_banner_edit"),
     path("admin-dashboard/operations/", views.admin_dashboard, name="admin_dashboard_operations"),
     path("admin-dashboard/operations/errors/", views.admin_dashboard, name="admin_dashboard_errors"),
     path("admin-dashboard/operations/audit/", views.admin_dashboard, name="admin_dashboard_audit"),
@@ -135,4 +137,7 @@ urlpatterns = [
     path("api/admin/events/<int:event_id>", views.api_admin_event_detail, name="api_admin_event_detail"),
     path("api/admin/tools", views.api_admin_tools, name="api_admin_tools"),
     path("api/admin/tools/<int:tool_id>", views.api_admin_tool_detail, name="api_admin_tool_detail"),
+    path("api/banners", views.api_banners, name="api_banners"),
+    path("api/admin/banners", views.api_admin_banners, name="api_admin_banners"),
+    path("api/admin/banners/<int:banner_id>", views.api_admin_banner_detail, name="api_admin_banner_detail"),
 ]

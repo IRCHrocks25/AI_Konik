@@ -930,12 +930,38 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
         <h1>Banners</h1>
         <p>Schedule platform-wide announcements and alerts.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-flag"></i></div>
-        <h3>Banner Management</h3>
-        <p>Create timed info / warning / critical banners with optional dismiss control — coming in Phase 10.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 10</span>
+      <div class="agents-topbar" style="flex-wrap:wrap;gap:10px">
+        <div class="agents-search-wrap">
+          <i class="fa-solid fa-magnifying-glass agents-search-icon"></i>
+          <input type="text" id="bn-search" class="agents-search-input" placeholder="Search message text…" autocomplete="off">
+        </div>
+        <select id="bn-type-filter" class="ev-filter-select" onchange="bannersRefetch()">
+          <option value="">All types</option>
+          <option value="info">Info</option>
+          <option value="warn">Warning</option>
+          <option value="critical">Critical</option>
+        </select>
+        <select id="bn-status-filter" class="ev-filter-select" onchange="bannersRefetch()">
+          <option value="">All statuses</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <select id="bn-sort-filter" class="ev-filter-select" onchange="bannersRefetch()">
+          <option value="-start_at">Newest start</option>
+          <option value="start_at">Oldest start</option>
+          <option value="end_at">Ending soonest</option>
+          <option value="-end_at">Ending latest</option>
+        </select>
+        <button class="agents-create-btn" onclick="bannersOpenCreate()">
+          <i class="fa-solid fa-plus"></i> Create new banner
+        </button>
       </div>
+      <div class="agents-count" id="bn-count" style="margin-bottom:6px"></div>
+      <div id="bn-table-wrap" class="agents-table-wrap"></div>
+    </div>
+
+    <div id="panel-banner-edit" class="admin-panel">
+      <div id="banner-edit-content"></div>
     </div>
 
     <div id="panel-operations" class="admin-panel">
@@ -1163,6 +1189,12 @@ function getInitSection(pathname) {
   if ((m = pathname.match(/^\/admin-dashboard\/content\/tools\/(\d+)\/?$/))) {
     return ['tool-edit', {mode: 'edit', toolId: parseInt(m[1], 10)}];
   }
+  if (pathname === '/admin-dashboard/content/banners/new/') {
+    return ['banner-edit', {mode: 'create'}];
+  }
+  if ((m = pathname.match(/^\/admin-dashboard\/content\/banners\/(\d+)\/?$/))) {
+    return ['banner-edit', {mode: 'edit', bannerId: parseInt(m[1], 10)}];
+  }
   return _STATIC_SECTIONS[pathname] || 'pulse';
 }
 
@@ -1237,7 +1269,8 @@ function showSection(key, params) {
                      (key === 'prompt-edit') ? 'prompts' :
                      (key === 'industry-edit') ? 'industries' :
                      (key === 'event-edit') ? 'events' :
-                     (key === 'tool-edit') ? 'tools' : key;
+                     (key === 'tool-edit') ? 'tools' :
+                     (key === 'banner-edit') ? 'banners' : key;
   document.querySelectorAll('.admin-sidebar-link[data-section="' + sidebarKey + '"]').forEach(l => l.classList.add('active'));
   if (key === 'pulse') startPulseRefresh();
   if (key === 'users') usersMount();
@@ -1252,6 +1285,8 @@ function showSection(key, params) {
   if (key === 'event-edit') eventEditMount(params || {});
   if (key === 'tools') toolsMount();
   if (key === 'tool-edit') toolEditMount(params || {});
+  if (key === 'banners') bannersMount();
+  if (key === 'banner-edit') bannerEditMount(params || {});
 }
 
 function navigateTo(path, section, params) {
@@ -5185,6 +5220,419 @@ async function teDeleteTool() {
   }
 }
 // ── END TOOL EDIT ────────────────────────────────────────────────────────────
+
+// ── BANNERS LIST ─────────────────────────────────────────────────────────────
+let bannersAllItems = [];
+let bannersMounted = false;
+let bannersSearchTimer = null;
+let bannersFilters = {search: '', banner_type: '', is_active: '', sort: '-start_at'};
+
+function bannersMount() {
+  if (!bannersMounted) {
+    bannersMounted = true;
+    const searchEl = document.getElementById('bn-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', function() {
+        clearTimeout(bannersSearchTimer);
+        bannersSearchTimer = setTimeout(function() {
+          bannersFilters.search = searchEl.value;
+          bannersRender();
+        }, 300);
+      });
+    }
+  }
+  bannersLoad();
+}
+
+function bannersRefetch() {
+  const typeEl   = document.getElementById('bn-type-filter');
+  const statusEl = document.getElementById('bn-status-filter');
+  const sortEl   = document.getElementById('bn-sort-filter');
+  if (typeEl)   bannersFilters.banner_type = typeEl.value;
+  if (statusEl) bannersFilters.is_active   = statusEl.value;
+  if (sortEl)   bannersFilters.sort        = sortEl.value;
+  bannersRender();
+}
+
+async function bannersLoad() {
+  const wrap    = document.getElementById('bn-table-wrap');
+  const countEl = document.getElementById('bn-count');
+  if (!wrap) return;
+
+  wrap.innerHTML = agentsRenderSkeleton();
+  if (countEl) countEl.textContent = '';
+
+  try {
+    const r = await fetch('/api/admin/banners', {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    bannersAllItems = data.banners || [];
+    bannersRender();
+  } catch(e) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Failed to load banners.</p></div>';
+  }
+}
+
+function bannersRender() {
+  const wrap    = document.getElementById('bn-table-wrap');
+  const countEl = document.getElementById('bn-count');
+  if (!wrap) return;
+
+  const search   = bannersFilters.search.toLowerCase();
+  const typeF    = bannersFilters.banner_type;
+  const isActive = bannersFilters.is_active;
+  const sort     = bannersFilters.sort;
+
+  let items = bannersAllItems.filter(function(b) {
+    if (search && !(b.message || '').toLowerCase().includes(search)) return false;
+    if (typeF && b.banner_type !== typeF) return false;
+    if (isActive === 'true'  && !b.is_active) return false;
+    if (isActive === 'false' &&  b.is_active) return false;
+    return true;
+  });
+
+  items = items.slice().sort(function(a, b) {
+    if (sort === 'start_at') return new Date(a.start_at) - new Date(b.start_at);
+    if (sort === 'end_at')   return new Date(a.end_at)   - new Date(b.end_at);
+    if (sort === '-end_at')  return new Date(b.end_at)   - new Date(a.end_at);
+    return new Date(b.start_at) - new Date(a.start_at);
+  });
+
+  const n = items.length;
+  if (countEl) countEl.textContent = n + ' banner' + (n !== 1 ? 's' : '') + ' found';
+
+  if (!items.length) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-flag"></i><p>' +
+      (search || typeF || isActive ? 'No banners match these filters.' : 'No banners yet. Create the first one.') +
+      '</p></div>';
+    return;
+  }
+
+  wrap.innerHTML = '<table class="agents-table"><thead><tr>' +
+    '<th>Message</th><th>Type</th><th>Window</th><th>Status</th><th>Dismissible</th><th></th>' +
+    '</tr></thead><tbody>' + items.map(bnRow).join('') + '</tbody></table>';
+}
+
+function bnTypePill(type) {
+  const cfg = {
+    info:     {bg:'rgba(13,148,136,.2)',  color:'#5eead4', border:'rgba(13,148,136,.3)',  label:'Info'},
+    warn:     {bg:'rgba(180,83,9,.2)',    color:'#fbbf24', border:'rgba(180,83,9,.3)',    label:'Warning'},
+    critical: {bg:'rgba(220,38,38,.2)',   color:'#f87171', border:'rgba(220,38,38,.3)',   label:'Critical'},
+  };
+  const c = cfg[type] || cfg.info;
+  return '<span style="display:inline-flex;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:600;' +
+    'background:' + c.bg + ';color:' + c.color + ';border:1px solid ' + c.border + '">' + escHtml(c.label) + '</span>';
+}
+
+function bnFmtWindow(start_at, end_at) {
+  const fmt = function(iso) {
+    return new Date(iso).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+  };
+  return escHtml(fmt(start_at)) + ' &rarr; ' + escHtml(fmt(end_at));
+}
+
+function bnRow(b) {
+  const msg = (b.message || '').length > 80 ? b.message.slice(0, 77) + '…' : b.message;
+  const active = b.is_active
+    ? '<span class="spill-on"><i class="fa-solid fa-circle" style="font-size:7px"></i> Active</span>'
+    : '<span class="spill-off">Inactive</span>';
+  const dismissible = b.is_dismissible
+    ? '<span style="font-size:12px;color:rgba(255,255,255,.5)">Yes</span>'
+    : '<span style="font-size:12px;color:rgba(255,255,255,.3)">No</span>';
+  return '<tr onclick="bannersOpenEdit(' + b.id + ')" title="' + escHtml(b.message) + '">' +
+    '<td><div class="agent-name-cell">' + escHtml(msg) + '</div></td>' +
+    '<td>' + bnTypePill(b.banner_type) + '</td>' +
+    '<td style="font-size:12px;color:rgba(255,255,255,.65);white-space:nowrap">' + bnFmtWindow(b.start_at, b.end_at) + '</td>' +
+    '<td>' + active + '</td>' +
+    '<td>' + dismissible + '</td>' +
+    '<td class="agents-row-actions" onclick="event.stopPropagation()">' +
+    '<button class="ag-row-btn" onclick="bannersOpenEdit(' + b.id + ')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+    '<button class="ag-row-btn danger" onclick="bannersConfirmDelete(' + b.id + ')"><i class="fa-solid fa-trash"></i></button>' +
+    '</td></tr>';
+}
+
+function bannersOpenCreate() {
+  navigateTo('/admin-dashboard/content/banners/new/', 'banner-edit', {mode: 'create'});
+}
+
+function bannersOpenEdit(id) {
+  navigateTo('/admin-dashboard/content/banners/' + id + '/', 'banner-edit', {mode: 'edit', bannerId: id});
+}
+
+async function bannersConfirmDelete(id) {
+  const b = bannersAllItems.find(function(x) { return x.id === id; });
+  const preview = b ? (b.banner_type.toUpperCase() + ': ' + b.message.slice(0, 60)) : 'this banner';
+  if (!confirm('Delete banner "' + preview + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/banners/' + id, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    udToast('Banner deleted.', 'success');
+    bannersLoad();
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END BANNERS LIST ──────────────────────────────────────────────────────────
+
+// ── BANNER EDIT FORM ──────────────────────────────────────────────────────────
+let bnIsCreate = false;
+let bnBannerId = null;
+let bnSavingState = false;
+
+async function bannerEditMount(params) {
+  bnIsCreate = params.mode === 'create';
+  bnBannerId = params.bannerId || null;
+  bnSavingState = false;
+
+  const el = document.getElementById('banner-edit-content');
+  if (!el) return;
+
+  if (bnIsCreate) {
+    bnRenderFull(null);
+    return;
+  }
+
+  el.innerHTML = bnRenderSkeleton();
+  try {
+    const r = await fetch('/api/admin/banners/' + bnBannerId, {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    bnRenderFull(data);
+  } catch(e) {
+    el.innerHTML = '<div style="padding:24px;color:#fb7185">Failed to load banner: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function bnRenderSkeleton() {
+  return '<div style="margin-bottom:22px">' +
+    '<div class="ae-skel-line" style="width:180px;height:16px;margin-bottom:10px"></div>' +
+    '<div class="ae-skel-line" style="width:280px;height:30px"></div></div>' +
+    '<div class="pe-shell"><div class="ae-form-col">' +
+    '<div class="ae-card"><div class="ae-skel-line" style="height:80px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:38px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:38px"></div></div></div></div>';
+}
+
+function bnDefaultStart() {
+  const d = new Date();
+  const pad = function(n) { return String(n).padStart(2, '0'); };
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function bnDefaultEnd() {
+  const d = new Date(Date.now() + 7 * 24 * 3600 * 1000);
+  const pad = function(n) { return String(n).padStart(2, '0'); };
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function bnRenderFull(data) {
+  const el = document.getElementById('banner-edit-content');
+  if (!el) return;
+
+  const d = data || {};
+  const title = bnIsCreate ? 'Create new banner' : 'Edit banner';
+
+  const delBtn = bnIsCreate ? '' :
+    '<button class="ae-del-btn" id="bn-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete banner</button>';
+
+  const curType = d.banner_type || 'info';
+  const typeOpts = [['info','Info'],['warn','Warning'],['critical','Critical']].map(function(p) {
+    return '<option value="' + p[0] + '"' + (p[0] === curType ? ' selected' : '') + '>' + p[1] + '</option>';
+  }).join('');
+
+  el.innerHTML =
+    '<div class="ae-header-row">' +
+      '<div class="ae-header-left">' +
+        '<button class="ud-back-link" id="bn-back-btn" type="button"><i class="fa-solid fa-arrow-left"></i> Back to banners</button>' +
+        '<h2 class="ae-title">' + title + '</h2>' +
+      '</div>' +
+      '<div>' + delBtn + '</div>' +
+    '</div>' +
+    '<div class="pe-shell"><div class="ae-form-col">' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Required</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="bn-message">Message <span class="pe-req">*</span></label>' +
+          '<textarea class="ae-inp" id="bn-message" rows="3" style="min-height:70px">' + escHtml(d.message || '') + '</textarea>' +
+          '<div class="ae-field-err" id="bn-message-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="bn-type">Banner type <span class="pe-req">*</span></label>' +
+          '<select class="ae-inp" id="bn-type">' + typeOpts + '</select>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="bn-start-at">Start at <span class="pe-req">*</span></label>' +
+            '<input class="ae-inp" id="bn-start-at" type="datetime-local" value="' + escHtml(bnIsCreate ? bnDefaultStart() : isoToDatetimeLocal(d.start_at)) + '">' +
+            '<div class="ae-field-err" id="bn-start-err"></div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="bn-end-at">End at <span class="pe-req">*</span></label>' +
+            '<input class="ae-inp" id="bn-end-at" type="datetime-local" value="' + escHtml(bnIsCreate ? bnDefaultEnd() : isoToDatetimeLocal(d.end_at)) + '">' +
+            '<div class="ae-field-err" id="bn-end-err"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Display settings</div>' +
+        '<div class="ae-field">' +
+          '<div class="ae-toggle-row">' +
+            '<label class="ae-toggle-lbl">' +
+              '<input class="ae-toggle" id="bn-active" type="checkbox"' + (d.is_active !== false ? ' checked' : '') + '> Active' +
+            '</label>' +
+            '<label class="ae-toggle-lbl">' +
+              '<input class="ae-toggle" id="bn-dismissible" type="checkbox"' + (d.is_dismissible !== false ? ' checked' : '') + '> Dismissible' +
+            '</label>' +
+          '</div>' +
+          '<div class="pe-helper" style="margin-top:8px">If dismissible, users can close the banner (stored in localStorage). If non-dismissible, it shows until end date or you deactivate it.</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Live preview</div>' +
+        '<div class="system-banner-preview" id="bn-preview-wrap">' +
+          '<div id="bn-preview-bar"></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-actions-row">' +
+        '<button class="ae-cancel-btn" id="bn-cancel-btn" type="button">Cancel</button>' +
+        '<button class="ae-save-btn" id="bn-save-btn" type="button"><i class="fa-solid fa-floppy-disk"></i> Save banner</button>' +
+      '</div>' +
+
+    '</div></div>';
+
+  bnBindAll();
+  bnUpdatePreview();
+}
+
+function bnUpdatePreview() {
+  const bar = document.getElementById('bn-preview-bar');
+  if (!bar) return;
+  const msgEl  = document.getElementById('bn-message');
+  const typeEl = document.getElementById('bn-type');
+  const dismEl = document.getElementById('bn-dismissible');
+  const msg    = msgEl  ? msgEl.value.trim()  : '';
+  const type   = typeEl ? typeEl.value        : 'info';
+  const dismiss = dismEl ? dismEl.checked     : true;
+  const safeMsg = String(msg || 'Banner message preview…').replace(/[&<>"']/g, function(m) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m];
+  });
+  bar.className = 'system-banner system-banner--' + type;
+  bar.innerHTML = '<span class="system-banner__msg">' + safeMsg + '</span>' +
+    (dismiss ? '<button class="system-banner__dismiss" type="button" onclick="void 0">&times;</button>' : '');
+}
+
+function bnBindAll() {
+  const backBtn   = document.getElementById('bn-back-btn');
+  const cancelBtn = document.getElementById('bn-cancel-btn');
+  const saveBtn   = document.getElementById('bn-save-btn');
+  const delBtn    = document.getElementById('bn-del-btn');
+  const msgEl     = document.getElementById('bn-message');
+  const typeEl    = document.getElementById('bn-type');
+  const dismEl    = document.getElementById('bn-dismissible');
+  if (backBtn)   backBtn.addEventListener('click',   function() { navigateTo('/admin-dashboard/content/banners/', 'banners'); });
+  if (cancelBtn) cancelBtn.addEventListener('click', function() { navigateTo('/admin-dashboard/content/banners/', 'banners'); });
+  if (saveBtn)   saveBtn.addEventListener('click',   bnSave);
+  if (delBtn)    delBtn.addEventListener('click',    bnDeleteBanner);
+  if (msgEl)     msgEl.addEventListener('input',     bnUpdatePreview);
+  if (typeEl)    typeEl.addEventListener('change',   bnUpdatePreview);
+  if (dismEl)    dismEl.addEventListener('change',   bnUpdatePreview);
+}
+
+async function bnSave() {
+  if (bnSavingState) return;
+
+  const msgEl   = document.getElementById('bn-message');
+  const typeEl  = document.getElementById('bn-type');
+  const startEl = document.getElementById('bn-start-at');
+  const endEl   = document.getElementById('bn-end-at');
+  const saveBtn = document.getElementById('bn-save-btn');
+  const msgErr  = document.getElementById('bn-message-err');
+  const startErr = document.getElementById('bn-start-err');
+  const endErr  = document.getElementById('bn-end-err');
+
+  let valid = true;
+  function bnSetErr(el, errEl, msg) {
+    if (errEl) errEl.textContent = msg;
+    if (el) el.classList.toggle('error', !!msg);
+    if (msg) valid = false;
+  }
+
+  const msgVal   = ((msgEl   || {}).value || '').trim();
+  const startVal = ((startEl || {}).value || '').trim();
+  const endVal   = ((endEl   || {}).value || '').trim();
+
+  bnSetErr(msgEl,   msgErr,   msgVal   ? '' : 'Message is required.');
+  bnSetErr(startEl, startErr, startVal ? '' : 'Start time is required.');
+  bnSetErr(endEl,   endErr,   endVal   ? '' : 'End time is required.');
+
+  if (valid && startVal && endVal && new Date(startVal) >= new Date(endVal)) {
+    bnSetErr(endEl, endErr, 'End time must be after start time.');
+    valid = false;
+  }
+  if (!valid) return;
+
+  const payload = {
+    message:        msgVal,
+    banner_type:    (typeEl ? typeEl.value : 'info'),
+    start_at:       new Date(startVal).toISOString(),
+    end_at:         new Date(endVal).toISOString(),
+    is_active:      !!(document.getElementById('bn-active') || {checked: true}).checked,
+    is_dismissible: !!(document.getElementById('bn-dismissible') || {checked: true}).checked,
+  };
+
+  bnSavingState = true;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…'; }
+
+  try {
+    const url    = bnIsCreate ? '/api/admin/banners' : '/api/admin/banners/' + bnBannerId;
+    const method = bnIsCreate ? 'POST' : 'PATCH';
+    const r = await fetch(url, {method, credentials: 'same-origin', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)});
+    const data = await r.json();
+    if (!r.ok) {
+      if (data.errors) {
+        if (data.errors.message)  bnSetErr(msgEl,   msgErr,   data.errors.message);
+        if (data.errors.start_at) bnSetErr(startEl, startErr, data.errors.start_at);
+        if (data.errors.end_at)   bnSetErr(endEl,   endErr,   data.errors.end_at);
+        if (!data.errors.message && !data.errors.start_at && !data.errors.end_at)
+          udToast(data.error || 'Save failed.', 'error');
+      } else {
+        udToast(data.error || 'Save failed.', 'error');
+      }
+      return;
+    }
+    udToast(bnIsCreate ? 'Banner created!' : 'Banner saved!', 'success');
+    navigateTo('/admin-dashboard/content/banners/', 'banners');
+  } catch(e) {
+    udToast('Save request failed.', 'error');
+  } finally {
+    bnSavingState = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save banner'; }
+  }
+}
+
+async function bnDeleteBanner() {
+  if (!bnBannerId) return;
+  const b = bannersAllItems.find(function(x) { return x.id === bnBannerId; });
+  const preview = b ? (b.banner_type.toUpperCase() + ': ' + b.message.slice(0, 60)) : 'this banner';
+  if (!confirm('Delete banner "' + preview + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/banners/' + bnBannerId, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    udToast('Banner deleted.', 'success');
+    navigateTo('/admin-dashboard/content/banners/', 'banners');
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END BANNER EDIT ───────────────────────────────────────────────────────────
 
 // Profile menu toggle
 const pmToggle = document.getElementById('profile-menu-toggle');

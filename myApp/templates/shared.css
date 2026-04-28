@@ -417,3 +417,82 @@ body.impersonating .admin-shell{padding-top:calc(64px + 44px)}
   /* banner height is variable when wrapped — let nav sit at its default */
   body.impersonating nav{top:auto}
 }
+
+/* ── SYSTEM BANNER ────────────────────────────────────────────────────────────
+   Fixed bar shown to logged-in users when an active banner is live.
+   body.has-system-banner is set by JS (applyActiveBanners).
+   z-index 190 sits below impersonation banner (200) and above nav (100).
+────────────────────────────────────────────────────────────────────────────── */
+
+.system-banner{
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:190;
+  height:44px;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
+  font-size:13px;
+  font-weight:600;
+}
+
+.system-banner__msg{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.system-banner__dismiss{
+  background:transparent;
+  border:0;
+  cursor:pointer;
+  padding:4px 8px;
+  opacity:.7;
+  font-size:18px;
+  line-height:1;
+  color:inherit;
+  font-family:inherit;
+}
+.system-banner__dismiss:hover{opacity:1}
+
+.system-banner--info{background:var(--teal-light);border-bottom:2px solid var(--teal);color:var(--teal2)}
+.system-banner--warn{background:var(--amber-bg);border-bottom:2px solid var(--amber);color:#78350f}
+.system-banner--critical{background:var(--red-bg);border-bottom:2px solid var(--red);color:var(--red)}
+
+/* Stacking: system banner pushed below impersonation banner when both active */
+body.impersonating .system-banner{top:44px}
+
+/* Nav adjustments */
+body.has-system-banner nav{top:44px}
+body.impersonating.has-system-banner nav{top:88px}
+
+/* Page shell padding */
+body.has-system-banner .page-shell,
+body.has-system-banner.dark-app .page-shell{padding-top:calc(64px + 44px)}
+body.impersonating.has-system-banner .page-shell,
+body.impersonating.has-system-banner.dark-app .page-shell{padding-top:calc(64px + 88px)}
+
+body.has-system-banner .admin-shell{padding-top:calc(64px + 44px)}
+body.impersonating.has-system-banner .admin-shell{padding-top:calc(64px + 88px)}
+
+/* Inline preview in admin form — overrides fixed positioning */
+.system-banner-preview .system-banner{
+  position:relative;
+  top:auto;left:auto;right:auto;
+  border-radius:8px;
+}
+
+@media(max-width:640px){
+  .system-banner{
+    height:auto;
+    min-height:44px;
+    flex-wrap:wrap;
+    padding:8px 12px;
+    font-size:12px;
+  }
+  body.has-system-banner nav{top:auto}
+  body.impersonating.has-system-banner nav{top:auto}
+}
