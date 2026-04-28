@@ -831,12 +831,21 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
         <h1>Industries</h1>
         <p>Manage industry taxonomy and icons used across the platform.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-industry"></i></div>
-        <h3>Industry Management</h3>
-        <p>Add, reorder, and soft-disable industries; migrate the INDUSTRY_MAP — coming in Phase 8.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 8</span>
+      <div class="agents-topbar">
+        <div class="agents-search-wrap">
+          <i class="fa-solid fa-magnifying-glass agents-search-icon"></i>
+          <input type="text" id="ind-search" class="agents-search-input" placeholder="Search by name or slug…" autocomplete="off">
+        </div>
+        <button class="agents-create-btn" onclick="industriesOpenCreate()">
+          <i class="fa-solid fa-plus"></i> Create new industry
+        </button>
       </div>
+      <div class="agents-count" id="ind-count"></div>
+      <div id="ind-table-wrap" class="agents-table-wrap"></div>
+    </div>
+
+    <div id="panel-industry-edit" class="admin-panel">
+      <div id="industry-edit-content"></div>
     </div>
 
     <div id="panel-events" class="admin-panel">
@@ -1085,6 +1094,12 @@ function getInitSection(pathname) {
   if ((m = pathname.match(/^\/admin-dashboard\/content\/prompts\/(\d+)\/?$/))) {
     return ['prompt-edit', {mode: 'edit', promptId: parseInt(m[1], 10)}];
   }
+  if (pathname === '/admin-dashboard/content/industries/new/') {
+    return ['industry-edit', {mode: 'create'}];
+  }
+  if ((m = pathname.match(/^\/admin-dashboard\/content\/industries\/(\d+)\/?$/))) {
+    return ['industry-edit', {mode: 'edit', industryId: parseInt(m[1], 10)}];
+  }
   return _STATIC_SECTIONS[pathname] || 'pulse';
 }
 
@@ -1155,7 +1170,7 @@ function showSection(key, params) {
   const panel = document.getElementById('panel-' + key);
   if (panel) panel.classList.add('active');
   // For nested routes, keep the parent sidebar link highlighted.
-  const sidebarKey = (key === 'agent-edit') ? 'agents' : (key === 'prompt-edit') ? 'prompts' : key;
+  const sidebarKey = (key === 'agent-edit') ? 'agents' : (key === 'prompt-edit') ? 'prompts' : (key === 'industry-edit') ? 'industries' : key;
   document.querySelectorAll('.admin-sidebar-link[data-section="' + sidebarKey + '"]').forEach(l => l.classList.add('active'));
   if (key === 'pulse') startPulseRefresh();
   if (key === 'users') usersMount();
@@ -1164,6 +1179,8 @@ function showSection(key, params) {
   if (key === 'agent-edit') agentEditMount(params || {});
   if (key === 'prompts') promptsMount();
   if (key === 'prompt-edit') promptEditMount(params || {});
+  if (key === 'industries') industriesMount();
+  if (key === 'industry-edit') industryEditMount(params || {});
 }
 
 function navigateTo(path, section, params) {
@@ -3193,7 +3210,7 @@ function aeRefreshIconBtn() {
   if (lbl) lbl.textContent = aeIconClass;
 }
 
-function aeOpenIconPicker() {
+function openIconPicker(initialIcon, onSelect) {
   const existing = document.getElementById('ip-overlay');
   if (existing) existing.remove();
 
@@ -3215,7 +3232,7 @@ function aeOpenIconPicker() {
       let grid = '';
       for (let ii = 0; ii < icons.length; ii++) {
         const ic = icons[ii];
-        grid += '<button class="icon-picker-cell' + (ic === aeIconClass ? ' selected' : '') + '" data-icon="' + escHtml(ic) + '" type="button" title="' + escHtml(ic) + '"><i class="fa-solid ' + escHtml(ic) + '"></i></button>';
+        grid += '<button class="icon-picker-cell' + (ic === initialIcon ? ' selected' : '') + '" data-icon="' + escHtml(ic) + '" type="button" title="' + escHtml(ic) + '"><i class="fa-solid ' + escHtml(ic) + '"></i></button>';
       }
       html += (
         '<div class="icon-picker-category">' +
@@ -3256,9 +3273,7 @@ function aeOpenIconPicker() {
     if (!body) return;
     body.querySelectorAll('.icon-picker-cell').forEach(btn => {
       btn.addEventListener('click', () => {
-        aeIconClass = btn.dataset.icon;
-        aeRefreshIconBtn();
-        aeUpdatePreview();
+        onSelect(btn.dataset.icon);
         closeIp();
       });
     });
@@ -3284,6 +3299,14 @@ function aeOpenIconPicker() {
   }
 
   bindCells();
+}
+
+function aeOpenIconPicker() {
+  openIconPicker(aeIconClass, function(ic) {
+    aeIconClass = ic;
+    aeRefreshIconBtn();
+    aeUpdatePreview();
+  });
 }
 
 function aeBindAll() {
@@ -3955,6 +3978,331 @@ async function promptEditMount(params) {
   }
 }
 // ── END PROMPTS ──────────────────────────────────────────────────────────────
+
+// ── INDUSTRIES LIST ──────────────────────────────────────────────────────────
+let industriesMounted = false;
+let industriesAllItems = [];
+let industriesSearchTimer = null;
+
+function industriesMount() {
+  if (!industriesMounted) {
+    industriesMounted = true;
+    const searchEl = document.getElementById('ind-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', () => {
+        clearTimeout(industriesSearchTimer);
+        industriesSearchTimer = setTimeout(industriesLoad, 300);
+      });
+    }
+  }
+  industriesLoad();
+}
+
+async function industriesLoad() {
+  const wrap = document.getElementById('ind-table-wrap');
+  const countEl = document.getElementById('ind-count');
+  if (!wrap) return;
+
+  const search = ((document.getElementById('ind-search') || {}).value || '').trim();
+  const params = new URLSearchParams();
+  if (search) params.set('search', search);
+
+  wrap.innerHTML = agentsRenderSkeleton();
+
+  try {
+    const r = await fetch('/api/admin/industries?' + params.toString(), {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+
+    industriesAllItems = data.items || [];
+    const n = industriesAllItems.length;
+    if (countEl) countEl.textContent = n + ' industr' + (n === 1 ? 'y' : 'ies') + ' found';
+
+    if (!industriesAllItems.length) {
+      wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-industry"></i><p>' +
+        (search ? 'No industries match this search.' : 'No industries yet. Create the first one.') + '</p></div>';
+      return;
+    }
+
+    wrap.innerHTML = '<table class="agents-table"><thead><tr>' +
+      '<th></th><th>Name</th><th>Slug</th><th>Sort</th><th>Status</th><th></th>' +
+      '</tr></thead><tbody>' + industriesAllItems.map(industryRow).join('') + '</tbody></table>';
+  } catch(e) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Failed to load industries.</p></div>';
+  }
+}
+
+function industryRow(ind) {
+  const active = ind.is_active
+    ? '<span class="spill-on"><i class="fa-solid fa-circle" style="font-size:7px"></i> Active</span>'
+    : '<span class="spill-off">Inactive</span>';
+  return '<tr onclick="industriesOpenEdit(' + ind.id + ')" title="Edit ' + escHtml(ind.name) + '">' +
+    '<td><div style="width:34px;height:34px;border-radius:9px;background:rgba(139,92,246,.2);display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#c4b5fd">' +
+    '<i class="fa-solid ' + escHtml(ind.icon_class || 'fa-briefcase') + '"></i></div></td>' +
+    '<td><div style="font-weight:600;color:#fff">' + escHtml(ind.name) + '</div></td>' +
+    '<td><code style="font-size:11px;color:rgba(255,255,255,.5);background:rgba(255,255,255,.07);padding:2px 7px;border-radius:5px">' + escHtml(ind.slug) + '</code></td>' +
+    '<td style="color:rgba(255,255,255,.6);font-size:13px">' + ind.sort_order + '</td>' +
+    '<td>' + active + '</td>' +
+    '<td class="agents-row-actions" onclick="event.stopPropagation()">' +
+    '<button class="ag-row-btn" onclick="industriesOpenEdit(' + ind.id + ')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+    '<button class="ag-row-btn danger" onclick="industriesConfirmDelete(' + ind.id + ')"><i class="fa-solid fa-trash"></i></button>' +
+    '</td></tr>';
+}
+
+function industriesOpenCreate() {
+  navigateTo('/admin-dashboard/content/industries/new/', 'industry-edit', {mode: 'create'});
+}
+
+function industriesOpenEdit(id) {
+  navigateTo('/admin-dashboard/content/industries/' + id + '/', 'industry-edit', {mode: 'edit', industryId: id});
+}
+
+async function industriesConfirmDelete(id) {
+  const ind = industriesAllItems.find(function(i) { return i.id === id; });
+  const name = ind ? ind.name : 'this industry';
+  if (!confirm('Delete industry "' + name + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/industries/' + id, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    _industriesFetch = null;
+    industriesAllItems = [];
+    udToast('Industry deleted.', 'success');
+    industriesLoad();
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+
+// ── INDUSTRY EDIT FORM ───────────────────────────────────────────────────────
+let ieIsCreate = false;
+let ieIndustryId = null;
+let ieIconClass = 'fa-briefcase';
+let ieSavingState = false;
+
+async function industryEditMount(params) {
+  ieIsCreate = params.mode === 'create';
+  ieIndustryId = params.industryId || null;
+  ieSavingState = false;
+
+  const el = document.getElementById('industry-edit-content');
+  if (!el) return;
+
+  if (ieIsCreate) {
+    ieIconClass = 'fa-briefcase';
+    ieRenderFull(null);
+    return;
+  }
+
+  el.innerHTML = ieRenderSkeleton();
+
+  try {
+    const r = await fetch('/api/admin/industries/' + ieIndustryId, {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    ieIconClass = data.icon_class || 'fa-briefcase';
+    ieRenderFull(data);
+  } catch(e) {
+    el.innerHTML = '<div style="padding:24px;color:#fb7185">Failed to load industry: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function ieRenderSkeleton() {
+  return '<div style="margin-bottom:22px">' +
+    '<div class="ae-skel-line" style="width:180px;height:16px;margin-bottom:10px"></div>' +
+    '<div class="ae-skel-line" style="width:260px;height:30px"></div></div>' +
+    '<div class="ae-shell"><div class="ae-form-col"><div class="ae-card">' +
+    '<div class="ae-skel-line" style="height:38px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:38px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:38px"></div>' +
+    '</div></div></div>';
+}
+
+function ieRenderFull(ind) {
+  const el = document.getElementById('industry-edit-content');
+  if (!el) return;
+
+  const title = ieIsCreate ? 'New industry' : 'Edit: ' + (ind ? escHtml(ind.name || '') : '');
+  const nameVal = ind ? escHtml(ind.name || '') : '';
+  const sortVal = ind ? ind.sort_order : 100;
+  const isActive = ind ? ind.is_active !== false : true;
+
+  const delBtn = ieIsCreate ? '' :
+    '<button class="ae-del-btn" id="ie-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete</button>';
+
+  el.innerHTML =
+    '<div class="ae-header-row">' +
+      '<div class="ae-header-left">' +
+        '<button class="ud-back-link" id="ie-back-btn" type="button"><i class="fa-solid fa-arrow-left"></i> Back to industries</button>' +
+        '<h2 class="ae-title">' + title + '</h2>' +
+      '</div>' +
+      '<div>' + delBtn + '</div>' +
+    '</div>' +
+    '<div class="ae-shell">' +
+      '<div class="ae-form-col">' +
+        '<div class="ae-card">' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ie-name">Name <span class="pe-req">*</span></label>' +
+            '<input class="ae-inp" id="ie-name" type="text" maxlength="80" placeholder="e.g. Legal" value="' + nameVal + '">' +
+            '<div class="ae-field-err" id="ie-name-err"></div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label">Icon</label>' +
+            '<button class="ae-icon-btn" id="ie-icon-btn" type="button">' +
+              '<span class="ae-icon-preview" id="ie-icon-preview" style="background:rgba(139,92,246,.2);color:#c4b5fd">' +
+                '<i class="fa-solid ' + escHtml(ieIconClass) + '"></i>' +
+              '</span>' +
+              '<span id="ie-icon-label">' + escHtml(ieIconClass) + '</span>' +
+            '</button>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label" for="ie-sort">Sort order</label>' +
+            '<input class="ae-inp" id="ie-sort" type="number" min="0" max="9999" value="' + sortVal + '">' +
+            '<div class="pe-helper">Lower numbers appear first in lists</div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<div class="ae-toggle-row">' +
+              '<label class="ae-toggle-lbl">' +
+                '<input class="ae-toggle" id="ie-active" type="checkbox"' + (isActive ? ' checked' : '') + '> Active' +
+              '</label>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="ae-actions-row">' +
+          '<button class="ae-cancel-btn" id="ie-cancel-btn" type="button">Cancel</button>' +
+          '<button class="ae-save-btn" id="ie-save-btn" type="button"><i class="fa-solid fa-floppy-disk"></i> Save industry</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ae-preview-col">' +
+        '<div class="ae-card">' +
+          '<div class="ae-preview-label">Preview</div>' +
+          '<div id="ie-preview-wrap" style="padding-top:6px">' + iePreviewHtml(ind ? (ind.name || '') : '', ieIconClass) + '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  ieBindAll();
+}
+
+function iePreviewHtml(name, iconClass) {
+  const label = name || 'Industry name';
+  return '<div style="display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:999px;' +
+    'border:1px solid rgba(214,203,255,.6);background:linear-gradient(120deg,rgba(168,85,247,.45),rgba(59,130,246,.35));' +
+    'color:#fff;font-size:13px;font-weight:500;cursor:default">' +
+    '<i class="fa-solid ' + escHtml(iconClass || 'fa-briefcase') + '" style="font-size:12px"></i> ' +
+    '<span>' + escHtml(label) + '</span></div>';
+}
+
+function ieRefreshIconBtn() {
+  const preview = document.getElementById('ie-icon-preview');
+  const label = document.getElementById('ie-icon-label');
+  if (preview) preview.innerHTML = '<i class="fa-solid ' + escHtml(ieIconClass) + '"></i>';
+  if (label) label.textContent = ieIconClass;
+}
+
+function ieUpdatePreview() {
+  const nameEl = document.getElementById('ie-name');
+  const wrap = document.getElementById('ie-preview-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = iePreviewHtml(nameEl ? nameEl.value : '', ieIconClass);
+}
+
+function ieBindAll() {
+  const backBtn   = document.getElementById('ie-back-btn');
+  const cancelBtn = document.getElementById('ie-cancel-btn');
+  const saveBtn   = document.getElementById('ie-save-btn');
+  const delBtn    = document.getElementById('ie-del-btn');
+  const iconBtn   = document.getElementById('ie-icon-btn');
+  const nameEl    = document.getElementById('ie-name');
+
+  if (backBtn)   backBtn.addEventListener('click',   function() { navigateTo('/admin-dashboard/content/industries/', 'industries'); });
+  if (cancelBtn) cancelBtn.addEventListener('click', function() { navigateTo('/admin-dashboard/content/industries/', 'industries'); });
+  if (saveBtn)   saveBtn.addEventListener('click',   ieSave);
+  if (delBtn)    delBtn.addEventListener('click',    ieDeleteIndustry);
+  if (iconBtn)   iconBtn.addEventListener('click', function() {
+    openIconPicker(ieIconClass, function(ic) {
+      ieIconClass = ic;
+      ieRefreshIconBtn();
+      ieUpdatePreview();
+    });
+  });
+  if (nameEl) nameEl.addEventListener('input', ieUpdatePreview);
+}
+
+async function ieSave() {
+  if (ieSavingState) return;
+
+  const nameEl  = document.getElementById('ie-name');
+  const sortEl  = document.getElementById('ie-sort');
+  const activeEl = document.getElementById('ie-active');
+  const saveBtn  = document.getElementById('ie-save-btn');
+  const nameErr  = document.getElementById('ie-name-err');
+
+  const name = nameEl ? nameEl.value.trim() : '';
+  if (!name) {
+    if (nameErr) nameErr.textContent = 'Name is required.';
+    if (nameEl) nameEl.classList.add('error');
+    return;
+  }
+  if (nameErr) nameErr.textContent = '';
+  if (nameEl) nameEl.classList.remove('error');
+
+  const rawSort = sortEl ? parseInt(sortEl.value, 10) : 100;
+  const sort_order = isNaN(rawSort) || rawSort < 0 ? 100 : rawSort;
+  const is_active = activeEl ? activeEl.checked : true;
+
+  ieSavingState = true;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…'; }
+
+  try {
+    const url = ieIsCreate ? '/api/admin/industries' : '/api/admin/industries/' + ieIndustryId;
+    const method = ieIsCreate ? 'POST' : 'PATCH';
+    const r = await fetch(url, {
+      method,
+      credentials: 'same-origin',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({name, icon_class: ieIconClass, sort_order, is_active}),
+    });
+    const data = await r.json();
+    if (!r.ok) {
+      if (data.errors && data.errors.name) {
+        if (nameErr) nameErr.textContent = data.errors.name;
+        if (nameEl) nameEl.classList.add('error');
+      } else {
+        udToast(data.error || 'Save failed.', 'error');
+      }
+      return;
+    }
+    _industriesFetch = null;
+    industriesAllItems = [];
+    udToast(ieIsCreate ? 'Industry created!' : 'Industry saved!', 'success');
+    navigateTo('/admin-dashboard/content/industries/', 'industries');
+  } catch(e) {
+    udToast('Save request failed.', 'error');
+  } finally {
+    ieSavingState = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save industry'; }
+  }
+}
+
+async function ieDeleteIndustry() {
+  if (!ieIndustryId) return;
+  const ind = industriesAllItems.find(function(i) { return i.id === ieIndustryId; });
+  const name = ind ? ind.name : 'this industry';
+  if (!confirm('Delete industry "' + name + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/industries/' + ieIndustryId, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    _industriesFetch = null;
+    industriesAllItems = [];
+    udToast('Industry deleted.', 'success');
+    navigateTo('/admin-dashboard/content/industries/', 'industries');
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END INDUSTRIES ───────────────────────────────────────────────────────────
 
 // Profile menu toggle
 const pmToggle = document.getElementById('profile-menu-toggle');

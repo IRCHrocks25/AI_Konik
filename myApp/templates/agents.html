@@ -255,6 +255,8 @@
   box-shadow:0 4px 14px rgba(139,92,246,.25);
 }
 .ind-filter.active i{opacity:1}
+@keyframes shimmer{from{opacity:.55}to{opacity:1}}
+.ind-skel{display:inline-block;border-radius:999px;background:rgba(255,255,255,.09);animation:shimmer 1.1s ease-in-out infinite alternate}
 
 /* ============ AGENT CARDS ============ */
 .agents-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
@@ -447,16 +449,7 @@
   <div class="results-meta" id="results-count">0 agents found</div>
 
   <section class="industry-row" id="ind-filters">
-    <button class="ind-filter active" onclick="filterInd('all',this)">All industries</button>
-    <button class="ind-filter" onclick="filterInd('legal',this)"><i class="fa-solid fa-scale-balanced"></i> Legal</button>
-    <button class="ind-filter" onclick="filterInd('healthcare',this)"><i class="fa-solid fa-hospital"></i> Healthcare</button>
-    <button class="ind-filter" onclick="filterInd('finance',this)"><i class="fa-solid fa-sack-dollar"></i> Finance</button>
-    <button class="ind-filter" onclick="filterInd('marketing',this)"><i class="fa-solid fa-bullhorn"></i> Marketing</button>
-    <button class="ind-filter" onclick="filterInd('technology',this)"><i class="fa-solid fa-laptop-code"></i> Technology</button>
-    <button class="ind-filter" onclick="filterInd('realestate',this)"><i class="fa-solid fa-house"></i> Real Estate</button>
-    <button class="ind-filter" onclick="filterInd('accounting',this)"><i class="fa-solid fa-chart-line"></i> Accounting</button>
-    <button class="ind-filter" onclick="filterInd('logistics',this)"><i class="fa-solid fa-truck"></i> Logistics</button>
-    <button class="ind-filter" onclick="filterInd('manufacturing',this)"><i class="fa-solid fa-gears"></i> Manufacturing</button>
+    <!-- Populated by initIndustryFilters() on page load -->
   </section>
 
   <div class="agents-grid" id="agents-grid"></div>
@@ -466,6 +459,50 @@ let AGENTS=[];
 let currentIndustry='all';
 let currentSearch='';
 let currentSort='featured';
+
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+
+function initIndustryFilters() {
+  const section = document.getElementById('ind-filters');
+  if (!section) return;
+
+  // Skeleton while loading
+  const SKEL_WIDTHS = [72, 90, 72, 84, 96, 88, 88, 80, 108];
+  section.innerHTML = '<button class="ind-filter active" onclick="filterInd(\'all\',this)">All industries</button>' +
+    SKEL_WIDTHS.map(function(w) {
+      return '<span class="ind-skel" style="width:' + w + 'px;height:34px"></span>';
+    }).join('');
+
+  fetch('/api/industries', {credentials: 'same-origin'})
+    .then(function(r) { return r.ok ? r.json() : {industries: []}; })
+    .then(function(data) {
+      const industries = data.industries || [];
+      const urlInd = new URLSearchParams(window.location.search).get('industry') || 'all';
+      if (urlInd !== 'all') currentIndustry = urlInd;
+
+      let html = '<button class="ind-filter' + (currentIndustry === 'all' ? ' active' : '') + '" onclick="filterInd(\'all\',this)">All industries</button>';
+      for (let i = 0; i < industries.length; i++) {
+        const ind = industries[i];
+        const active = ind.slug === currentIndustry ? ' active' : '';
+        html += '<button class="ind-filter' + active + '" data-industry="' + esc(ind.slug) + '" onclick="filterInd(\'' + esc(ind.slug) + '\',this)">' +
+          '<i class="fa-solid ' + esc(ind.icon_class) + '"></i> ' + esc(ind.name) + '</button>';
+      }
+      section.innerHTML = html;
+
+      if (currentIndustry !== 'all') renderAgents();
+    })
+    .catch(function() {
+      const section2 = document.getElementById('ind-filters');
+      if (section2) section2.innerHTML = '<button class="ind-filter active" onclick="filterInd(\'all\',this)">All industries</button>';
+      const t = document.createElement('div');
+      t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(220,38,38,.9);color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:9999';
+      t.textContent = 'Could not load industries';
+      document.body.appendChild(t);
+      setTimeout(function() { t.remove(); }, 3500);
+    });
+}
+
+initIndustryFilters();
 
 // Saturated accent palette for agent card icons — cycled deterministically by industry/id
 // so icons are always high-contrast against the card background.
