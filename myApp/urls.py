@@ -125,4 +125,10 @@ urlpatterns = [
     path("api/admin/ops/token-usage", views.api_admin_ops_token_usage, name="api_admin_ops_token_usage"),
     path("api/admin/ops/audit", views.api_admin_ops_audit, name="api_admin_ops_audit"),
     path("api/admin/ops/errors", views.api_admin_ops_errors, name="api_admin_ops_errors"),
+    path("api/events", views.api_events, name="api_events"),
+    path("api/tools", views.api_tools, name="api_tools"),
+    path("api/admin/events", views.api_admin_events, name="api_admin_events"),
+    path("api/admin/events/<int:event_id>", views.api_admin_event_detail, name="api_admin_event_detail"),
+    path("api/admin/tools", views.api_admin_tools, name="api_admin_tools"),
+    path("api/admin/tools/<int:tool_id>", views.api_admin_tool_detail, name="api_admin_tool_detail"),
 ]

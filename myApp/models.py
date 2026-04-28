@@ -239,6 +239,10 @@ class Event(models.Model):
         db_index=True,
         help_text="When the event occurs (indexed to support 'upcoming' filters).",
     )
+    event_type = models.CharField(
+        max_length=50, blank=True, default="",
+        help_text="e.g. 'Workshop', 'Webinar', 'Summit', 'Masterclass'. Free-form.",
+    )
     location = models.CharField(max_length=200, blank=True)
     image_url = models.URLField(blank=True, max_length=500)
     registration_url = models.URLField(blank=True, max_length=500)

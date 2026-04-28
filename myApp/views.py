@@ -11,12 +11,15 @@ from datetime import datetime, timedelta
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password, make_password
+from django.core.exceptions import ValidationError
+from django.core.validators import URLValidator
 from django.db import transaction
 from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncDate
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
 from django.utils import timezone as dj_tz
+from django.utils.dateparse import parse_datetime as django_parse_datetime
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
@@ -32,7 +35,7 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import AdminAction, Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Industry, Prompt, SavedPrompt
+from .models import AdminAction, Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, ErrorLog, Event, Industry, Prompt, SavedPrompt, Tool
 from .openai_service import (
     MAX_REQUEST_TOKENS,
     estimate_messages_tokens,
@@ -40,7 +43,7 @@ from .openai_service import (
     trim_history_to_budget,
 )
 from .personalization import build_full_system_prompt
-from .seed_data import seed_agents_and_prompts, seed_industries
+from .seed_data import seed_agents_and_prompts, seed_events, seed_industries, seed_tools
 
 try:
     from openpyxl import load_workbook
@@ -172,6 +175,36 @@ def ensure_seed_industries():
     if Industry.objects.exists():
         return
     seed_industries()
+
+
+def ensure_seed_events():
+    if Event.objects.exists():
+        return
+    ensure_seed_industries()  # events reference industries
+    seed_events()
+
+
+def ensure_seed_tools():
+    if Tool.objects.exists():
+        return
+    seed_tools()
+
+
+def _parse_event_date(raw):
+    """Parse an ISO-8601 string into a tz-aware datetime, or return None."""
+    val = str(raw or "").strip()
+    if not val:
+        return None
+    dt = django_parse_datetime(val)
+    if dt is not None:
+        return dj_tz.make_aware(dt) if dt.tzinfo is None else dt
+    from datetime import datetime as _dt
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        try:
+            return dj_tz.make_aware(_dt.strptime(val, fmt))
+        except ValueError:
+            continue
+    return None
 
 
 def home(request):
@@ -2795,5 +2828,547 @@ def api_admin_industry_detail(request, industry_id):
         )
         industry.refresh_from_db()
         return JsonResponse(_serialize_industry(industry))
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# ---------------------------------------------------------------------------
+# EVENTS — public + admin CRUD
+# ---------------------------------------------------------------------------
+
+def _serialize_event(event):
+    industry = None
+    if event.industry_id:
+        ind = event.industry
+        industry = {"slug": ind.slug, "name": ind.name, "icon_class": ind.icon_class}
+    return {
+        "id": event.id,
+        "title": event.title,
+        "slug": event.slug,
+        "description": event.description,
+        "event_date": event.event_date.isoformat(),
+        "event_type": event.event_type,
+        "location": event.location,
+        "image_url": event.image_url,
+        "registration_url": event.registration_url,
+        "is_featured": event.is_featured,
+        "is_active": event.is_active,
+        "sort_order": event.sort_order,
+        "industry": industry,
+        "created_at": event.created_at.isoformat(),
+        "updated_at": event.updated_at.isoformat(),
+    }
+
+
+def api_events(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    ensure_seed_events()
+    now = dj_tz.now()
+    events = list(
+        Event.objects.select_related("industry")
+        .filter(is_active=True, event_date__gte=now)
+        .order_by("sort_order", "event_date")
+    )
+    return JsonResponse({"events": [_serialize_event(e) for e in events]})
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_events(request):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if request.method == "GET":
+        ensure_seed_events()
+        qs = Event.objects.select_related("industry").all()
+
+        search = request.GET.get("search", "").strip()
+        if search:
+            qs = qs.filter(
+                Q(title__icontains=search)
+                | Q(description__icontains=search)
+                | Q(location__icontains=search)
+            )
+
+        industry_param = request.GET.get("industry", "").strip().lower()
+        if industry_param:
+            qs = qs.filter(industry__slug=industry_param)
+
+        is_active_param = request.GET.get("is_active", "").strip().lower()
+        if is_active_param == "true":
+            qs = qs.filter(is_active=True)
+        elif is_active_param == "false":
+            qs = qs.filter(is_active=False)
+
+        sort_param = request.GET.get("sort", "date_asc")
+        if sort_param == "date_desc":
+            qs = qs.order_by("-event_date")
+        elif sort_param == "title_asc":
+            qs = qs.order_by("title")
+        elif sort_param == "featured_first":
+            qs = qs.order_by("-is_featured", "event_date")
+        else:
+            qs = qs.order_by("sort_order", "event_date")
+
+        page = max(1, _to_non_negative_int(request.GET.get("page", 1), default=1))
+        page_size = min(200, max(1, _to_non_negative_int(request.GET.get("page_size", 50), default=50)))
+        total = qs.count()
+        items = list(qs[(page - 1) * page_size: page * page_size])
+        return JsonResponse({
+            "items": [_serialize_event(e) for e in items],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "pages": max(1, -(-total // page_size)),
+        })
+
+    if request.method == "POST":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        title = str(payload.get("title", "")).strip()
+        if not title:
+            errors["title"] = "Required."
+        elif len(title) > 200:
+            errors["title"] = "Too long (max 200)."
+
+        description = str(payload.get("description", "")).strip()
+        if not description:
+            errors["description"] = "Required."
+
+        event_date_raw = payload.get("event_date", "")
+        event_date = _parse_event_date(event_date_raw)
+        if event_date is None:
+            errors["event_date"] = "Required. Use ISO-8601 (e.g. 2026-05-15T14:00)."
+
+        _url_validator = URLValidator()
+        for url_field in ("image_url", "registration_url"):
+            val = str(payload.get(url_field, "") or "").strip()
+            if val:
+                try:
+                    _url_validator(val)
+                except ValidationError:
+                    errors[url_field] = "Enter a valid URL."
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        slug = slugify(title)
+        if not slug:
+            return JsonResponse({"error": "Invalid title — cannot generate slug"}, status=400)
+        if Event.objects.filter(slug=slug).exists():
+            return JsonResponse({"error": f"Event with slug '{slug}' already exists"}, status=409)
+
+        event_type = str(payload.get("event_type", "") or "").strip()[:50]
+        location = str(payload.get("location", "") or "").strip()[:200]
+        image_url = str(payload.get("image_url", "") or "").strip()
+        registration_url = str(payload.get("registration_url", "") or "").strip()
+        is_featured = bool(payload.get("is_featured", False))
+        is_active = payload.get("is_active", True)
+        if not isinstance(is_active, bool):
+            is_active = True
+        sort_order = _to_non_negative_int(payload.get("sort_order", 100), default=100)
+
+        industry = None
+        industry_slug = str(payload.get("industry", "") or "").strip()
+        if industry_slug:
+            industry = Industry.objects.filter(slug=industry_slug).first()
+
+        event = Event.objects.create(
+            title=title,
+            slug=slug,
+            description=description,
+            event_date=event_date,
+            event_type=event_type,
+            location=location,
+            image_url=image_url,
+            registration_url=registration_url,
+            industry=industry,
+            is_featured=is_featured,
+            is_active=is_active,
+            sort_order=sort_order,
+        )
+        record_admin_action(
+            admin=request.current_user,
+            action_type="event.create",
+            target_type="event",
+            target_id=event.id,
+            metadata={"title": event.title, "event_type": event.event_type},
+        )
+        event_out = Event.objects.select_related("industry").get(id=event.id)
+        return JsonResponse(_serialize_event(event_out), status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_event_detail(request, event_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    event = Event.objects.select_related("industry").filter(id=event_id).first()
+    if not event:
+        return JsonResponse({"error": "Event not found"}, status=404)
+
+    if request.method == "GET":
+        return JsonResponse(_serialize_event(event))
+
+    if request.method == "DELETE":
+        title = event.title
+        event.delete()
+        record_admin_action(
+            admin=request.current_user,
+            action_type="event.delete",
+            target_type="event",
+            target_id=event_id,
+            metadata={"title": title},
+        )
+        return JsonResponse({"deleted": True})
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        updates = {}
+
+        if "title" in payload:
+            title = str(payload["title"]).strip()
+            if not title:
+                errors["title"] = "Cannot be empty."
+            elif len(title) > 200:
+                errors["title"] = "Too long (max 200)."
+            else:
+                new_slug = slugify(title)
+                if not new_slug:
+                    errors["title"] = "Invalid title."
+                elif Event.objects.filter(slug=new_slug).exclude(id=event.id).exists():
+                    errors["title"] = "Another event with this title already exists."
+                else:
+                    updates["title"] = title
+                    updates["slug"] = new_slug
+
+        if "description" in payload:
+            val = str(payload["description"]).strip()
+            if not val:
+                errors["description"] = "Cannot be empty."
+            else:
+                updates["description"] = val
+
+        if "event_date" in payload:
+            parsed = _parse_event_date(payload["event_date"])
+            if parsed is None:
+                errors["event_date"] = "Invalid date. Use ISO-8601."
+            else:
+                updates["event_date"] = parsed
+
+        _url_validator = URLValidator()
+        for url_field in ("image_url", "registration_url"):
+            if url_field in payload:
+                val = str(payload[url_field] or "").strip()
+                if val:
+                    try:
+                        _url_validator(val)
+                    except ValidationError:
+                        errors[url_field] = "Enter a valid URL."
+                        continue
+                updates[url_field] = val
+
+        for str_field, max_len in (("event_type", 50), ("location", 200)):
+            if str_field in payload:
+                updates[str_field] = str(payload[str_field] or "").strip()[:max_len]
+
+        for bool_field in ("is_featured", "is_active"):
+            if bool_field in payload:
+                val = payload[bool_field]
+                if not isinstance(val, bool):
+                    errors[bool_field] = "Must be a boolean."
+                else:
+                    updates[bool_field] = val
+
+        if "sort_order" in payload:
+            updates["sort_order"] = _to_non_negative_int(payload["sort_order"], default=event.sort_order)
+
+        if "industry" in payload:
+            industry_slug = str(payload["industry"] or "").strip()
+            if industry_slug:
+                ind = Industry.objects.filter(slug=industry_slug).first()
+                if not ind:
+                    errors["industry"] = f"Industry '{industry_slug}' not found."
+                else:
+                    updates["industry_id"] = ind.id
+            else:
+                updates["industry_id"] = None
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        changed_fields = list(updates.keys())
+        if updates:
+            for field, value in updates.items():
+                setattr(event, field, value)
+            event.save(update_fields=changed_fields + ["updated_at"])
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="event.update",
+            target_type="event",
+            target_id=event.id,
+            metadata={"changed_fields": changed_fields},
+        )
+        event = Event.objects.select_related("industry").get(id=event.id)
+        return JsonResponse(_serialize_event(event))
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+# ---------------------------------------------------------------------------
+# TOOLS — public + admin CRUD
+# ---------------------------------------------------------------------------
+
+def _serialize_tool(tool):
+    return {
+        "id": tool.id,
+        "name": tool.name,
+        "slug": tool.slug,
+        "description": tool.description,
+        "icon_class": tool.icon_class,
+        "external_url": tool.external_url,
+        "category": tool.category,
+        "is_featured": tool.is_featured,
+        "is_active": tool.is_active,
+        "sort_order": tool.sort_order,
+        "created_at": tool.created_at.isoformat(),
+        "updated_at": tool.updated_at.isoformat(),
+    }
+
+
+def api_tools(request):
+    if request.method != "GET":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    ensure_seed_tools()
+    tools = list(Tool.objects.filter(is_active=True).order_by("sort_order", "name"))
+    return JsonResponse({"tools": [_serialize_tool(t) for t in tools]})
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_tools(request):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+
+    if request.method == "GET":
+        ensure_seed_tools()
+        qs = Tool.objects.all()
+
+        search = request.GET.get("search", "").strip()
+        if search:
+            qs = qs.filter(
+                Q(name__icontains=search)
+                | Q(description__icontains=search)
+                | Q(category__icontains=search)
+            )
+
+        category_param = request.GET.get("category", "").strip()
+        if category_param:
+            qs = qs.filter(category__iexact=category_param)
+
+        is_active_param = request.GET.get("is_active", "").strip().lower()
+        if is_active_param == "true":
+            qs = qs.filter(is_active=True)
+        elif is_active_param == "false":
+            qs = qs.filter(is_active=False)
+
+        sort_param = request.GET.get("sort", "name_asc")
+        if sort_param == "sort_order_asc":
+            qs = qs.order_by("sort_order", "name")
+        elif sort_param == "featured_first":
+            qs = qs.order_by("-is_featured", "sort_order", "name")
+        else:
+            qs = qs.order_by("name")
+
+        page = max(1, _to_non_negative_int(request.GET.get("page", 1), default=1))
+        page_size = min(200, max(1, _to_non_negative_int(request.GET.get("page_size", 50), default=50)))
+        total = qs.count()
+        items = list(qs[(page - 1) * page_size: page * page_size])
+        return JsonResponse({
+            "items": [_serialize_tool(t) for t in items],
+            "total": total,
+            "page": page,
+            "page_size": page_size,
+            "pages": max(1, -(-total // page_size)),
+        })
+
+    if request.method == "POST":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        name = str(payload.get("name", "")).strip()
+        if not name:
+            errors["name"] = "Required."
+        elif len(name) > 120:
+            errors["name"] = "Too long (max 120)."
+
+        description = str(payload.get("description", "")).strip()
+        if not description:
+            errors["description"] = "Required."
+
+        external_url = str(payload.get("external_url", "") or "").strip()
+        if not external_url:
+            errors["external_url"] = "Required."
+        else:
+            try:
+                URLValidator()(external_url)
+            except ValidationError:
+                errors["external_url"] = "Enter a valid URL."
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        slug = slugify(name)
+        if not slug:
+            return JsonResponse({"error": "Invalid name — cannot generate slug"}, status=400)
+        if Tool.objects.filter(slug=slug).exists():
+            return JsonResponse({"error": f"Tool with slug '{slug}' already exists"}, status=409)
+
+        icon_class = str(payload.get("icon_class", "fa-toolbox") or "fa-toolbox").strip()[:80] or "fa-toolbox"
+        category = str(payload.get("category", "") or "").strip()[:80]
+        is_featured = bool(payload.get("is_featured", False))
+        is_active = payload.get("is_active", True)
+        if not isinstance(is_active, bool):
+            is_active = True
+        sort_order = _to_non_negative_int(payload.get("sort_order", 100), default=100)
+
+        tool = Tool.objects.create(
+            name=name,
+            slug=slug,
+            description=description,
+            icon_class=icon_class,
+            external_url=external_url,
+            category=category,
+            is_featured=is_featured,
+            is_active=is_active,
+            sort_order=sort_order,
+        )
+        record_admin_action(
+            admin=request.current_user,
+            action_type="tool.create",
+            target_type="tool",
+            target_id=tool.id,
+            metadata={"name": tool.name, "slug": tool.slug},
+        )
+        return JsonResponse(_serialize_tool(tool), status=201)
+
+    return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_tool_detail(request, tool_id):
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    tool = Tool.objects.filter(id=tool_id).first()
+    if not tool:
+        return JsonResponse({"error": "Tool not found"}, status=404)
+
+    if request.method == "GET":
+        return JsonResponse(_serialize_tool(tool))
+
+    if request.method == "DELETE":
+        name = tool.name
+        tool.delete()
+        record_admin_action(
+            admin=request.current_user,
+            action_type="tool.delete",
+            target_type="tool",
+            target_id=tool_id,
+            metadata={"name": name},
+        )
+        return JsonResponse({"deleted": True})
+
+    if request.method == "PATCH":
+        payload = get_request_json(request)
+        if payload is None:
+            return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+
+        errors = {}
+        updates = {}
+
+        if "name" in payload:
+            name = str(payload["name"]).strip()
+            if not name:
+                errors["name"] = "Cannot be empty."
+            elif len(name) > 120:
+                errors["name"] = "Too long (max 120)."
+            else:
+                new_slug = slugify(name)
+                if not new_slug:
+                    errors["name"] = "Invalid name."
+                elif Tool.objects.filter(slug=new_slug).exclude(id=tool.id).exists():
+                    errors["name"] = "Another tool with this name already exists."
+                else:
+                    updates["name"] = name
+                    updates["slug"] = new_slug
+
+        if "description" in payload:
+            val = str(payload["description"]).strip()
+            if not val:
+                errors["description"] = "Cannot be empty."
+            else:
+                updates["description"] = val
+
+        if "external_url" in payload:
+            val = str(payload["external_url"] or "").strip()
+            if not val:
+                errors["external_url"] = "Required."
+            else:
+                try:
+                    URLValidator()(val)
+                    updates["external_url"] = val
+                except ValidationError:
+                    errors["external_url"] = "Enter a valid URL."
+
+        if "icon_class" in payload:
+            val = str(payload["icon_class"] or "fa-toolbox").strip()
+            updates["icon_class"] = (val or "fa-toolbox")[:80]
+
+        if "category" in payload:
+            updates["category"] = str(payload["category"] or "").strip()[:80]
+
+        for bool_field in ("is_featured", "is_active"):
+            if bool_field in payload:
+                val = payload[bool_field]
+                if not isinstance(val, bool):
+                    errors[bool_field] = "Must be a boolean."
+                else:
+                    updates[bool_field] = val
+
+        if "sort_order" in payload:
+            updates["sort_order"] = _to_non_negative_int(payload["sort_order"], default=tool.sort_order)
+
+        if errors:
+            return JsonResponse({"errors": errors}, status=400)
+
+        changed_fields = list(updates.keys())
+        if updates:
+            for field, value in updates.items():
+                setattr(tool, field, value)
+            tool.save(update_fields=changed_fields + ["updated_at"])
+
+        record_admin_action(
+            admin=request.current_user,
+            action_type="tool.update",
+            target_type="tool",
+            target_id=tool.id,
+            metadata={"changed_fields": changed_fields},
+        )
+        tool.refresh_from_db()
+        return JsonResponse(_serialize_tool(tool))
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
