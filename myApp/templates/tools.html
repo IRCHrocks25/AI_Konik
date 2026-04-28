@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Tool Directory — AI KONIK</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/shared.css">
@@ -10,43 +11,31 @@
 .hero{text-align:center;padding:28px 24px 24px;margin-bottom:16px}
 .hero h1{margin:0 0 8px;font-family:'DM Serif Display',serif;color:#fff;font-size:clamp(34px,4vw,50px)}
 .hero p{margin:0 auto;max-width:860px;color:rgba(255,255,255,.86);font-size:18px;line-height:1.6}
-.hero-stats{margin-top:14px;display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-.hero-stats .stat{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.1);border-radius:14px;padding:10px 14px;color:#fff;font-size:13px;font-weight:500}
-.tools-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px}
-.tools-sidebar{position:sticky;top:84px;padding:16px;height:fit-content}
-.tools-sidebar .sidebar-label{color:rgba(255,255,255,.62);padding:8px 10px}
-.tools-sidebar .sidebar-link{border-radius:10px;margin:2px 4px;border-left:none;color:rgba(255,255,255,.84)}
-.tools-sidebar .sidebar-link:hover{background:rgba(255,255,255,.12);color:#fff}
-.tools-sidebar .sidebar-link.active{background:linear-gradient(135deg, rgba(147,51,234,.45), rgba(217,70,239,.42));color:#fff;font-weight:600}
-.tools-main .filter-bar{margin-bottom:16px;background:linear-gradient(120deg, rgba(255,255,255,.16), rgba(255,255,255,.08));border:1px solid rgba(255,255,255,.2);backdrop-filter:blur(8px)}
-.tools-main .filter-search{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.24);border-radius:12px}
-.tools-main .filter-search span{color:rgba(255,255,255,.7)}
-.tools-main .filter-search input{color:#fff}
-.tools-main .filter-search input::placeholder{color:rgba(255,255,255,.6)}
-.tools-main .filter-select{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:12px;padding:10px 12px}
-.tools-main .filter-select option{color:#111827}
-.tools-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.tool-card{position:relative;border:1px solid rgba(255,255,255,.24);border-radius:20px;padding:20px;transition:all .2s;cursor:pointer;background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));box-shadow:0 10px 28px rgba(0,0,0,.22);backdrop-filter:blur(6px)}
+.tl-controls-row{display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.tl-search-wrap{position:relative;flex:1;min-width:220px}
+.tl-search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,.45);font-size:14px;pointer-events:none}
+.tl-search-input{width:100%;padding:12px 14px 12px 42px;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.12);color:#fff;border-radius:14px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box;transition:border-color .15s}
+.tl-search-input::placeholder{color:rgba(255,255,255,.45)}
+.tl-search-input:focus{border-color:rgba(168,85,247,.55)}
+.results-hint{color:rgba(255,255,255,.72);font-size:13px;white-space:nowrap}
+@keyframes shimmer{from{opacity:.55}to{opacity:1}}
+.cat-filter-row{display:flex;flex-wrap:wrap;gap:8px;padding:14px 0 16px;margin-bottom:4px;border-bottom:1px solid rgba(255,255,255,.08)}
+.cat-filter{border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.05);color:rgba(255,255,255,.72);padding:7px 14px;border-radius:999px;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+.cat-filter:hover{background:rgba(255,255,255,.12);color:#fff}
+.cat-filter.active{border-color:rgba(214,203,255,.6);background:linear-gradient(120deg,rgba(168,85,247,.45),rgba(59,130,246,.35));color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(139,92,246,.25)}
+.cat-skel{display:inline-block;border-radius:999px;background:rgba(255,255,255,.09);animation:shimmer 1.1s ease-in-out infinite alternate}
+.tools-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+.tool-card{position:relative;border:1px solid rgba(255,255,255,.24);border-radius:20px;padding:20px;transition:all .2s;cursor:pointer;background:linear-gradient(150deg,rgba(255,255,255,.2),rgba(255,255,255,.07));box-shadow:0 10px 28px rgba(0,0,0,.22);backdrop-filter:blur(6px)}
 .tool-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.45);box-shadow:0 14px 35px rgba(0,0,0,.3)}
 .tool-card.featured{border-color:rgba(192,132,252,.65);box-shadow:0 0 0 1px rgba(192,132,252,.4), 0 16px 36px rgba(76,29,149,.28)}
-.tool-logo{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#8b5cf6,#4f46e5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
+.tool-logo{width:52px;height:52px;border-radius:14px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;margin-bottom:14px}
 .tool-name{font-size:20px;font-weight:600;color:#fff;margin-bottom:8px;line-height:1.25}
-.tool-desc{font-size:14px;color:rgba(255,255,255,.84);line-height:1.6;margin-bottom:14px}
-.stars{color:#FBBF24;font-size:13px;letter-spacing:1px}
-.tool-meta{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid rgba(255,255,255,.18)}
-.rating-wrap{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
-.rating-score{font-size:14px;font-weight:600;color:#fff}
-.review-count{font-size:12px;color:rgba(255,255,255,.68)}
-.badge-teal{background:rgba(139,92,246,.3);color:#fff}
-.badge-navy{background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff}
-.tool-pill-row{display:flex;gap:6px;margin-bottom:10px}
-.submit-tool-btn{width:100%;justify-content:center;min-height:42px;border-radius:12px;border:1px solid rgba(196,181,253,.48);background:linear-gradient(135deg, rgba(139,92,246,.58), rgba(79,70,229,.54));color:#fff;font-weight:600;box-shadow:0 10px 24px rgba(49,46,129,.34);transition:transform .15s ease, filter .15s ease, box-shadow .15s ease}
-.submit-tool-btn:hover{transform:translateY(-1px);filter:brightness(1.08);box-shadow:0 14px 30px rgba(49,46,129,.42)}
-@media(max-width:1100px){
-  .tools-layout{grid-template-columns:1fr}
-  .tools-sidebar{position:static}
-  .tools-grid{grid-template-columns:1fr 1fr}
-}
+.tool-desc{font-size:14px;color:rgba(255,255,255,.84);line-height:1.6;margin-bottom:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.tool-pill-row{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tool-footer{display:flex;align-items:center;justify-content:flex-end;padding-top:14px;border-top:1px solid rgba(255,255,255,.18);min-height:40px}
+.tl-skel-logo{border-radius:14px;background:rgba(255,255,255,.1);animation:shimmer 1.2s ease-in-out infinite alternate}
+.tl-skel-line{border-radius:4px;animation:shimmer 1.2s ease-in-out infinite alternate}
+@media(max-width:1100px){.tools-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:720px){
   .portal-wrap{padding:96px 14px 28px}
   .tools-grid{grid-template-columns:1fr}
@@ -108,118 +97,180 @@ fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{
   applyImpersonationBanner(d);
 }).catch(()=>{});
 </script>
+
 <div class="page-shell portal-wrap">
   <section class="hero glass">
     <h1>The Best AI Tools for Your Industry</h1>
-    <p>Curated, community-rated AI tools with honest reviews from SMB users like you.</p>
-    <div class="hero-stats">
-      <div class="stat"><i class="fa-solid fa-screwdriver-wrench"></i> 120+ Tools</div>
-      <div class="stat"><i class="fa-solid fa-star"></i> Community Rated</div>
-      <div class="stat"><i class="fa-solid fa-layer-group"></i> 9 Core Categories</div>
-    </div>
+    <p>Curated AI tools vetted for SMB teams across every industry.</p>
   </section>
-  <div class="tools-layout">
-    <aside class="tools-sidebar glass">
-      <div class="sidebar-section">
-        <div class="sidebar-label">Category</div>
-        <a class="sidebar-link active" href="#">All Tools</a>
-        <a class="sidebar-link" href="#">Writing & Content</a>
-        <a class="sidebar-link" href="#">Legal & Compliance</a>
-        <a class="sidebar-link" href="#">Finance & Accounting</a>
-        <a class="sidebar-link" href="#">Marketing & SEO</a>
-        <a class="sidebar-link" href="#">Data & Analytics</a>
-        <a class="sidebar-link" href="#">Customer Support</a>
-        <a class="sidebar-link" href="#">Code & Development</a>
-        <a class="sidebar-link" href="#">HR & People Ops</a>
+  <div>
+    <div class="tl-controls-row">
+      <div class="tl-search-wrap">
+        <i class="fa-solid fa-magnifying-glass tl-search-icon"></i>
+        <input type="text" id="tl-search" class="tl-search-input" placeholder="Search tools…" autocomplete="off">
       </div>
-      <div class="sidebar-section">
-        <div class="sidebar-label">Pricing</div>
-        <a class="sidebar-link" href="#">Free</a>
-        <a class="sidebar-link" href="#">Freemium</a>
-        <a class="sidebar-link" href="#">Paid</a>
-        <a class="sidebar-link" href="#">Enterprise</a>
-      </div>
-      <div style="padding:16px">
-        <button class="btn btn-sm submit-tool-btn" onclick="showToast('Submission form opening...','')"><i class="fa-solid fa-plus"></i> Submit a Tool</button>
-      </div>
-    </aside>
-    <div class="tools-main">
-      <div class="filter-bar">
-        <div class="filter-search"><span><i class="fa-solid fa-magnifying-glass"></i></span><input type="text" placeholder="Search tools..."></div>
-        <select class="filter-select"><option>All Pricing</option><option>Free</option><option>Freemium</option><option>Paid</option></select>
-        <select class="filter-select"><option>Top Rated</option><option>Most Reviewed</option><option>Newest</option></select>
-      </div>
-      <div class="tools-grid">
-        <div class="tool-card featured">
-          <div style="position:absolute;top:12px;right:12px;font-size:10px" class="badge badge-navy">Featured</div>
-          <div class="tool-logo"><i class="fa-solid fa-file-pen"></i></div>
-          <div class="tool-name">Claude (Anthropic)</div>
-          <div class="tool-pill-row"><span class="badge badge-teal">Writing</span><span class="badge badge-gray">Freemium</span></div>
-          <div class="tool-desc">The most capable AI assistant for legal, compliance, and complex reasoning tasks. Best-in-class for document analysis.</div>
-          <div class="tool-meta">
-            <div class="rating-wrap"><div class="stars">★★★★★</div><span class="rating-score">4.9</span><span class="review-count">(284 reviews)</span></div>
-            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-logo"><i class="fa-solid fa-magnifying-glass"></i></div>
-          <div class="tool-name">Perplexity AI</div>
-          <div class="tool-pill-row"><span class="badge badge-teal">Research</span><span class="badge badge-gray">Freemium</span></div>
-          <div class="tool-desc">AI-powered research engine. Ideal for competitive intelligence, market research, and due diligence.</div>
-          <div class="tool-meta">
-            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.6</span><span class="review-count">(142 reviews)</span></div>
-            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-logo"><i class="fa-solid fa-palette"></i></div>
-          <div class="tool-name">Midjourney</div>
-          <div class="tool-pill-row"><span class="badge badge-teal">Design</span><span class="badge badge-gray">Paid</span></div>
-          <div class="tool-desc">Best-in-class AI image generation. Used by marketing teams for brand visuals, ads, and creative content.</div>
-          <div class="tool-meta">
-            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.5</span><span class="review-count">(198 reviews)</span></div>
-            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-logo"><i class="fa-solid fa-chart-line"></i></div>
-          <div class="tool-name">Notion AI</div>
-          <div class="tool-pill-row"><span class="badge badge-teal">Productivity</span><span class="badge badge-gray">Freemium</span></div>
-          <div class="tool-desc">AI-powered workspace for teams. Excellent for SOPs, meeting notes, project documentation, and wikis.</div>
-          <div class="tool-meta">
-            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.4</span><span class="review-count">(167 reviews)</span></div>
-            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-logo"><i class="fa-solid fa-handshake"></i></div>
-          <div class="tool-name">HubSpot AI</div>
-          <div class="tool-pill-row"><span class="badge badge-teal">CRM</span><span class="badge badge-gray">Freemium</span></div>
-          <div class="tool-desc">AI-enhanced CRM for SMBs. Smart email generation, deal scoring, and automated follow-up sequences.</div>
-          <div class="tool-meta">
-            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.3</span><span class="review-count">(221 reviews)</span></div>
-            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
-        </div>
-        <div class="tool-card">
-          <div class="tool-logo"><i class="fa-solid fa-video"></i></div>
-          <div class="tool-name">Descript</div>
-          <div class="tool-pill-row"><span class="badge badge-teal">Video</span><span class="badge badge-gray">Paid</span></div>
-          <div class="tool-desc">AI video editor with transcription, overdubbing, and automatic cut removal. Great for training and webinar content.</div>
-          <div class="tool-meta">
-            <div class="rating-wrap"><div class="stars">★★★★☆</div><span class="rating-score">4.4</span><span class="review-count">(89 reviews)</span></div>
-            <a href="#" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>
-          </div>
-        </div>
-      </div>
+      <span class="results-hint" id="tl-results-hint"></span>
     </div>
+    <div class="cat-filter-row" id="cat-filters"></div>
+    <div class="tools-grid" id="tools-grid"></div>
   </div>
 </div>
+
 <div class="toast" id="toast"></div>
+
 <script>
-function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');setTimeout(()=>t.className='toast',3500);}
-// make sidebar links work
-document.querySelectorAll('.sidebar-link').forEach(l=>l.addEventListener('click',function(e){e.preventDefault();document.querySelectorAll('.sidebar-link').forEach(x=>x.classList.remove('active'));this.classList.add('active');}));
+function escHtml(s){return String(s||'').replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  setTimeout(()=>t.className='toast',4000);
+}
+
+// Deterministic gradient from category string
+const TL_GRADIENTS = [
+  'linear-gradient(135deg,#8b5cf6,#4f46e5)',
+  'linear-gradient(135deg,#06b6d4,#0284c7)',
+  'linear-gradient(135deg,#10b981,#059669)',
+  'linear-gradient(135deg,#f59e0b,#d97706)',
+  'linear-gradient(135deg,#ef4444,#dc2626)',
+  'linear-gradient(135deg,#ec4899,#db2777)',
+  'linear-gradient(135deg,#6366f1,#4338ca)',
+];
+function tlCatGradient(cat) {
+  let h = 0;
+  const s = cat || '';
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) & 0xffff;
+  return TL_GRADIENTS[h % TL_GRADIENTS.length];
+}
+
+let allTools = [];
+let currentCat = '';
+let tlSearchVal = '';
+
+// ── CATEGORY FILTER ───────────────────────────────────────────────────────────
+function initTlCategoryFilters(tools) {
+  const row = document.getElementById('cat-filters');
+  if (!row) return;
+
+  const cats = [];
+  const seen = new Set();
+  for (let i = 0; i < tools.length; i++) {
+    const c = tools[i].category || '';
+    if (c && !seen.has(c)) { seen.add(c); cats.push(c); }
+  }
+  cats.sort();
+
+  let html = '<button class="cat-filter active" data-cat="" onclick="filterTlCat(\'\')">All</button>';
+  for (let i = 0; i < cats.length; i++) {
+    html += '<button class="cat-filter" data-cat="' + escHtml(cats[i]) + '" onclick="filterTlCat(\'' + escHtml(cats[i]) + '\')">' + escHtml(cats[i]) + '</button>';
+  }
+  row.innerHTML = html;
+}
+
+function filterTlCat(cat) {
+  currentCat = cat;
+  document.querySelectorAll('#cat-filters .cat-filter').forEach(function(b) {
+    b.classList.toggle('active', b.dataset.cat === cat);
+  });
+  renderFilteredTools();
+}
+
+// ── TOOLS FETCH + RENDER ──────────────────────────────────────────────────────
+function tlSkeleton() {
+  const card = '<div class="tool-card">' +
+    '<div class="tl-skel-logo" style="width:52px;height:52px;margin-bottom:14px"></div>' +
+    '<div class="tl-skel-line" style="height:20px;width:60%;background:rgba(255,255,255,.1);margin-bottom:8px"></div>' +
+    '<div class="tl-skel-line" style="height:12px;width:40%;background:rgba(255,255,255,.07);margin-bottom:10px"></div>' +
+    '<div class="tl-skel-line" style="height:52px;background:rgba(255,255,255,.07)"></div>' +
+    '</div>';
+  return card + card + card + card + card + card;
+}
+
+async function fetchAndRenderTools() {
+  const grid = document.getElementById('tools-grid');
+  if (!grid) return;
+  grid.innerHTML = tlSkeleton();
+
+  try {
+    const r = await fetch('/api/tools', {credentials: 'same-origin'});
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json();
+    allTools = data.tools || [];
+    initTlCategoryFilters(allTools);
+    renderFilteredTools();
+  } catch(e) {
+    grid.innerHTML = tlEmptyState('Could not load tools. Please try again.');
+    showToast('Could not load tools', '');
+  }
+}
+
+function tlEmptyState(msg) {
+  return '<div style="grid-column:1/-1;text-align:center;padding:52px 20px;color:rgba(255,255,255,.55)">' +
+    '<i class="fa-solid fa-toolbox" style="font-size:40px;display:block;margin-bottom:16px;opacity:.4"></i>' +
+    '<p style="font-size:15px">' + escHtml(msg) + '</p></div>';
+}
+
+function renderFilteredTools() {
+  const grid = document.getElementById('tools-grid');
+  const hint = document.getElementById('tl-results-hint');
+  if (!grid) return;
+
+  const search = tlSearchVal.toLowerCase();
+  const filtered = allTools.filter(function(tl) {
+    if (currentCat && (tl.category || '') !== currentCat) return false;
+    if (search && !(tl.name || '').toLowerCase().includes(search) &&
+        !(tl.description || '').toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  if (hint) hint.textContent = filtered.length + ' tool' + (filtered.length !== 1 ? 's' : '') + ' available';
+
+  if (!filtered.length) {
+    grid.innerHTML = tlEmptyState(search || currentCat ? 'No tools match these filters.' : 'No tools available yet. Check back soon!');
+    return;
+  }
+
+  grid.innerHTML = filtered.map(renderToolCard).join('');
+}
+
+function renderToolCard(tl) {
+  const grad = tlCatGradient(tl.category || '');
+  const iconCls = escHtml(tl.icon_class || 'fa-toolbox');
+  const featBadge = tl.is_featured
+    ? '<div style="position:absolute;top:12px;right:12px;font-size:10px" class="badge badge-navy"><i class="fa-solid fa-star"></i> Featured</div>'
+    : '';
+  const catBadge = tl.category
+    ? '<span class="badge badge-teal">' + escHtml(tl.category) + '</span>'
+    : '';
+  const visitBtn = tl.external_url
+    ? '<a href="' + escHtml(tl.external_url) + '" target="_blank" rel="noopener noreferrer" class="btn btn-teal btn-sm">Visit <i class="fa-solid fa-arrow-right"></i></a>'
+    : '';
+
+  return '<div class="tool-card' + (tl.is_featured ? ' featured' : '') + '">' +
+    featBadge +
+    '<div class="tool-logo" style="background:' + grad + '"><i class="fa-solid ' + iconCls + '"></i></div>' +
+    '<div class="tool-name">' + escHtml(tl.name) + '</div>' +
+    (catBadge ? '<div class="tool-pill-row">' + catBadge + '</div>' : '') +
+    '<div class="tool-desc">' + escHtml(tl.description) + '</div>' +
+    '<div class="tool-footer">' + visitBtn + '</div>' +
+    '</div>';
+}
+
+// ── SEARCH INPUT ──────────────────────────────────────────────────────────────
+let tlSearchTimer = null;
+const tlSearchEl = document.getElementById('tl-search');
+if (tlSearchEl) {
+  tlSearchEl.addEventListener('input', function() {
+    clearTimeout(tlSearchTimer);
+    tlSearchTimer = setTimeout(function() {
+      tlSearchVal = tlSearchEl.value;
+      renderFilteredTools();
+    }, 300);
+  });
+}
+
+// ── PROFILE MENU ──────────────────────────────────────────────────────────────
 const pmToggle = document.getElementById('profile-menu-toggle');
 const profileMenu = document.getElementById('profile-menu');
 if(pmToggle && profileMenu){
@@ -241,6 +292,9 @@ if(signoutBtn){
       .finally(()=>{window.location.href="{% url 'login' %}";});
   });
 }
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+fetchAndRenderTools();
 </script>
 </body>
 </html>
