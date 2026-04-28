@@ -606,6 +606,11 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
 .ops-log-empty i{font-size:32px;color:rgba(255,255,255,.2);display:block;margin-bottom:12px}
 .ops-log-empty p{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:16px}
 .ops-log-skel{background:rgba(255,255,255,.09);border-radius:4px;height:13px;animation:shimmer 1.2s ease-in-out infinite alternate;display:inline-block}
+
+/* ── EVENTS + TOOLS shared ── */
+.ev-filter-select{padding:8px 26px 8px 12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:8px;color:rgba(255,255,255,.82);font-size:12.5px;cursor:pointer;outline:none;font-family:inherit;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='7' viewBox='0 0 10 7'%3E%3Cpath fill='rgba(255,255,255,0.45)' d='M5 7L0 0h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+.ev-filter-select:hover{background:rgba(255,255,255,.11)}
+.ev-filter-select option{background:#1e1b2e;color:#fff}
 </style>
 </head>
 <body class="dark-app admin-visible">
@@ -853,12 +858,36 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
         <h1>Events</h1>
         <p>Schedule and manage community events and webinars.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-calendar-days"></i></div>
-        <h3>Events Management</h3>
-        <p>Create, edit, and feature events; cut over the events page from hardcoded data — coming in Phase 9.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 9</span>
+      <div class="agents-topbar" style="flex-wrap:wrap;gap:10px">
+        <div class="agents-search-wrap">
+          <i class="fa-solid fa-magnifying-glass agents-search-icon"></i>
+          <input type="text" id="ev-search" class="agents-search-input" placeholder="Search title, description, location…" autocomplete="off">
+        </div>
+        <select id="ev-industry-filter" class="ev-filter-select" onchange="eventsRefetch()">
+          <option value="">All industries</option>
+        </select>
+        <select id="ev-status-filter" class="ev-filter-select" onchange="eventsRefetch()">
+          <option value="">All statuses</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <select id="ev-sort-filter" class="ev-filter-select" onchange="eventsRefetch()">
+          <option value="date_asc">Date ↑ (soonest)</option>
+          <option value="date_desc">Date ↓ (latest)</option>
+          <option value="title_asc">Title A–Z</option>
+          <option value="featured_first">Featured first</option>
+        </select>
+        <button class="agents-create-btn" onclick="eventsOpenCreate()">
+          <i class="fa-solid fa-plus"></i> Create new event
+        </button>
       </div>
+      <div class="agents-count" id="ev-count" style="margin-bottom:6px"></div>
+      <div id="ev-table-wrap" class="agents-table-wrap"></div>
+      <div class="users-pagination" id="ev-pagination" style="margin-top:12px"></div>
+    </div>
+
+    <div id="panel-event-edit" class="admin-panel">
+      <div id="event-edit-content"></div>
     </div>
 
     <div id="panel-tools" class="admin-panel">
@@ -866,12 +895,34 @@ textarea.ae-inp{resize:vertical;min-height:80px;line-height:1.6}
         <h1>Tools</h1>
         <p>Curate the AI tools directory shown to users.</p>
       </div>
-      <div class="placeholder-card">
-        <div class="ph-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-        <h3>Tools Directory</h3>
-        <p>Add, edit, and reorder tools; cut over the tools page from hardcoded data — coming in Phase 9.</p>
-        <span class="ph-badge"><i class="fa-solid fa-clock"></i> Phase 9</span>
+      <div class="agents-topbar" style="flex-wrap:wrap;gap:10px">
+        <div class="agents-search-wrap">
+          <i class="fa-solid fa-magnifying-glass agents-search-icon"></i>
+          <input type="text" id="tl-search" class="agents-search-input" placeholder="Search name, description, or category…" autocomplete="off">
+        </div>
+        <select id="tl-category-filter" class="ev-filter-select" onchange="toolsRefetch()">
+          <option value="">All categories</option>
+        </select>
+        <select id="tl-status-filter" class="ev-filter-select" onchange="toolsRefetch()">
+          <option value="">All statuses</option>
+          <option value="true">Active</option>
+          <option value="false">Inactive</option>
+        </select>
+        <select id="tl-sort-filter" class="ev-filter-select" onchange="toolsRefetch()">
+          <option value="name_asc">Name A–Z</option>
+          <option value="sort_order_asc">Sort order</option>
+          <option value="featured_first">Featured first</option>
+        </select>
+        <button class="agents-create-btn" onclick="toolsOpenCreate()">
+          <i class="fa-solid fa-plus"></i> Create new tool
+        </button>
       </div>
+      <div class="agents-count" id="tl-count" style="margin-bottom:6px"></div>
+      <div id="tl-table-wrap" class="agents-table-wrap"></div>
+    </div>
+
+    <div id="panel-tool-edit" class="admin-panel">
+      <div id="tool-edit-content"></div>
     </div>
 
     <div id="panel-banners" class="admin-panel">
@@ -1100,6 +1151,18 @@ function getInitSection(pathname) {
   if ((m = pathname.match(/^\/admin-dashboard\/content\/industries\/(\d+)\/?$/))) {
     return ['industry-edit', {mode: 'edit', industryId: parseInt(m[1], 10)}];
   }
+  if (pathname === '/admin-dashboard/content/events/new/') {
+    return ['event-edit', {mode: 'create'}];
+  }
+  if ((m = pathname.match(/^\/admin-dashboard\/content\/events\/(\d+)\/?$/))) {
+    return ['event-edit', {mode: 'edit', eventId: parseInt(m[1], 10)}];
+  }
+  if (pathname === '/admin-dashboard/content/tools/new/') {
+    return ['tool-edit', {mode: 'create'}];
+  }
+  if ((m = pathname.match(/^\/admin-dashboard\/content\/tools\/(\d+)\/?$/))) {
+    return ['tool-edit', {mode: 'edit', toolId: parseInt(m[1], 10)}];
+  }
   return _STATIC_SECTIONS[pathname] || 'pulse';
 }
 
@@ -1170,7 +1233,11 @@ function showSection(key, params) {
   const panel = document.getElementById('panel-' + key);
   if (panel) panel.classList.add('active');
   // For nested routes, keep the parent sidebar link highlighted.
-  const sidebarKey = (key === 'agent-edit') ? 'agents' : (key === 'prompt-edit') ? 'prompts' : (key === 'industry-edit') ? 'industries' : key;
+  const sidebarKey = (key === 'agent-edit') ? 'agents' :
+                     (key === 'prompt-edit') ? 'prompts' :
+                     (key === 'industry-edit') ? 'industries' :
+                     (key === 'event-edit') ? 'events' :
+                     (key === 'tool-edit') ? 'tools' : key;
   document.querySelectorAll('.admin-sidebar-link[data-section="' + sidebarKey + '"]').forEach(l => l.classList.add('active'));
   if (key === 'pulse') startPulseRefresh();
   if (key === 'users') usersMount();
@@ -1181,6 +1248,10 @@ function showSection(key, params) {
   if (key === 'prompt-edit') promptEditMount(params || {});
   if (key === 'industries') industriesMount();
   if (key === 'industry-edit') industryEditMount(params || {});
+  if (key === 'events') eventsMount();
+  if (key === 'event-edit') eventEditMount(params || {});
+  if (key === 'tools') toolsMount();
+  if (key === 'tool-edit') toolEditMount(params || {});
 }
 
 function navigateTo(path, section, params) {
@@ -4303,6 +4374,817 @@ async function ieDeleteIndustry() {
   }
 }
 // ── END INDUSTRIES ───────────────────────────────────────────────────────────
+
+// ── EVENTS LIST ──────────────────────────────────────────────────────────────
+let eventsMounted = false;
+let eventsAllItems = [];
+let eventsSearchTimer = null;
+let eventsFilters = {search: '', industry: '', is_active: '', sort: 'date_asc', page: 1};
+
+function fmtEventDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-US', {month:'short', day:'numeric', year:'numeric', hour:'numeric', minute:'2-digit'});
+}
+
+function isoToDatetimeLocal(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  const pad = function(n) { return String(n).padStart(2, '0'); };
+  return d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()) +
+    'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+
+function eventsMount() {
+  if (!eventsMounted) {
+    eventsMounted = true;
+    const searchEl = document.getElementById('ev-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', function() {
+        clearTimeout(eventsSearchTimer);
+        eventsSearchTimer = setTimeout(function() {
+          eventsFilters.search = searchEl.value;
+          eventsFilters.page = 1;
+          eventsLoad();
+        }, 300);
+      });
+    }
+    loadIndustries().then(function(industries) {
+      const el = document.getElementById('ev-industry-filter');
+      if (!el || el.options.length > 1) return;
+      industries.forEach(function(ind) {
+        const o = document.createElement('option');
+        o.value = ind.slug;
+        o.textContent = ind.name;
+        el.appendChild(o);
+      });
+    });
+  }
+  eventsLoad();
+}
+
+function eventsRefetch() {
+  const indEl    = document.getElementById('ev-industry-filter');
+  const statusEl = document.getElementById('ev-status-filter');
+  const sortEl   = document.getElementById('ev-sort-filter');
+  if (indEl)    eventsFilters.industry  = indEl.value;
+  if (statusEl) eventsFilters.is_active = statusEl.value;
+  if (sortEl)   eventsFilters.sort      = sortEl.value;
+  eventsFilters.page = 1;
+  eventsLoad();
+}
+
+function eventsGoPage(page) {
+  eventsFilters.page = page;
+  eventsLoad();
+}
+
+async function eventsLoad() {
+  const wrap    = document.getElementById('ev-table-wrap');
+  const countEl = document.getElementById('ev-count');
+  const pagEl   = document.getElementById('ev-pagination');
+  if (!wrap) return;
+
+  wrap.innerHTML = agentsRenderSkeleton();
+  if (pagEl) pagEl.innerHTML = '';
+  if (countEl) countEl.textContent = '';
+
+  const p = new URLSearchParams();
+  p.set('page', eventsFilters.page);
+  p.set('page_size', '25');
+  if (eventsFilters.search)    p.set('q', eventsFilters.search);
+  if (eventsFilters.industry)  p.set('industry', eventsFilters.industry);
+  if (eventsFilters.is_active) p.set('is_active', eventsFilters.is_active);
+  if (eventsFilters.sort !== 'date_asc') p.set('sort', eventsFilters.sort);
+
+  try {
+    const r = await fetch('/api/admin/events?' + p.toString(), {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    eventsRender(data);
+  } catch(e) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Failed to load events.</p></div>';
+  }
+}
+
+function eventsRender(data) {
+  const wrap    = document.getElementById('ev-table-wrap');
+  const countEl = document.getElementById('ev-count');
+  const pagEl   = document.getElementById('ev-pagination');
+
+  eventsAllItems = data.items || [];
+  const total = data.total !== undefined ? data.total : eventsAllItems.length;
+  if (countEl) countEl.textContent = total + ' event' + (total !== 1 ? 's' : '') + ' found';
+
+  if (!eventsAllItems.length) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-calendar-days"></i><p>' +
+      (eventsFilters.search || eventsFilters.industry || eventsFilters.is_active
+        ? 'No events match these filters.' : 'No events yet. Create the first one.') + '</p></div>';
+    if (pagEl) pagEl.innerHTML = '';
+    return;
+  }
+
+  wrap.innerHTML = '<table class="agents-table"><thead><tr>' +
+    '<th>Date</th><th>Title</th><th>Type</th><th>Industry</th>' +
+    '<th style="text-align:center">Featured</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' + eventsAllItems.map(evRow).join('') + '</tbody></table>';
+
+  if (pagEl) pagEl.innerHTML = logPagination(data, 'eventsGoPage');
+}
+
+function evRow(ev) {
+  const typePill = ev.event_type
+    ? '<span class="pr-cat-pill">' + escHtml(ev.event_type) + '</span>'
+    : '<span style="color:rgba(255,255,255,.3)">—</span>';
+  const indName = ev.industry
+    ? escHtml(ev.industry.name)
+    : '<span style="color:rgba(255,255,255,.3)">—</span>';
+  const featured = ev.is_featured
+    ? '<i class="fa-solid fa-star" style="color:#fbbf24;font-size:13px"></i>' : '';
+  const active = ev.is_active
+    ? '<span class="spill-on"><i class="fa-solid fa-circle" style="font-size:7px"></i> Active</span>'
+    : '<span class="spill-off">Inactive</span>';
+  return '<tr onclick="eventsOpenEdit(' + ev.id + ')" title="' + escHtml(ev.title) + '">' +
+    '<td style="font-size:12px;white-space:nowrap;color:rgba(255,255,255,.7)">' + escHtml(fmtEventDate(ev.event_date)) + '</td>' +
+    '<td><div class="agent-name-cell" title="' + escHtml(ev.title) + '">' + escHtml(ev.title) + '</div></td>' +
+    '<td>' + typePill + '</td>' +
+    '<td style="font-size:13px;color:rgba(255,255,255,.75)">' + indName + '</td>' +
+    '<td style="text-align:center">' + featured + '</td>' +
+    '<td>' + active + '</td>' +
+    '<td class="agents-row-actions" onclick="event.stopPropagation()">' +
+    '<button class="ag-row-btn" onclick="eventsOpenEdit(' + ev.id + ')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+    '<button class="ag-row-btn danger" onclick="eventsConfirmDelete(' + ev.id + ')"><i class="fa-solid fa-trash"></i></button>' +
+    '</td></tr>';
+}
+
+function eventsOpenCreate() {
+  navigateTo('/admin-dashboard/content/events/new/', 'event-edit', {mode: 'create'});
+}
+
+function eventsOpenEdit(id) {
+  navigateTo('/admin-dashboard/content/events/' + id + '/', 'event-edit', {mode: 'edit', eventId: id});
+}
+
+async function eventsConfirmDelete(id) {
+  const ev = eventsAllItems.find(function(e) { return e.id === id; });
+  const title = ev ? ev.title : 'this event';
+  if (!confirm('Delete event "' + title + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/events/' + id, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    udToast('Event deleted.', 'success');
+    eventsLoad();
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END EVENTS LIST ───────────────────────────────────────────────────────────
+
+// ── EVENT EDIT FORM ──────────────────────────────────────────────────────────
+let evIsCreate = false;
+let evEventId = null;
+let evSavingState = false;
+
+async function eventEditMount(params) {
+  evIsCreate = params.mode === 'create';
+  evEventId = params.eventId || null;
+  evSavingState = false;
+
+  const el = document.getElementById('event-edit-content');
+  if (!el) return;
+
+  if (evIsCreate) {
+    await loadIndustries();
+    evRenderFull(null);
+    return;
+  }
+
+  el.innerHTML = evRenderSkeleton();
+  try {
+    const [, r] = await Promise.all([
+      loadIndustries(),
+      fetch('/api/admin/events/' + evEventId, {credentials: 'same-origin'}),
+    ]);
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    evRenderFull(data);
+  } catch(e) {
+    el.innerHTML = '<div style="padding:24px;color:#fb7185">Failed to load event: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function evRenderSkeleton() {
+  return '<div style="margin-bottom:22px">' +
+    '<div class="ae-skel-line" style="width:180px;height:16px;margin-bottom:10px"></div>' +
+    '<div class="ae-skel-line" style="width:320px;height:30px"></div></div>' +
+    '<div class="pe-shell"><div class="ae-form-col">' +
+    '<div class="ae-card"><div class="ae-skel-line" style="height:38px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:80px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:38px"></div></div></div></div>';
+}
+
+function evRenderFull(data) {
+  const el = document.getElementById('event-edit-content');
+  if (!el) return;
+
+  const d = data || {};
+  const title = evIsCreate ? 'Create new event' : 'Edit: ' + escHtml(d.title || '');
+  const industries = _industriesCache || [];
+
+  let indOpts = '<option value="">— None —</option>';
+  industries.forEach(function(ind) {
+    const sel = (d.industry && d.industry.slug === ind.slug) ? ' selected' : '';
+    indOpts += '<option value="' + escHtml(ind.slug) + '"' + sel + '>' + escHtml(ind.name) + '</option>';
+  });
+
+  const delBtn = evIsCreate ? '' :
+    '<button class="ae-del-btn" id="ev-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete event</button>';
+
+  el.innerHTML =
+    '<div class="ae-header-row">' +
+      '<div class="ae-header-left">' +
+        '<button class="ud-back-link" id="ev-back-btn" type="button"><i class="fa-solid fa-arrow-left"></i> Back to events</button>' +
+        '<h2 class="ae-title">' + title + '</h2>' +
+      '</div>' +
+      '<div>' + delBtn + '</div>' +
+    '</div>' +
+    '<div class="pe-shell"><div class="ae-form-col">' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Required</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-title">Title <span class="pe-req">*</span></label>' +
+          '<input class="ae-inp" id="ev-title" type="text" maxlength="200" value="' + escHtml(d.title || '') + '">' +
+          '<div class="ae-field-err" id="ev-title-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-desc">Description <span class="pe-req">*</span></label>' +
+          '<textarea class="ae-inp" id="ev-desc" rows="4" style="min-height:90px">' + escHtml(d.description || '') + '</textarea>' +
+          '<div class="ae-field-err" id="ev-desc-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-date">Event date <span class="pe-req">*</span></label>' +
+          '<input class="ae-inp" id="ev-date" type="datetime-local" value="' + escHtml(isoToDatetimeLocal(d.event_date)) + '">' +
+          '<div class="ae-field-err" id="ev-date-err"></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Categorization</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-type">Event type</label>' +
+          '<input class="ae-inp" id="ev-type" type="text" maxlength="50" placeholder="e.g. Workshop, Webinar, Summit, Masterclass" value="' + escHtml(d.event_type || '') + '">' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-industry">Industry</label>' +
+          '<select class="ae-inp" id="ev-industry">' + indOpts + '</select>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Links &amp; media</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-location">Location</label>' +
+          '<input class="ae-inp" id="ev-location" type="text" maxlength="200" placeholder="Online or venue address" value="' + escHtml(d.location || '') + '">' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-image-url">Image URL</label>' +
+          '<input class="ae-inp" id="ev-image-url" type="url" maxlength="500" placeholder="https://…" value="' + escHtml(d.image_url || '') + '">' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-reg-url">Registration URL</label>' +
+          '<input class="ae-inp" id="ev-reg-url" type="url" maxlength="500" placeholder="https://…" value="' + escHtml(d.registration_url || '') + '">' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Display settings</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="ev-sort">Sort order</label>' +
+          '<input class="ae-inp" id="ev-sort" type="number" min="0" max="9999" value="' + (d.sort_order !== undefined ? d.sort_order : 100) + '">' +
+          '<div class="pe-helper">Lower numbers appear first</div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<div class="ae-toggle-row">' +
+            '<label class="ae-toggle-lbl">' +
+              '<input class="ae-toggle" id="ev-featured" type="checkbox"' + (d.is_featured ? ' checked' : '') + '> Featured' +
+            '</label>' +
+            '<label class="ae-toggle-lbl">' +
+              '<input class="ae-toggle" id="ev-active" type="checkbox"' + (d.is_active !== false ? ' checked' : '') + '> Active' +
+            '</label>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-actions-row">' +
+        '<button class="ae-cancel-btn" id="ev-cancel-btn" type="button">Cancel</button>' +
+        '<button class="ae-save-btn" id="ev-save-btn" type="button"><i class="fa-solid fa-floppy-disk"></i> Save event</button>' +
+      '</div>' +
+
+    '</div></div>';
+
+  evBindAll();
+}
+
+function evBindAll() {
+  const backBtn   = document.getElementById('ev-back-btn');
+  const cancelBtn = document.getElementById('ev-cancel-btn');
+  const saveBtn   = document.getElementById('ev-save-btn');
+  const delBtn    = document.getElementById('ev-del-btn');
+  if (backBtn)   backBtn.addEventListener('click',   function() { navigateTo('/admin-dashboard/content/events/', 'events'); });
+  if (cancelBtn) cancelBtn.addEventListener('click', function() { navigateTo('/admin-dashboard/content/events/', 'events'); });
+  if (saveBtn)   saveBtn.addEventListener('click',   evSave);
+  if (delBtn)    delBtn.addEventListener('click',    evDeleteEvent);
+}
+
+async function evSave() {
+  if (evSavingState) return;
+
+  const titleEl  = document.getElementById('ev-title');
+  const descEl   = document.getElementById('ev-desc');
+  const dateEl   = document.getElementById('ev-date');
+  const saveBtn  = document.getElementById('ev-save-btn');
+  const titleErr = document.getElementById('ev-title-err');
+  const descErr  = document.getElementById('ev-desc-err');
+  const dateErr  = document.getElementById('ev-date-err');
+
+  let valid = true;
+  function evSetErr(el, errEl, msg) {
+    if (errEl) errEl.textContent = msg;
+    if (el) el.classList.toggle('error', !!msg);
+    if (msg) valid = false;
+  }
+
+  const titleVal = ((titleEl || {}).value || '').trim();
+  const descVal  = ((descEl  || {}).value || '').trim();
+  const dateVal  = ((dateEl  || {}).value || '').trim();
+
+  evSetErr(titleEl, titleErr, titleVal ? '' : 'Title is required.');
+  evSetErr(descEl,  descErr,  descVal  ? '' : 'Description is required.');
+  evSetErr(dateEl,  dateErr,  dateVal  ? '' : 'Event date is required.');
+  if (!valid) return;
+
+  const indEl = document.getElementById('ev-industry');
+  const payload = {
+    title:            titleVal,
+    description:      descVal,
+    event_date:       dateVal,
+    event_type:       ((document.getElementById('ev-type')     || {}).value || '').trim(),
+    industry:         (indEl && indEl.value) ? indEl.value : null,
+    location:         ((document.getElementById('ev-location') || {}).value || '').trim(),
+    image_url:        ((document.getElementById('ev-image-url')|| {}).value || '').trim(),
+    registration_url: ((document.getElementById('ev-reg-url') || {}).value || '').trim(),
+    sort_order:       parseInt(((document.getElementById('ev-sort') || {}).value || '100'), 10) || 100,
+    is_featured:      !!(document.getElementById('ev-featured') || {}).checked,
+    is_active:        (document.getElementById('ev-active') || {checked:true}).checked !== false,
+  };
+
+  evSavingState = true;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…'; }
+
+  try {
+    const url    = evIsCreate ? '/api/admin/events' : '/api/admin/events/' + evEventId;
+    const method = evIsCreate ? 'POST' : 'PATCH';
+    const r = await fetch(url, {method, credentials: 'same-origin', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const data = await r.json();
+    if (!r.ok) {
+      if (data.errors) {
+        if (data.errors.title)       evSetErr(titleEl, titleErr, data.errors.title);
+        if (data.errors.description) evSetErr(descEl,  descErr,  data.errors.description);
+        if (data.errors.event_date)  evSetErr(dateEl,  dateErr,  data.errors.event_date);
+        if (!data.errors.title && !data.errors.description && !data.errors.event_date)
+          udToast(data.error || 'Save failed.', 'error');
+      } else {
+        udToast(data.error || 'Save failed.', 'error');
+      }
+      return;
+    }
+    udToast(evIsCreate ? 'Event created!' : 'Event saved!', 'success');
+    navigateTo('/admin-dashboard/content/events/', 'events');
+  } catch(e) {
+    udToast('Save request failed.', 'error');
+  } finally {
+    evSavingState = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save event'; }
+  }
+}
+
+async function evDeleteEvent() {
+  if (!evEventId) return;
+  const ev = eventsAllItems.find(function(e) { return e.id === evEventId; });
+  const title = ev ? ev.title : 'this event';
+  if (!confirm('Delete event "' + title + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/events/' + evEventId, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    udToast('Event deleted.', 'success');
+    navigateTo('/admin-dashboard/content/events/', 'events');
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END EVENT EDIT ───────────────────────────────────────────────────────────
+
+// ── TOOLS LIST ───────────────────────────────────────────────────────────────
+let toolsMounted = false;
+let toolsAllItems = [];
+let toolsSearchTimer = null;
+let toolsFilters = {search: '', category: '', is_active: '', sort: 'name_asc'};
+
+function toolsMount() {
+  if (!toolsMounted) {
+    toolsMounted = true;
+    const searchEl = document.getElementById('tl-search');
+    if (searchEl) {
+      searchEl.addEventListener('input', function() {
+        clearTimeout(toolsSearchTimer);
+        toolsSearchTimer = setTimeout(function() {
+          toolsFilters.search = searchEl.value;
+          toolsRender();
+        }, 300);
+      });
+    }
+  }
+  toolsLoad();
+}
+
+function toolsRefetch() {
+  const catEl    = document.getElementById('tl-category-filter');
+  const statusEl = document.getElementById('tl-status-filter');
+  const sortEl   = document.getElementById('tl-sort-filter');
+  const prevSort = toolsFilters.sort;
+  if (catEl)    toolsFilters.category  = catEl.value;
+  if (statusEl) toolsFilters.is_active = statusEl.value;
+  if (sortEl)   toolsFilters.sort      = sortEl.value;
+  if (toolsFilters.sort !== prevSort) {
+    toolsLoad();
+  } else {
+    toolsRender();
+  }
+}
+
+async function toolsLoad() {
+  const wrap    = document.getElementById('tl-table-wrap');
+  const countEl = document.getElementById('tl-count');
+  if (!wrap) return;
+
+  wrap.innerHTML = agentsRenderSkeleton();
+  if (countEl) countEl.textContent = '';
+
+  const p = new URLSearchParams();
+  p.set('page_size', '500');
+  if (toolsFilters.sort !== 'name_asc') p.set('sort', toolsFilters.sort);
+
+  try {
+    const r = await fetch('/api/admin/tools?' + p.toString(), {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    toolsAllItems = data.items || [];
+    tlPopulateCategories(toolsAllItems);
+    toolsRender();
+  } catch(e) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-triangle-exclamation"></i><p>Failed to load tools.</p></div>';
+  }
+}
+
+function tlPopulateCategories(items) {
+  const catEl = document.getElementById('tl-category-filter');
+  if (!catEl) return;
+  const existing = catEl.value;
+  const cats = Array.from(new Set(items.map(function(t) { return t.category; }).filter(Boolean))).sort();
+  catEl.innerHTML = '<option value="">All categories</option>';
+  cats.forEach(function(c) {
+    const o = document.createElement('option');
+    o.value = c;
+    o.textContent = c;
+    if (c === existing) o.selected = true;
+    catEl.appendChild(o);
+  });
+}
+
+function toolsRender() {
+  const wrap    = document.getElementById('tl-table-wrap');
+  const countEl = document.getElementById('tl-count');
+  if (!wrap) return;
+
+  const search   = toolsFilters.search.toLowerCase();
+  const category = toolsFilters.category;
+  const isActive = toolsFilters.is_active;
+
+  const filtered = toolsAllItems.filter(function(t) {
+    if (search && !((t.name||'').toLowerCase().includes(search) ||
+                    (t.description||'').toLowerCase().includes(search) ||
+                    (t.category||'').toLowerCase().includes(search))) return false;
+    if (category && t.category !== category) return false;
+    if (isActive === 'true'  && !t.is_active)  return false;
+    if (isActive === 'false' &&  t.is_active)  return false;
+    return true;
+  });
+
+  const n = filtered.length;
+  if (countEl) countEl.textContent = n + ' tool' + (n !== 1 ? 's' : '') + ' found';
+
+  if (!filtered.length) {
+    wrap.innerHTML = '<div class="agents-empty-state"><i class="fa-solid fa-screwdriver-wrench"></i><p>' +
+      (search || category || isActive ? 'No tools match these filters.' : 'No tools yet. Create the first one.') + '</p></div>';
+    return;
+  }
+
+  wrap.innerHTML = '<table class="agents-table"><thead><tr>' +
+    '<th></th><th>Name</th><th>Category</th><th>External URL</th>' +
+    '<th style="text-align:center">Featured</th><th>Status</th><th></th>' +
+    '</tr></thead><tbody>' + filtered.map(tlRow).join('') + '</tbody></table>';
+}
+
+function tlRow(tool) {
+  const catPill = tool.category
+    ? '<span class="pr-cat-pill">' + escHtml(tool.category) + '</span>'
+    : '<span style="color:rgba(255,255,255,.3)">—</span>';
+  const url = tool.external_url || '';
+  const urlShort = url.replace(/^https?:\/\//, '');
+  const urlDisplay = urlShort.length > 38 ? urlShort.slice(0, 35) + '…' : urlShort;
+  const featured = tool.is_featured
+    ? '<i class="fa-solid fa-star" style="color:#fbbf24;font-size:13px"></i>' : '';
+  const active = tool.is_active
+    ? '<span class="spill-on"><i class="fa-solid fa-circle" style="font-size:7px"></i> Active</span>'
+    : '<span class="spill-off">Inactive</span>';
+  return '<tr onclick="toolsOpenEdit(' + tool.id + ')" title="Edit ' + escHtml(tool.name) + '">' +
+    '<td><div style="width:34px;height:34px;border-radius:9px;background:rgba(139,92,246,.15);display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:#c4b5fd">' +
+    '<i class="fa-solid ' + escHtml(tool.icon_class || 'fa-toolbox') + '"></i></div></td>' +
+    '<td><div style="font-weight:600;color:#fff">' + escHtml(tool.name) + '</div></td>' +
+    '<td>' + catPill + '</td>' +
+    '<td><a href="' + escHtml(url) + '" target="_blank" onclick="event.stopPropagation()" ' +
+      'style="font-size:12px;color:rgba(139,92,246,.85);text-decoration:none" title="' + escHtml(url) + '">' +
+      escHtml(urlDisplay) + '</a></td>' +
+    '<td style="text-align:center">' + featured + '</td>' +
+    '<td>' + active + '</td>' +
+    '<td class="agents-row-actions" onclick="event.stopPropagation()">' +
+    '<button class="ag-row-btn" onclick="toolsOpenEdit(' + tool.id + ')"><i class="fa-solid fa-pen"></i> Edit</button>' +
+    '<button class="ag-row-btn danger" onclick="toolsConfirmDelete(' + tool.id + ')"><i class="fa-solid fa-trash"></i></button>' +
+    '</td></tr>';
+}
+
+function toolsOpenCreate() {
+  navigateTo('/admin-dashboard/content/tools/new/', 'tool-edit', {mode: 'create'});
+}
+
+function toolsOpenEdit(id) {
+  navigateTo('/admin-dashboard/content/tools/' + id + '/', 'tool-edit', {mode: 'edit', toolId: id});
+}
+
+async function toolsConfirmDelete(id) {
+  const tool = toolsAllItems.find(function(t) { return t.id === id; });
+  const name = tool ? tool.name : 'this tool';
+  if (!confirm('Delete tool "' + name + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/tools/' + id, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    udToast('Tool deleted.', 'success');
+    toolsLoad();
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END TOOLS LIST ───────────────────────────────────────────────────────────
+
+// ── TOOL EDIT FORM ───────────────────────────────────────────────────────────
+let teIsCreate = false;
+let teToolId = null;
+let teSavingState = false;
+let teIconClass = 'fa-toolbox';
+
+async function toolEditMount(params) {
+  teIsCreate = params.mode === 'create';
+  teToolId = params.toolId || null;
+  teSavingState = false;
+
+  const el = document.getElementById('tool-edit-content');
+  if (!el) return;
+
+  if (teIsCreate) {
+    teIconClass = 'fa-toolbox';
+    teRenderFull(null);
+    return;
+  }
+
+  el.innerHTML = teRenderSkeleton();
+  try {
+    const r = await fetch('/api/admin/tools/' + teToolId, {credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || String(r.status));
+    teIconClass = data.icon_class || 'fa-toolbox';
+    teRenderFull(data);
+  } catch(e) {
+    el.innerHTML = '<div style="padding:24px;color:#fb7185">Failed to load tool: ' + escHtml(e.message) + '</div>';
+  }
+}
+
+function teRenderSkeleton() {
+  return '<div style="margin-bottom:22px">' +
+    '<div class="ae-skel-line" style="width:180px;height:16px;margin-bottom:10px"></div>' +
+    '<div class="ae-skel-line" style="width:280px;height:30px"></div></div>' +
+    '<div class="pe-shell"><div class="ae-form-col">' +
+    '<div class="ae-card"><div class="ae-skel-line" style="height:38px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:80px;margin-bottom:14px"></div>' +
+    '<div class="ae-skel-line" style="height:38px"></div></div></div></div>';
+}
+
+function teRenderFull(data) {
+  const el = document.getElementById('tool-edit-content');
+  if (!el) return;
+
+  const d = data || {};
+  const title = teIsCreate ? 'Create new tool' : 'Edit: ' + escHtml(d.name || '');
+
+  const delBtn = teIsCreate ? '' :
+    '<button class="ae-del-btn" id="te-del-btn" type="button"><i class="fa-solid fa-trash"></i> Delete tool</button>';
+
+  el.innerHTML =
+    '<div class="ae-header-row">' +
+      '<div class="ae-header-left">' +
+        '<button class="ud-back-link" id="te-back-btn" type="button"><i class="fa-solid fa-arrow-left"></i> Back to tools</button>' +
+        '<h2 class="ae-title">' + title + '</h2>' +
+      '</div>' +
+      '<div>' + delBtn + '</div>' +
+    '</div>' +
+    '<div class="pe-shell"><div class="ae-form-col">' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Required</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="te-name">Name <span class="pe-req">*</span></label>' +
+          '<input class="ae-inp" id="te-name" type="text" maxlength="120" value="' + escHtml(d.name || '') + '">' +
+          '<div class="ae-field-err" id="te-name-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="te-desc">Description <span class="pe-req">*</span></label>' +
+          '<textarea class="ae-inp" id="te-desc" rows="4" style="min-height:90px">' + escHtml(d.description || '') + '</textarea>' +
+          '<div class="ae-field-err" id="te-desc-err"></div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="te-url">External URL <span class="pe-req">*</span></label>' +
+          '<input class="ae-inp" id="te-url" type="url" maxlength="500" placeholder="https://…" value="' + escHtml(d.external_url || '') + '">' +
+          '<div class="ae-field-err" id="te-url-err"></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Visual identity</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label">Icon</label>' +
+          '<button class="ae-icon-btn" id="te-icon-btn" type="button">' +
+            '<span class="ae-icon-preview" id="te-icon-preview" style="background:rgba(139,92,246,.2);color:#c4b5fd">' +
+              '<i class="fa-solid ' + escHtml(teIconClass) + '"></i>' +
+            '</span>' +
+            '<span id="te-icon-label">' + escHtml(teIconClass) + '</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-card">' +
+        '<div class="ae-card-title">Categorization &amp; display</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="te-category">Category</label>' +
+          '<input class="ae-inp" id="te-category" type="text" maxlength="80" placeholder="e.g. Writing, Research, Productivity" value="' + escHtml(d.category || '') + '">' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<label class="ae-label" for="te-sort">Sort order</label>' +
+          '<input class="ae-inp" id="te-sort" type="number" min="0" max="9999" value="' + (d.sort_order !== undefined ? d.sort_order : 100) + '">' +
+          '<div class="pe-helper">Lower numbers appear first</div>' +
+        '</div>' +
+        '<div class="ae-field">' +
+          '<div class="ae-toggle-row">' +
+            '<label class="ae-toggle-lbl">' +
+              '<input class="ae-toggle" id="te-featured" type="checkbox"' + (d.is_featured ? ' checked' : '') + '> Featured' +
+            '</label>' +
+            '<label class="ae-toggle-lbl">' +
+              '<input class="ae-toggle" id="te-active" type="checkbox"' + (d.is_active !== false ? ' checked' : '') + '> Active' +
+            '</label>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="ae-actions-row">' +
+        '<button class="ae-cancel-btn" id="te-cancel-btn" type="button">Cancel</button>' +
+        '<button class="ae-save-btn" id="te-save-btn" type="button"><i class="fa-solid fa-floppy-disk"></i> Save tool</button>' +
+      '</div>' +
+
+    '</div></div>';
+
+  teBindAll();
+}
+
+function teRefreshIconBtn() {
+  const preview = document.getElementById('te-icon-preview');
+  const label   = document.getElementById('te-icon-label');
+  if (preview) preview.innerHTML = '<i class="fa-solid ' + escHtml(teIconClass) + '"></i>';
+  if (label)   label.textContent = teIconClass;
+}
+
+function teBindAll() {
+  const backBtn   = document.getElementById('te-back-btn');
+  const cancelBtn = document.getElementById('te-cancel-btn');
+  const saveBtn   = document.getElementById('te-save-btn');
+  const delBtn    = document.getElementById('te-del-btn');
+  const iconBtn   = document.getElementById('te-icon-btn');
+  if (backBtn)   backBtn.addEventListener('click',   function() { navigateTo('/admin-dashboard/content/tools/', 'tools'); });
+  if (cancelBtn) cancelBtn.addEventListener('click', function() { navigateTo('/admin-dashboard/content/tools/', 'tools'); });
+  if (saveBtn)   saveBtn.addEventListener('click',   teSave);
+  if (delBtn)    delBtn.addEventListener('click',    teDeleteTool);
+  if (iconBtn)   iconBtn.addEventListener('click', function() {
+    openIconPicker(teIconClass, function(ic) {
+      teIconClass = ic;
+      teRefreshIconBtn();
+    });
+  });
+}
+
+async function teSave() {
+  if (teSavingState) return;
+
+  const nameEl  = document.getElementById('te-name');
+  const descEl  = document.getElementById('te-desc');
+  const urlEl   = document.getElementById('te-url');
+  const saveBtn = document.getElementById('te-save-btn');
+  const nameErr = document.getElementById('te-name-err');
+  const descErr = document.getElementById('te-desc-err');
+  const urlErr  = document.getElementById('te-url-err');
+
+  let valid = true;
+  function teSetErr(el, errEl, msg) {
+    if (errEl) errEl.textContent = msg;
+    if (el) el.classList.toggle('error', !!msg);
+    if (msg) valid = false;
+  }
+
+  const nameVal = ((nameEl || {}).value || '').trim();
+  const descVal = ((descEl || {}).value || '').trim();
+  const urlVal  = ((urlEl  || {}).value || '').trim();
+
+  teSetErr(nameEl, nameErr, nameVal ? '' : 'Name is required.');
+  teSetErr(descEl, descErr, descVal ? '' : 'Description is required.');
+  teSetErr(urlEl,  urlErr,  urlVal  ? '' : 'External URL is required.');
+  if (!valid) return;
+
+  const payload = {
+    name:         nameVal,
+    description:  descVal,
+    external_url: urlVal,
+    icon_class:   teIconClass,
+    category:     ((document.getElementById('te-category') || {}).value || '').trim(),
+    sort_order:   parseInt(((document.getElementById('te-sort') || {}).value || '100'), 10) || 100,
+    is_featured:  !!(document.getElementById('te-featured') || {}).checked,
+    is_active:    (document.getElementById('te-active') || {checked:true}).checked !== false,
+  };
+
+  teSavingState = true;
+  if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…'; }
+
+  try {
+    const url    = teIsCreate ? '/api/admin/tools' : '/api/admin/tools/' + teToolId;
+    const method = teIsCreate ? 'POST' : 'PATCH';
+    const r = await fetch(url, {method, credentials: 'same-origin', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+    const data = await r.json();
+    if (!r.ok) {
+      if (data.errors) {
+        if (data.errors.name)         teSetErr(nameEl, nameErr, data.errors.name);
+        if (data.errors.description)  teSetErr(descEl, descErr, data.errors.description);
+        if (data.errors.external_url) teSetErr(urlEl,  urlErr,  data.errors.external_url);
+        if (!data.errors.name && !data.errors.description && !data.errors.external_url)
+          udToast(data.error || 'Save failed.', 'error');
+      } else {
+        udToast(data.error || 'Save failed.', 'error');
+      }
+      return;
+    }
+    udToast(teIsCreate ? 'Tool created!' : 'Tool saved!', 'success');
+    navigateTo('/admin-dashboard/content/tools/', 'tools');
+  } catch(e) {
+    udToast('Save request failed.', 'error');
+  } finally {
+    teSavingState = false;
+    if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save tool'; }
+  }
+}
+
+async function teDeleteTool() {
+  if (!teToolId) return;
+  const tool = toolsAllItems.find(function(t) { return t.id === teToolId; });
+  const name = tool ? tool.name : 'this tool';
+  if (!confirm('Delete tool "' + name + '"?\n\nThis cannot be undone.')) return;
+  try {
+    const r = await fetch('/api/admin/tools/' + teToolId, {method: 'DELETE', credentials: 'same-origin'});
+    const data = await r.json();
+    if (!r.ok) { udToast(data.error || 'Delete failed.', 'error'); return; }
+    udToast('Tool deleted.', 'success');
+    navigateTo('/admin-dashboard/content/tools/', 'tools');
+  } catch(e) {
+    udToast('Delete request failed.', 'error');
+  }
+}
+// ── END TOOL EDIT ────────────────────────────────────────────────────────────
 
 // Profile menu toggle
 const pmToggle = document.getElementById('profile-menu-toggle');
