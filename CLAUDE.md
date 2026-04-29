@@ -27,8 +27,8 @@ Notes:
 
 ## Build Phase Status
 
-Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12
-Remaining phases: none — admin dashboard build complete
+Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, B+F
+Remaining phases: none — admin dashboard build complete; launch sprint (email + onboarding) shipped
 
 Phase summary:
 - **1a/1b** — Auth (CustomUser, session), core pages, shared.css design system
@@ -43,6 +43,19 @@ Phase summary:
 - **10** — Banners CRUD in admin dashboard + site-wide banner display. Banners are DB-driven via `/api/banners` with rendering across all 12 authenticated templates. Dismissal is client-side via localStorage with `ban-dismiss-<id>` keys. Stacking with impersonation banner handled by body class composition (`body.impersonating` + `body.has-system-banner`).
 - **11** — Admin dashboard: Users section (list, detail, suspend/unsuspend, impersonate, export)
 - **12** — Tools CRUD in admin dashboard; `/agent-admin/` removed, all agent management consolidated into `/admin-dashboard/`
+
+### Phase B+F (Launch Sprint — Email + Onboarding)
+
+- Email verification flow (Resend HTTP API integration via `myApp/email_service.py`)
+- 8 new `CustomUser` fields: `email_verified`, `email_verification_token`, `email_verification_sent_at`, `onboarding_completed`, `onboarding_industry`, `onboarding_use_cases`, `last_lifecycle_email_sent`, `last_lifecycle_email_kind`
+- Migration `0006` with data backfill (existing users marked verified + onboarded)
+- 3-step onboarding flow (welcome → industry → use cases) with personalized recommendations
+- Auto-login on email verification (user proves email control via token)
+- `/verify-email-required/` accessible to anonymous users (uses `sessionStorage` fallback)
+- Lifecycle emails: day-3 check-in, day-14 strategy call with usage stats + Calendly link
+- Cron-ready management command: `send_lifecycle_emails` (idempotent, supports `--dry-run`)
+- All 12 authenticated templates carry the `email_verified` + `onboarding_completed` gate snippet
+- `OPENAI_API_KEY` loaded via `python-dotenv` in `settings.py`
 
 ## Environment Variables
 
@@ -154,7 +167,11 @@ Seeding behavior:
 Input normalization:
 - Use `INDUSTRY_MAP` (`views.py`) for free-text industry normalization.
 
-### 5) Chat Runtime Flow
+### 5) Environment Loading
+
+`myProject/settings.py` calls `python-dotenv`'s `load_dotenv()` at startup to pull values from a repo-root `.env` file into `os.environ` before any Django setting is read. This is how `OPENAI_API_KEY`, `DJANGO_SECRET_KEY`, `DEBUG`, `DATABASE_URL`, and the Cloudinary credentials reach the app in local dev. In Railway and other hosted envs, real env vars take precedence — `load_dotenv()` is a no-op when `.env` is absent. Add new secrets to `.env` (and to the deployment env) rather than committing them.
+
+### 6) Chat Runtime Flow
 
 Core endpoint: `POST /api/chat/sessions/<id>/send`
 1. Persist user message.

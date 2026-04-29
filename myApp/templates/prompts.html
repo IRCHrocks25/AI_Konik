@@ -401,6 +401,21 @@ let PROMPTS=[];
 
 let pIndustry='all',pSearch='',pLibrary='all';
 let authProfile = {};
+const VALID_PROMPT_INDUSTRIES = new Set(['legal','healthcare','finance','marketing','technology','realestate','accounting','logistics','manufacturing']);
+function applyIndustryQueryFromUrl(){
+  const q = new URLSearchParams(window.location.search).get('industry');
+  if(!q) return;
+  const slug = String(q).toLowerCase().trim();
+  if(!VALID_PROMPT_INDUSTRIES.has(slug)) return;
+  pIndustry = slug;
+  document.querySelectorAll('.industry-link').forEach((l)=>{
+    l.classList.remove('active');
+    const oc = l.getAttribute('onclick') || '';
+    if(oc.includes("'"+slug+"'")) l.classList.add('active');
+  });
+  const allLink = document.querySelector('.industry-link[onclick*="\'all\'"]');
+  if(slug === 'all' && allLink) allLink.classList.add('active');
+}
 const DEFAULT_AGENT_BY_INDUSTRY = {
   legal: "Contract Review Agent",
   healthcare: "Patient Communication Agent",
@@ -448,6 +463,9 @@ function updateLibraryTitle(totalPrompts){
     sideTitle.textContent = `${compactNum(totalPrompts)} Prompts Library`;
   }
 }
+function displayPromptTitle(title){
+  return String(title || '').replace(/^\s*\[\s*variation\s*\]\s*/i, '').trim();
+}
 
 function renderPrompts(){
   const filtered=PROMPTS.filter(p=>(pIndustry==='all'||p.industry===pIndustry)&&(!pSearch||p.title.toLowerCase().includes(pSearch)||p.body.toLowerCase().includes(pSearch)));
@@ -462,7 +480,7 @@ function renderPrompts(){
   document.getElementById('prompts-grid').innerHTML=filtered.map(p=>`
     <div class="prompt-card">
       <div class="prompt-card-top">
-        <div class="prompt-title">${p.title}</div>
+        <div class="prompt-title">${displayPromptTitle(p.title)}</div>
         <button class="save-btn ${p.saved?'saved':''}" onclick="toggleSave(${p.id},this)" aria-label="Save prompt">
           <i class="fa-${p.saved?'solid':'regular'} fa-bookmark"></i>
         </button>
@@ -562,7 +580,7 @@ function usePrompt(id){
     prompt: prompt.body || '',
     promptTitle: prompt.title || '',
   });
-  window.location.href = `{% url 'agent_chat' %}?new=1?${params.toString()}`;
+  window.location.href = `{% url 'agent_chat' %}?${params.toString()}`;
 }
 function loadPrompts(){
   const params=new URLSearchParams();
@@ -678,7 +696,7 @@ fetch('/api/auth/me',{credentials:'same-origin'})
   .then(async r=>({ok:r.ok,data:await r.json()}))
   .then(({data})=>{
     if(!data.authenticated){
-      window.location.href='{% url 'login' %}';
+      window.location.href="{% url 'login' %}";
       return;
     }
     if(data.is_admin) document.body.classList.add('admin-visible');
@@ -686,6 +704,7 @@ fetch('/api/auth/me',{credentials:'same-origin'})
     applyActiveBanners();
     authProfile = data || {};
     renderUserIdentity(authProfile);
+    applyIndustryQueryFromUrl();
     loadPrompts();
   })
   .catch(()=>{

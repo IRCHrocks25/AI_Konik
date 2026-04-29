@@ -162,6 +162,22 @@ footer.slim{background:var(--navy);padding:24px 40px;text-align:center;color:rgb
   font-size:13px;
   color:var(--slate);
 }
+body.dark-app .page-preloader{
+  background:
+    radial-gradient(circle at 18% 15%, rgba(139,92,246,.24), transparent 36%),
+    radial-gradient(circle at 82% 18%, rgba(20,184,166,.2), transparent 34%),
+    linear-gradient(145deg, rgba(15,23,42,.98), rgba(17,24,39,.98));
+  backdrop-filter:blur(4px);
+}
+body.dark-app .page-preloader .preloader-spinner{
+  border-color:rgba(255,255,255,.26);
+  border-top-color:#2dd4bf;
+  box-shadow:0 0 0 4px rgba(45,212,191,.12);
+}
+body.dark-app .page-preloader .preloader-text{
+  color:rgba(255,255,255,.86);
+  letter-spacing:.02em;
+}
 body.preload-active .page-preloader{
   opacity:1;
   pointer-events:auto;

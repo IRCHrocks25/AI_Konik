@@ -7,7 +7,41 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 <style>
-.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:30px}
+.dash-section{margin-bottom:30px}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap}
+.section-header h2{font-size:19px;font-weight:600;color:#fff;line-height:1.2}
+.section-header .btn{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.08);color:#fff}
+.section-header .btn:hover{background:rgba(255,255,255,.18)}
+.section-subtitle{font-size:13px;color:rgba(255,255,255,.7);margin:-6px 0 14px}
+
+/* Section 1 — Recent / starter chats */
+.recent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.recent-card{
+  background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.24);
+  border-radius:14px;
+  padding:16px 17px 14px;
+  display:flex;flex-direction:column;gap:8px;
+  text-decoration:none;color:inherit;cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 8px 22px rgba(0,0,0,.2);
+  min-height:148px;
+}
+.recent-card:hover{border-color:rgba(255,255,255,.45);transform:translateY(-2px)}
+.recent-card .agent-name{font-size:14px;font-weight:600;color:#fff;display:flex;align-items:center;gap:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-card .chat-title{font-size:13px;color:rgba(255,255,255,.78);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.recent-card .agent-desc{font-size:12px;color:rgba(255,255,255,.72);line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.recent-card .card-foot{display:flex;align-items:center;justify-content:space-between;margin-top:auto;gap:8px}
+.recent-card .resume-pill{font-size:11px;font-weight:600;color:#fff;background:rgba(255,255,255,.16);padding:4px 10px;border-radius:20px;display:inline-flex;align-items:center;gap:5px}
+.recent-card .industry-pill{font-size:10px;font-weight:600;text-transform:lowercase;letter-spacing:.04em;background:rgba(20,184,166,.22);color:#5eead4;padding:3px 9px;border-radius:20px}
+.recent-card .agent-icon{
+  width:32px;height:32px;border-radius:9px;
+  display:inline-flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.14);color:#fff;font-size:14px;flex-shrink:0;
+}
+
+/* Section 2 — Stats row (reuses metric-card visual) */
+.dash-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .metric-card{
   background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
   border:1px solid rgba(255,255,255,.24);
@@ -18,69 +52,94 @@
 }
 .metric-label{font-size:12px;font-weight:600;color:rgba(255,255,255,.72);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
 .metric-val{font-family:'DM Serif Display',serif;font-size:38px;color:#fff;line-height:1}
-.metric-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:5px}
-.metric-trend{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:8px}
-.trend-up{background:rgba(16,185,129,.22);color:#6ee7b7}
-.trend-new{background:rgba(139,92,246,.22);color:#ddd6fe}
+.metric-sub{font-size:12px;color:rgba(255,255,255,.65);margin-top:6px}
 
-.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.section-header h2{font-size:19px;font-weight:600;color:#fff}
-.section-header .btn{border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.08);color:#fff}
-.section-header .btn:hover{background:rgba(255,255,255,.18)}
-
-.agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:28px}
+/* Section 3 — Recommended agents */
+.agent-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
 .agent-card{
   background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
   border:1px solid rgba(255,255,255,.24);
   border-radius:14px;
-  padding:18px 18px;
-  display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:all .2s;text-decoration:none;
+  padding:18px;
+  display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:all .2s;text-decoration:none;color:inherit;
   box-shadow:0 10px 24px rgba(0,0,0,.2);
 }
 .agent-card:hover{border-color:rgba(255,255,255,.45);transform:translateY(-2px)}
 .agent-emoji{
   width:44px;height:44px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
-  font-size:20px;flex-shrink:0;color:#0f172a;
-  box-shadow:inset 0 0 0 1px rgba(15,23,42,.08);
+  font-size:20px;flex-shrink:0;
+  background:rgba(255,255,255,.18);color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);
 }
+.agent-info{flex:1;min-width:0}
 .agent-info h3{font-size:15px;font-weight:600;color:#fff;margin-bottom:4px}
-.agent-info p{font-size:13px;color:rgba(255,255,255,.82);line-height:1.45}
-.agent-info .meta{display:flex;align-items:center;gap:6px;margin-top:7px}
+.agent-info p{font-size:13px;color:rgba(255,255,255,.82);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.agent-info .meta{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
 
-.onboard-card{
+/* Section 4 — Today's prompt feature */
+.prompt-feature{
+  background:linear-gradient(135deg, rgba(20,184,166,.34), rgba(15,118,110,.22));
+  border:1px solid rgba(94,234,212,.4);
+  border-radius:18px;
+  padding:24px 26px;
+  box-shadow:0 14px 34px rgba(13,124,102,.28);
+  color:#fff;
+}
+.prompt-feature .pf-label{font-size:11px;font-weight:600;color:rgba(255,255,255,.78);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.prompt-feature h3{font-family:'DM Serif Display',serif;font-size:24px;line-height:1.25;margin-bottom:10px;color:#fff}
+.prompt-feature .pf-body{font-size:14px;color:rgba(255,255,255,.88);line-height:1.55;margin-bottom:14px}
+.prompt-feature .pf-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px;font-size:12px;color:rgba(255,255,255,.85)}
+.prompt-feature .pf-meta .badge{background:rgba(255,255,255,.18);color:#fff;font-weight:600}
+.prompt-feature .pf-cta{background:#fff;color:#0f172a;font-weight:600}
+.prompt-feature .pf-cta:hover{background:rgba(255,255,255,.92);transform:translateY(-1px)}
+
+/* Section 5 — Strategy CTA */
+.strategy-card{
   background:linear-gradient(135deg, rgba(139,92,246,.55), rgba(79,70,229,.58));
   border:1px solid rgba(255,255,255,.26);
   border-radius:18px;
-  padding:24px 24px;color:#fff;margin-bottom:22px;
+  padding:26px 28px;
+  color:#fff;
   box-shadow:0 14px 34px rgba(76,29,149,.32);
 }
-.onboard-card h3{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:8px}
-.onboard-card p{font-size:14px;opacity:.9;margin-bottom:16px}
-.checklist{display:flex;flex-direction:column;gap:8px}
-.check-item{display:flex;align-items:center;gap:10px;font-size:13px;background:rgba(255,255,255,.14);border-radius:9px;padding:8px 12px;cursor:pointer;transition:background .2s}
-.check-item:hover{background:rgba(255,255,255,.25)}
-.check-item.done{opacity:.7;text-decoration:line-through}
-.check-box{width:18px;height:18px;border-radius:5px;border:2px solid rgba(255,255,255,.5);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s}
-.check-item.done .check-box{background:#fff;border-color:#fff;color:#6d28d9}
+.strategy-card h3{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:10px}
+.strategy-card p{font-size:14px;opacity:.92;margin-bottom:18px;max-width:560px}
+.strategy-card .sc-actions{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.strategy-card .sc-cta{background:#fff;color:#4338ca;font-weight:600}
+.strategy-card .sc-cta:hover{background:rgba(255,255,255,.92);transform:translateY(-1px)}
+.strategy-card .sc-later{background:none;border:none;color:rgba(255,255,255,.85);font-size:13px;cursor:pointer;text-decoration:underline;font-family:inherit;padding:4px 6px}
+.strategy-card .sc-later:hover{color:#fff}
 
-.prompt-list{display:flex;flex-direction:column;gap:8px}
-.prompt-item{
+/* Section 6 — Library shortcuts */
+.library-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.library-card{
   background:linear-gradient(150deg, rgba(255,255,255,.2), rgba(255,255,255,.07));
   border:1px solid rgba(255,255,255,.24);
-  border-radius:14px;
-  padding:14px 15px;
-  display:flex;justify-content:space-between;align-items:center;text-decoration:none;transition:all .2s;
-  box-shadow:0 8px 20px rgba(0,0,0,.18);
+  border-radius:16px;
+  padding:22px 24px;
+  display:flex;align-items:center;gap:18px;
+  text-decoration:none;color:inherit;
+  transition:all .2s;
+  box-shadow:0 10px 24px rgba(0,0,0,.2);
 }
-.prompt-item:hover{border-color:rgba(255,255,255,.45);background:rgba(255,255,255,.18)}
-.prompt-item-left h4{font-size:13px;font-weight:500;color:#fff;margin-bottom:2px}
-.prompt-item-left p{font-size:11px;color:rgba(255,255,255,.68)}
-.prompt-arrow{color:rgba(255,255,255,.7);font-size:16px}
+.library-card:hover{border-color:rgba(255,255,255,.45);transform:translateY(-2px)}
+.library-card .lib-icon{
+  width:52px;height:52px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;flex-shrink:0;
+  background:rgba(255,255,255,.18);color:#fff;
+}
+.library-card .lib-info{flex:1;min-width:0}
+.library-card .lib-info h3{font-size:16px;font-weight:600;color:#fff;margin-bottom:4px}
+.library-card .lib-info p{font-size:13px;color:rgba(255,255,255,.78)}
+.library-card .lib-arrow{color:rgba(255,255,255,.7);font-size:16px}
 
 @media(max-width:1020px){
   .dash-grid{grid-template-columns:1fr 1fr}
   .agent-grid{grid-template-columns:1fr}
+  .recent-grid{grid-template-columns:1fr}
+  .library-grid{grid-template-columns:1fr}
 }
 @media(max-width:820px){
   .page-shell>div{grid-template-columns:1fr !important}
@@ -118,8 +177,8 @@
     </div>
     <div class="nav-cta profile-nav">
       <a href="/admin-dashboard/" class="admin-only admin-nav-btn"><i class="fa-solid fa-shield-halved"></i> Admin</a>
-      <span style="font-size:13px;color:var(--slate)">Sarah Chen</span>
-      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">SC</button>
+      <span style="font-size:13px;color:var(--slate)" id="nav-user-name">&nbsp;</span>
+      <button type="button" class="sc-avatar" id="profile-menu-toggle" aria-haspopup="true" aria-expanded="false">&nbsp;</button>
       <div class="profile-menu" id="profile-menu">
         <a href="{% url 'profile' %}"><i class="fa-regular fa-user"></i> Profile</a>
         <a href="{% url 'billing' %}"><i class="fa-regular fa-credit-card"></i> Billing</a>
@@ -171,107 +230,107 @@
 
     <!-- MAIN -->
     <div class="main-content">
-      <!-- Onboarding -->
-      <div class="onboard-card">
-        <h3>Welcome, Sarah! Let's get started.</h3>
-        <p>Complete these steps to unlock the full power of AI KONIK</p>
-        <div class="checklist">
-          <div class="check-item done" onclick="toggleCheck(this)"><div class="check-box"><i class="fa-solid fa-check"></i></div>Pick your industry (Legal)</div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div>Start your first agent session</div>
-          <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div>Save your first prompt to a collection</div>
+      <!-- Section 1: Recent / starter chats -->
+      <section class="dash-section" id="dash-recent-section" hidden>
+        <div class="section-header">
+          <h2 id="dash-recent-heading">Continue where you left off</h2>
+          <a href="{% url 'agents' %}" class="btn btn-ghost btn-sm">View all agents <i class="fa-solid fa-arrow-right"></i></a>
         </div>
-      </div>
+        <p class="section-subtitle" id="dash-recent-subtitle" hidden></p>
+        <div class="recent-grid" id="dash-recent-grid"></div>
+      </section>
 
-      <!-- Metrics -->
-      <div class="dash-grid">
-        <div class="metric-card">
-          <div class="metric-label">Agent Sessions</div>
-          <div class="metric-val">12</div>
-          <div class="metric-trend trend-up">↑ 4 this week</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Saved Prompts</div>
-          <div class="metric-val">34</div>
-          <div class="metric-trend trend-new">3 new</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-label">Courses Enrolled</div>
-          <div class="metric-val">2</div>
-          <div class="metric-sub">1 in progress</div>
-        </div>
-      </div>
+      <!-- Section 2: Stats -->
+      <section class="dash-section" id="dash-stats-section">
+        <div class="dash-grid" id="dash-stats-grid"></div>
+      </section>
 
-      <!-- Recommended Agents -->
-      <div class="section-header">
-        <h2>Your Legal Agents</h2>
-        <a href="{% url 'agents' %}" class="btn btn-ghost btn-sm">View all <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-      <div class="agent-grid">
-        <a href="{% url 'agent_chat' %}?new=1" class="agent-card">
-          <div class="agent-emoji" style="background:#EEF2FF"><i class="fa-solid fa-scale-balanced"></i></div>
-          <div class="agent-info">
-            <h3>Contract Review Agent</h3>
-            <p>Analyze contracts for risk, unfavorable clauses, and missing protections</p>
-            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">M&A · Contracts</span></div>
-          </div>
-        </a>
-        <a href="{% url 'agent_chat' %}?new=1" class="agent-card">
-          <div class="agent-emoji" style="background:#F0FDF4"><i class="fa-solid fa-magnifying-glass"></i></div>
-          <div class="agent-info">
-            <h3>Compliance Monitor</h3>
-            <p>Track regulatory changes and flag compliance risks in your documents</p>
-            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">Compliance</span></div>
-          </div>
-        </a>
-        <a href="{% url 'agent_chat' %}?new=1" class="agent-card">
-          <div class="agent-emoji" style="background:#FFF7ED"><i class="fa-solid fa-landmark"></i></div>
-          <div class="agent-info">
-            <h3>IP Research Agent</h3>
-            <p>Patent landscape analysis, trademark search, IP strategy guidance</p>
-            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">IP</span></div>
-          </div>
-        </a>
-        <a href="{% url 'agent_chat' %}?new=1" class="agent-card">
-          <div class="agent-emoji" style="background:#FFF1F2"><i class="fa-solid fa-file-signature"></i></div>
-          <div class="agent-info">
-            <h3>NDA Drafter</h3>
-            <p>Generate tailored NDAs with industry-standard protections in minutes</p>
-            <div class="meta"><span class="badge badge-teal">Legal</span><span class="badge badge-gray">Drafting</span></div>
-          </div>
-        </a>
-      </div>
+      <!-- Section 3: Recommended agents -->
+      <section class="dash-section" id="dash-recommended-section" hidden>
+        <div class="section-header">
+          <h2 id="dash-recommended-heading">Recommended for you</h2>
+          <a href="{% url 'agents' %}" class="btn btn-ghost btn-sm">View all agents <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+        <div class="agent-grid" id="dash-recommended-grid"></div>
+      </section>
 
-      <!-- Top Prompts -->
-      <div class="section-header">
-        <h2>Top Legal Prompts</h2>
-        <a href="{% url 'prompts' %}" class="btn btn-ghost btn-sm">Browse library <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-      <div class="prompt-list">
-        <a href="{% url 'prompts' %}" class="prompt-item">
-          <div class="prompt-item-left"><h4>Review this contract for unfavorable indemnification clauses</h4><p>Legal · Contracts · 2.1k uses</p></div>
-          <span class="prompt-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-        </a>
-        <a href="{% url 'prompts' %}" class="prompt-item">
-          <div class="prompt-item-left"><h4>Generate a mutual NDA between two parties for software development</h4><p>Legal · NDA · 1.8k uses</p></div>
-          <span class="prompt-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-        </a>
-        <a href="{% url 'prompts' %}" class="prompt-item">
-          <div class="prompt-item-left"><h4>Summarize the key risks in this M&A term sheet</h4><p>Legal · M&A · 1.4k uses</p></div>
-          <span class="prompt-arrow"><i class="fa-solid fa-arrow-right"></i></span>
-        </a>
-      </div>
+      <!-- Section 4: Today's prompt -->
+      <section class="dash-section" id="dash-prompt-section" hidden>
+        <div class="prompt-feature" id="dash-prompt-card"></div>
+      </section>
+
+      <!-- Section 5: Strategy CTA -->
+      <section class="dash-section" id="dash-strategy-section" hidden>
+        <div class="strategy-card">
+          <h3>Need help maximizing Ikonik?</h3>
+          <p>Want a personalized AI roadmap? Get a free 30-min call with a strategist on our team.</p>
+          <div class="sc-actions">
+            <a href="https://l.katalyst-crm.com/widget/bookings/discovery-call-ai-business-os" target="_blank" rel="noopener noreferrer" class="btn btn-lg sc-cta">Book your call</a>
+            <button type="button" class="sc-later" id="strategy-later-btn">Maybe later</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Section 6: Library shortcuts -->
+      <section class="dash-section">
+        <div class="library-grid">
+          <a href="{% url 'agents' %}" class="library-card">
+            <div class="lib-icon"><i class="fa-solid fa-robot"></i></div>
+            <div class="lib-info">
+              <h3>Browse all agents</h3>
+              <p>Explore 100+ specialized AI agents</p>
+            </div>
+            <span class="lib-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+          </a>
+          <a href="{% url 'prompts' %}" class="library-card">
+            <div class="lib-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div class="lib-info">
+              <h3>Browse prompts library</h3>
+              <p>Discover 60,000+ curated prompts</p>
+            </div>
+            <span class="lib-arrow"><i class="fa-solid fa-arrow-right"></i></span>
+          </a>
+        </div>
+      </section>
     </div>
   </div>
 </div>
 <script>
-function toggleCheck(el){
-  el.classList.toggle('done');
-  if(el.classList.contains('done'))el.querySelector('.check-box').innerHTML='<i class="fa-solid fa-check"></i>';
-  else el.querySelector('.check-box').innerHTML='';
+function escHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+  });
+}
+function initialsFor(name){
+  var s = String(name || '').trim();
+  if(!s) return 'U';
+  var parts = s.split(/\s+/);
+  var first = (parts[0] || '')[0] || '';
+  var second = (parts.length > 1 ? (parts[parts.length - 1] || '')[0] : '') || '';
+  return (first + second).toUpperCase() || 'U';
+}
+function formatMinutesToHours(min){
+  var n = Number(min) || 0;
+  if(n <= 0) return '0h';
+  if(n >= 60) return Math.round(n / 60) + 'h';
+  return n + ' min';
+}
+function formatUsageCount(n){
+  var v = Number(n) || 0;
+  if(v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+  return String(v);
+}
+function showToast(msg){
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(15,23,42,.92);color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.3)';
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3500);
 }
 function hidePreloader(){
-  document.body.classList.remove("preload-active");
+  document.body.classList.remove('preload-active');
 }
+
 async function applyActiveBanners() {
   try {
     const r = await fetch('/api/banners', {credentials: 'same-origin'});
@@ -291,9 +350,6 @@ async function applyActiveBanners() {
   }
 }
 function renderSystemBanner(b) {
-  const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) =>
-    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]
-  );
   const banner = document.createElement('div');
   banner.className = 'system-banner system-banner--' + b.banner_type;
   banner.id = 'system-banner-' + b.id;
@@ -319,11 +375,10 @@ function applyImpersonationBanner(meData) {
   const name = meData.first_name
     ? meData.first_name + (meData.last_name ? ' ' + meData.last_name : '')
     : meData.email;
-  const safeName = String(name).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
   b.innerHTML = `
     <span class="imp-banner-text">
       <i class="fa-solid fa-triangle-exclamation"></i>
-      Impersonating <strong>${safeName}</strong>
+      Impersonating <strong>${escHtml(name)}</strong>
     </span>
     <button class="imp-stop-btn" onclick="stopImpersonation()">
       Return to your account &rarr;
@@ -342,36 +397,216 @@ async function stopImpersonation() {
     window.location.href = '/admin-dashboard/';
   }
 }
+
+/* ── Section renderers ───────────────────────────────────── */
+
+function renderUserIdentity(name){
+  var clean = name || 'User';
+  var navName = document.getElementById('nav-user-name');
+  if(navName) navName.textContent = clean;
+  var avatar = document.getElementById('profile-menu-toggle');
+  if(avatar) avatar.textContent = initialsFor(clean);
+}
+
+function renderRecentChats(recentChats, recommendedAgents){
+  var section = document.getElementById('dash-recent-section');
+  var heading = document.getElementById('dash-recent-heading');
+  var subtitle = document.getElementById('dash-recent-subtitle');
+  var grid = document.getElementById('dash-recent-grid');
+  if(!section || !grid) return;
+
+  var chats = Array.isArray(recentChats) ? recentChats : [];
+  var starters = Array.isArray(recommendedAgents) ? recommendedAgents.slice(0, 3) : [];
+
+  if(chats.length === 0 && starters.length === 0){
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+
+  if(chats.length > 0){
+    heading.textContent = 'Continue where you left off';
+    if(subtitle){ subtitle.hidden = true; subtitle.textContent = ''; }
+    grid.innerHTML = chats.map(function(c){
+      var industryPill = c.industry
+        ? '<span class="industry-pill">' + escHtml(c.industry) + '</span>'
+        : '';
+      return '<a class="recent-card" href="/agent-chat/?session=' + encodeURIComponent(c.id) + '">' +
+        '<div class="agent-name"><span class="agent-icon"><i class="fa-solid fa-robot"></i></span><span>' + escHtml(c.agent_name || 'Agent') + '</span></div>' +
+        '<div class="chat-title">' + escHtml(c.title || 'Untitled chat') + '</div>' +
+        '<div class="card-foot">' + industryPill +
+          '<span class="resume-pill">Resume <i class="fa-solid fa-arrow-right"></i></span>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+  } else {
+    heading.textContent = 'Start your first chat';
+    if(subtitle){ subtitle.textContent = 'Try chatting with…'; subtitle.hidden = false; }
+    grid.innerHTML = starters.map(function(a){
+      return '<a class="recent-card" href="/agent-chat/?agent=' + encodeURIComponent(a.id) + '&new=1">' +
+        '<div class="agent-name"><span class="agent-icon"><i class="fa-solid ' + escHtml(a.icon_class || 'fa-robot') + '"></i></span><span>' + escHtml(a.name || 'Agent') + '</span></div>' +
+        '<div class="agent-desc">' + escHtml(a.description || '') + '</div>' +
+        '<div class="card-foot"><span></span>' +
+          '<span class="resume-pill">Start chat <i class="fa-solid fa-arrow-right"></i></span>' +
+        '</div>' +
+      '</a>';
+    }).join('');
+  }
+}
+
+function renderStats(stats){
+  var grid = document.getElementById('dash-stats-grid');
+  if(!grid) return;
+  var s = stats || {};
+  var sessionsWeek = Number(s.agent_sessions_this_week) || 0;
+  var sessionsTotal = Number(s.agent_sessions_total) || 0;
+  var messagesWeek = Number(s.messages_this_week) || 0;
+  var savedMinutes = Number(s.time_saved_minutes_this_week) || 0;
+  grid.innerHTML =
+    '<div class="metric-card">' +
+      '<div class="metric-label">Agent Sessions This Week</div>' +
+      '<div class="metric-val">' + sessionsWeek + '</div>' +
+      '<div class="metric-sub">' + sessionsTotal + ' total</div>' +
+    '</div>' +
+    '<div class="metric-card">' +
+      '<div class="metric-label">Messages This Week</div>' +
+      '<div class="metric-val">' + messagesWeek + '</div>' +
+      '<div class="metric-sub">Across all agents</div>' +
+    '</div>' +
+    '<div class="metric-card">' +
+      '<div class="metric-label">Time Saved This Week</div>' +
+      '<div class="metric-val">' + escHtml(formatMinutesToHours(savedMinutes)) + '</div>' +
+      '<div class="metric-sub">Estimated based on your usage</div>' +
+    '</div>';
+}
+
+function renderRecommendedAgents(agents, userIndustrySlug, userIndustryName){
+  var section = document.getElementById('dash-recommended-section');
+  var heading = document.getElementById('dash-recommended-heading');
+  var grid = document.getElementById('dash-recommended-grid');
+  if(!section || !grid) return;
+
+  var list = Array.isArray(agents) ? agents : [];
+  if(list.length === 0){
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+
+  var hasIndustry = !!(userIndustrySlug && userIndustryName && userIndustryName !== 'Your Industry');
+  heading.textContent = hasIndustry
+    ? 'Recommended for ' + userIndustryName
+    : 'Recommended for you';
+
+  grid.innerHTML = list.map(function(a){
+    var badge = a.industry_name
+      ? '<span class="badge badge-teal">' + escHtml(a.industry_name) + '</span>'
+      : '';
+    return '<a class="agent-card" href="/agent-chat/?agent=' + encodeURIComponent(a.id) + '&new=1">' +
+      '<div class="agent-emoji"><i class="fa-solid ' + escHtml(a.icon_class || 'fa-robot') + '"></i></div>' +
+      '<div class="agent-info">' +
+        '<h3>' + escHtml(a.name || 'Agent') + '</h3>' +
+        '<p>' + escHtml(a.description || '') + '</p>' +
+        (badge ? '<div class="meta">' + badge + '</div>' : '') +
+      '</div>' +
+    '</a>';
+  }).join('');
+}
+
+function renderTodaysPrompt(prompt){
+  var section = document.getElementById('dash-prompt-section');
+  var card = document.getElementById('dash-prompt-card');
+  if(!section || !card) return;
+  if(!prompt){
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+
+  var body = String(prompt.body || '');
+  var excerpt = body.length > 200 ? body.slice(0, 200).trim() + '…' : body;
+  var categoryBadge = prompt.category
+    ? '<span class="badge">' + escHtml(prompt.category) + '</span>'
+    : '';
+  var usage = Number(prompt.usage_count) || 0;
+  var usageText = usage > 0 ? 'Used ' + escHtml(formatUsageCount(usage)) + ' times' : 'New prompt';
+
+  card.innerHTML =
+    '<div class="pf-label">Today’s high-value prompt</div>' +
+    '<h3>' + escHtml(prompt.title || 'Featured prompt') + '</h3>' +
+    '<div class="pf-body">' + escHtml(excerpt) + '</div>' +
+    '<div class="pf-meta">' + categoryBadge + '<span>' + usageText + '</span></div>' +
+    '<a class="btn btn-lg pf-cta" href="/agent-chat/?prompt=' + encodeURIComponent(prompt.id) + '&new=1">' +
+      'Try this prompt <i class="fa-solid fa-arrow-right"></i>' +
+    '</a>';
+}
+
+function renderStrategyCTA(show){
+  var section = document.getElementById('dash-strategy-section');
+  if(!section) return;
+  var dismissed = false;
+  try { dismissed = sessionStorage.getItem('strategy_cta_dismissed') === '1'; } catch(e){}
+  if(!show || dismissed){
+    section.hidden = true;
+    return;
+  }
+  section.hidden = false;
+  var laterBtn = document.getElementById('strategy-later-btn');
+  if(laterBtn && !laterBtn.dataset.bound){
+    laterBtn.dataset.bound = '1';
+    laterBtn.addEventListener('click', function(){
+      try { sessionStorage.setItem('strategy_cta_dismissed', '1'); } catch(e){}
+      section.remove();
+    });
+  }
+}
+
+function renderDashboard(data){
+  if(!data) return;
+  renderUserIdentity(data.user_name);
+  renderRecentChats(data.recent_chats, data.recommended_agents);
+  renderStats(data.stats);
+  renderRecommendedAgents(data.recommended_agents, data.user_industry, data.user_industry_name);
+  renderTodaysPrompt(data.todays_prompt);
+  renderStrategyCTA(!!data.show_strategy_call_cta);
+}
+
+function renderFallbackOnError(){
+  // Minimal fallback: stats with zeros so the page isn't empty; nav/sidebar/library still render.
+  renderStats({});
+}
+
 function initDashboard(){
   fetch('/api/auth/me',{credentials:'same-origin'})
     .then(async r=>({ok:r.ok,data:await r.json()}))
     .then(({data})=>{
       if(!data.authenticated){
         window.location.href="{% url 'login' %}";
+        return;
       }
       if(data.is_admin) document.body.classList.add('admin-visible');
       applyImpersonationBanner(data);
       applyActiveBanners();
-    });
+    })
+    .catch(()=>{});
+
   fetch('/api/dashboard',{credentials:'same-origin'})
     .then(async r=>({ok:r.ok,data:await r.json()}))
     .then(({ok,data})=>{
-      if(!ok){return;}
-      const nameNodes=document.querySelectorAll('.nav-cta span, .onboard-card h3');
-      if(nameNodes.length){
-        const cleanName=data.user_name || 'User';
-        nameNodes[0].textContent=cleanName;
-        nameNodes[1].textContent=`Welcome, ${cleanName}! Let's get started.`;
+      if(!ok || !data){
+        showToast('Could not load dashboard data');
+        renderFallbackOnError();
+        return;
       }
-      const metricValues=document.querySelectorAll('.metric-val');
-      if(metricValues.length>=3){
-        metricValues[0].textContent=String(data.metrics.agent_sessions ?? 0);
-        metricValues[1].textContent=String(data.metrics.saved_prompts ?? 0);
-        metricValues[2].textContent=String(data.metrics.courses_enrolled ?? 0);
-      }
+      renderDashboard(data);
+    })
+    .catch(()=>{
+      showToast('Could not load dashboard data');
+      renderFallbackOnError();
     })
     .finally(()=>hidePreloader());
 }
+
 function performSignOut(){
   fetch('/api/auth/logout',{method:'POST',credentials:'same-origin'})
     .finally(()=>{window.location.href="{% url 'login' %}";});

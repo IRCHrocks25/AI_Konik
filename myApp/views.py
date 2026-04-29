@@ -1693,21 +1693,112 @@ def api_admin_prompts_categories(request):
 @login_required_api
 def api_dashboard(request):
     user = request.current_user
-    sessions_count = ChatSession.objects.filter(user=user).count()
-    saved_count = SavedPrompt.objects.filter(user=user).count()
-    chats_this_week = ChatMessage.objects.filter(session__user=user, role="user").count()
-    return JsonResponse(
+    now = dj_tz.now()
+    week_ago = now - timedelta(days=7)
+
+    full_name = f"{user.first_name} {user.last_name}".strip()
+    if not full_name:
+        full_name = user.email.split("@", 1)[0] if user.email else "User"
+
+    user_industry = (user.onboarding_industry or "").strip()
+    user_industry_name = ""
+    if user_industry:
+        ind = Industry.objects.filter(slug=user_industry).first()
+        if ind:
+            user_industry_name = ind.name
+    if not user_industry_name:
+        user_industry_name = "Your Industry"
+
+    days_since_signup = 0
+    if user.created_at:
+        days_since_signup = max(0, (now - user.created_at).days)
+    show_strategy_call_cta = days_since_signup >= 7
+
+    recent_chats = [
         {
-            "user_name": f"{user.first_name} {user.last_name}".strip(),
-            "industry": user.industry,
-            "metrics": {
-                "agent_sessions": sessions_count,
-                "saved_prompts": saved_count,
-                "courses_enrolled": 0,
-                "sessions_this_week": chats_this_week,
-            },
+            "id": s.id,
+            "title": (s.title or "")[:60],
+            "agent_name": s.agent_name or "",
+            "industry": s.industry or "",
+            "updated_at": s.updated_at.isoformat() if s.updated_at else "",
         }
-    )
+        for s in ChatSession.objects.filter(user=user).order_by("-updated_at")[:3]
+    ]
+
+    agents_qs = Agent.objects.filter(is_active=True)
+    industry_agents = []
+    if user_industry:
+        industry_agents = list(
+            agents_qs.filter(industry__iexact=user_industry)
+            .order_by("sort_order", "-created_at")[:4]
+        )
+    if not industry_agents:
+        industry_agents = list(agents_qs.order_by("sort_order", "-created_at")[:4])
+
+    agent_slugs = {a.industry for a in industry_agents if a.industry}
+    industry_name_map = {
+        i.slug: i.name
+        for i in Industry.objects.filter(slug__in=agent_slugs)
+    }
+    recommended_agents = [
+        {
+            "id": a.id,
+            "name": a.name,
+            "icon_class": a.icon_class or "fa-robot",
+            "description": (a.description or "")[:120],
+            "industry_slug": a.industry or "",
+            "industry_name": industry_name_map.get(a.industry, a.industry or ""),
+        }
+        for a in industry_agents
+    ]
+
+    prompt_obj = None
+    if user_industry:
+        prompt_obj = (
+            Prompt.objects.filter(industry__iexact=user_industry, status="approved")
+            .order_by("-usage_count")
+            .first()
+        )
+    if prompt_obj is None:
+        prompt_obj = (
+            Prompt.objects.filter(status="approved")
+            .order_by("-usage_count")
+            .first()
+        )
+    todays_prompt = None
+    if prompt_obj is not None:
+        todays_prompt = {
+            "id": prompt_obj.id,
+            "title": prompt_obj.title or "",
+            "body": prompt_obj.body or "",
+            "category": prompt_obj.category or "",
+            "usage_count": prompt_obj.usage_count or 0,
+        }
+
+    sessions_total = ChatSession.objects.filter(user=user).count()
+    sessions_this_week = ChatSession.objects.filter(
+        user=user, created_at__gte=week_ago
+    ).count()
+    messages_this_week = ChatMessage.objects.filter(
+        session__user=user, role="user", created_at__gte=week_ago
+    ).count()
+
+    return JsonResponse({
+        "user_name": full_name,
+        "user_industry": user_industry,
+        "user_industry_name": user_industry_name,
+        "days_since_signup": days_since_signup,
+        "show_strategy_call_cta": show_strategy_call_cta,
+        "recent_chats": recent_chats,
+        "recommended_agents": recommended_agents,
+        "todays_prompt": todays_prompt,
+        "stats": {
+            "agent_sessions_total": sessions_total,
+            "agent_sessions_this_week": sessions_this_week,
+            "messages_this_week": messages_this_week,
+            "time_saved_minutes_this_week": messages_this_week * 18,
+        },
+    })
 
 
 # Blended token cost estimate: $0.50/1M tokens (gpt-4.1-mini rough average of input $0.40 + output $1.60).

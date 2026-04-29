@@ -24,11 +24,66 @@
 .badge-gray{background:rgba(255,255,255,.22);color:#fff;font-size:11px;padding:5px 10px}
 .sub-chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
 .sub-chip{padding:5px 11px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:999px;font-size:12px;color:rgba(255,255,255,.9);font-weight:500}
+.ind-hero-card.is-selected{
+  border-color:rgba(45,212,191,.75);
+  box-shadow:0 0 0 3px rgba(45,212,191,.2),0 14px 35px rgba(0,0,0,.3);
+  background:linear-gradient(150deg, rgba(20,184,166,.22), rgba(255,255,255,.1));
+}
+.industry-focus{
+  margin-top:28px;margin-bottom:8px;padding:38px 40px 40px;border-radius:22px;display:none;
+  background:linear-gradient(155deg, rgba(255,255,255,.22), rgba(255,255,255,.07));
+  border:1px solid rgba(255,255,255,.38);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.08) inset,
+    0 20px 48px rgba(0,0,0,.35);
+  backdrop-filter:blur(14px) saturate(1.25);
+  -webkit-backdrop-filter:blur(14px) saturate(1.25);
+}
+.industry-focus.visible{display:block}
+.industry-focus-kicker{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(221,214,254,.98);margin-bottom:10px}
+.industry-focus h2{margin:0 0 18px;font-family:'DM Serif Display',serif;color:#fff;font-size:clamp(24px,2.8vw,34px);line-height:1.15}
+.industry-focus-stats{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:26px}
+.industry-focus-stat{
+  display:inline-flex;align-items:center;gap:10px;padding:10px 18px;border-radius:999px;
+  font-size:13px;font-weight:600;color:#fff;
+  background:rgba(2,6,23,.28);border:1px solid rgba(255,255,255,.32);
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset
+}
+.industry-focus-stat i{color:#a5f3fc;opacity:.95}
+.industry-focus-lead{margin:0 0 24px;color:rgba(255,255,255,.9);font-size:16px;line-height:1.75;max-width:920px}
+.industry-focus-list-wrap{
+  margin:0 0 24px;padding:20px 22px;border-radius:16px;
+  background:rgba(2,6,23,.32);border:1px solid rgba(255,255,255,.18);
+  box-shadow:0 1px 0 rgba(255,255,255,.06) inset
+}
+.industry-focus-list{margin:0;padding:0;list-style:none;max-width:920px}
+.industry-focus-list li{
+  display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;font-size:14px;line-height:1.6;color:rgba(255,255,255,.92)
+}
+.industry-focus-list li:last-child{margin-bottom:0}
+.industry-focus-list li i.fa-circle-check{color:#5eead4;margin-top:4px;flex-shrink:0}
+.industry-focus-note{
+  margin:0 0 28px;padding-top:22px;border-top:1px solid rgba(255,255,255,.18);
+  font-size:13px;line-height:1.65;color:rgba(255,255,255,.72);max-width:920px
+}
+.industry-focus-actions{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding-top:4px}
+.btn-ind-primary{
+  display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none;
+  color:#fff;background:linear-gradient(135deg,#14b8a6,#0d9488);border:1px solid rgba(45,212,191,.6);box-shadow:0 6px 18px rgba(20,184,166,.35)
+}
+.btn-ind-primary:hover{filter:brightness(1.06)}
+.btn-ind-secondary{
+  display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:12px;font-size:14px;font-weight:600;text-decoration:none;
+  color:#fff;background:rgba(139,92,246,.38);border:1px solid rgba(196,181,253,.85);box-shadow:0 0 0 1px rgba(255,255,255,.12) inset,0 6px 18px rgba(76,29,149,.25)
+}
+.btn-ind-secondary:hover{background:rgba(139,92,246,.52);border-color:#e9d5ff}
 @media(max-width:1100px){.ind-hero-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:720px){
   .portal-wrap{padding:96px 14px 28px}
   .ind-hero-grid{grid-template-columns:1fr}
   .hero p{font-size:16px}
+  .industry-focus{padding:26px 18px 28px;margin-top:22px}
+  .industry-focus-list-wrap{padding:16px 14px}
 }
 </style>
 <script>
@@ -147,64 +202,78 @@ fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{
     </div>
   </section>
   <div>
-    <div class="ind-hero-grid">
-      <a href="{% url 'industries' %}?i=legal" class="ind-hero-card">
+    <div class="industry-focus glass" id="industry-focus">
+      <div class="industry-focus-kicker">Selected vertical</div>
+      <h2 id="industry-focus-title">Industry</h2>
+      <div class="industry-focus-stats" id="industry-focus-stats" aria-label="Library coverage"></div>
+      <p class="industry-focus-lead" id="industry-focus-desc"></p>
+      <div class="industry-focus-list-wrap">
+        <ul class="industry-focus-list" id="industry-focus-bullets"></ul>
+      </div>
+      <p class="industry-focus-note" id="industry-focus-note"></p>
+      <div class="industry-focus-actions">
+        <a class="btn-ind-primary" id="industry-focus-agents" href="{% url 'agents' %}"><i class="fa-solid fa-robot"></i> Browse agents</a>
+        <a class="btn-ind-secondary" id="industry-focus-prompts" href="{% url 'prompts' %}"><i class="fa-solid fa-book-open"></i> Browse prompts</a>
+      </div>
+    </div>
+    <div class="ind-hero-grid" id="ind-hero-grid">
+      <a href="{% url 'industries' %}?i=legal" class="ind-hero-card" data-industry="legal">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#8b5cf6,#6366f1)"><i class="fa-solid fa-scale-balanced"></i></div>
         <h3>Legal</h3>
         <p>Contract review, M&A due diligence, compliance monitoring, IP research, and litigation support.</p>
         <div class="ind-meta"><span class="badge badge-teal">12 agents</span><span class="badge badge-gray">4,200 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">M&A</span><span class="sub-chip">Compliance</span><span class="sub-chip">IP</span><span class="sub-chip">Contracts</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=healthcare" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=healthcare" class="ind-hero-card" data-industry="healthcare">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#14b8a6,#0d9488)"><i class="fa-solid fa-hospital"></i></div>
         <h3>Healthcare</h3>
         <p>Clinical documentation, patient communication, medical billing, and regulatory compliance (HIPAA).</p>
         <div class="ind-meta"><span class="badge badge-teal">15 agents</span><span class="badge badge-gray">5,800 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">Clinics</span><span class="sub-chip">Telehealth</span><span class="sub-chip">Pharma</span><span class="sub-chip">Admin</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=finance" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=finance" class="ind-hero-card" data-industry="finance">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#f59e0b,#ef4444)"><i class="fa-solid fa-sack-dollar"></i></div>
         <h3>Finance</h3>
         <p>Risk analysis, portfolio management, regulatory filings, client communications, and FinTech workflows.</p>
         <div class="ind-meta"><span class="badge badge-teal">11 agents</span><span class="badge badge-gray">3,900 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">Investment</span><span class="sub-chip">Banking</span><span class="sub-chip">Insurance</span><span class="sub-chip">Risk</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=marketing" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=marketing" class="ind-hero-card" data-industry="marketing">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#ec4899,#f43f5e)"><i class="fa-solid fa-bullhorn"></i></div>
         <h3>Marketing</h3>
         <p>Content strategy, ad copy, SEO, brand voice management, and campaign analytics across all channels.</p>
         <div class="ind-meta"><span class="badge badge-teal">14 agents</span><span class="badge badge-gray">7,200 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">Content</span><span class="sub-chip">SEO</span><span class="sub-chip">Paid Ads</span><span class="sub-chip">Brand</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=technology" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=technology" class="ind-hero-card" data-industry="technology">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#0891b2,#2563eb)"><i class="fa-solid fa-laptop-code"></i></div>
         <h3>Technology</h3>
         <p>Technical docs, code review, security audits, architecture planning, and DevOps automation.</p>
         <div class="ind-meta"><span class="badge badge-teal">16 agents</span><span class="badge badge-gray">6,100 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">SaaS</span><span class="sub-chip">Security</span><span class="sub-chip">DevOps</span><span class="sub-chip">AI/ML</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=realestate" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=realestate" class="ind-hero-card" data-industry="realestate">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)"><i class="fa-solid fa-house"></i></div>
         <h3>Real Estate</h3>
         <p>Property analysis, lease review, market research, client communication, and investment modeling.</p>
         <div class="ind-meta"><span class="badge badge-teal">10 agents</span><span class="badge badge-gray">3,200 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">Residential</span><span class="sub-chip">Commercial</span><span class="sub-chip">REITs</span><span class="sub-chip">Leasing</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=accounting" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=accounting" class="ind-hero-card" data-industry="accounting">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="fa-solid fa-chart-line"></i></div>
         <h3>Accounting</h3>
         <p>Tax preparation, audit support, bookkeeping automation, financial reporting, and payroll assistance.</p>
         <div class="ind-meta"><span class="badge badge-teal">9 agents</span><span class="badge badge-gray">3,500 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">Tax</span><span class="sub-chip">Audit</span><span class="sub-chip">Payroll</span><span class="sub-chip">Advisory</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=logistics" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=logistics" class="ind-hero-card" data-industry="logistics">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#ea580c,#f97316)"><i class="fa-solid fa-truck"></i></div>
         <h3>Logistics</h3>
         <p>Supply chain optimization, freight analysis, warehouse management, and last-mile delivery planning.</p>
         <div class="ind-meta"><span class="badge badge-teal">8 agents</span><span class="badge badge-gray">2,800 prompts</span></div>
         <div class="sub-chips"><span class="sub-chip">Supply Chain</span><span class="sub-chip">Freight</span><span class="sub-chip">Fleet</span></div>
       </a>
-      <a href="{% url 'industries' %}?i=manufacturing" class="ind-hero-card">
+      <a href="{% url 'industries' %}?i=manufacturing" class="ind-hero-card" data-industry="manufacturing">
         <div class="ind-icon-lg" style="background:linear-gradient(135deg,#64748b,#334155)"><i class="fa-solid fa-gears"></i></div>
         <h3>Manufacturing</h3>
         <p>Quality control, procurement analysis, lean operations, ERP integration, and maintenance planning.</p>
@@ -215,6 +284,173 @@ fetch('/api/auth/me',{credentials:'same-origin'}).then(r=>r.json()).then(d=>{
   </div>
 </div>
 <script>
+(function(){
+  function esc(s){
+    return String(s||'').replace(/[&<>"']/g,function(c){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]);
+    });
+  }
+  const INDUSTRY_META = {
+    legal:{
+      label:'Legal',
+      agents:12,prompts:4200,
+      desc:'Purpose-built agents and prompts for contracts, diligence, and risk language — so teams move faster without missing important clauses.',
+      insights:[
+        'Compare NDAs and MSAs to your playbook, flag one-sided terms, and draft redlines in plain English.',
+        'Summarize long agreements into exec-ready risk bullets and open questions for counsel.',
+        'Generate checklists for M&A, vendor onboarding, and regulatory change impact on existing agreements.',
+      ],
+      note:'Tip: open Agents for interactive clause work; use Prompts for repeatable templates (e.g., red-flag reviews). AI output is informational — verify with qualified counsel.',
+    },
+    healthcare:{
+      label:'Healthcare',
+      agents:15,prompts:5800,
+      desc:'Support clinical documentation, patient-friendly communication, and ops workflows while keeping a HIPAA-aware mindset in how you use AI.',
+      insights:[
+        'Draft empathetic patient updates, discharge summaries, and plain-language explanations of care plans.',
+        'Turn rough clinical notes into structured SOAP-style documentation for provider review.',
+        'Prepare billing/coding summaries and payer-response drafts for admin teams to validate.',
+      ],
+      note:'Tip: never paste real PHI into tools unless your org policy allows it. Use de-identified samples for drafts, then finalize in approved systems.',
+    },
+    finance:{
+      label:'Finance',
+      agents:11,prompts:3900,
+      desc:'Accelerate memos, risk commentary, and client communications with models tuned for finance vocabulary and careful reasoning.',
+      insights:[
+        'Stress-test narratives: assumptions, sensitivities, and what would change your conclusion.',
+        'Draft regulatory-style explanations and investor communications for human review.',
+        'Summarize long filings or decks into KPI tables and risk callouts.',
+      ],
+      note:'Tip: treat outputs as drafts for compliance review — not investment, legal, or tax advice.',
+    },
+    marketing:{
+      label:'Marketing',
+      agents:14,prompts:7200,
+      desc:'Move from blank page to on-brand campaigns faster: angles, hooks, SEO outlines, and channel-specific variants you can test.',
+      insights:[
+        'Generate campaign variants (email, social, landing) aligned to a single value proposition.',
+        'Build SEO outlines and FAQ blocks from a topic brief and competitor positioning.',
+        'Create A/B test matrices with hypotheses so experiments stay measurable.',
+      ],
+      note:'Tip: add brand voice + guardrails in chat; use Prompts when you want a repeatable workflow for your team.',
+    },
+    technology:{
+      label:'Technology',
+      agents:16,prompts:6100,
+      desc:'Speed up engineering communication: RFCs, runbooks, security reviews, and release notes grounded in how software teams actually work.',
+      insights:[
+        'Turn rough notes into RFCs with alternatives, tradeoffs, and rollout risks.',
+        'Review diffs for security footguns and suggest tests before merge.',
+        'Draft incident timelines and customer comms from postmortem bullets.',
+      ],
+      note:'Tip: paste minimal repro steps or logs (redact secrets) for tighter technical answers.',
+    },
+    realestate:{
+      label:'Real Estate',
+      agents:10,prompts:3200,
+      desc:'Support brokers, analysts, and operators with lease summaries, comparables narratives, and client-ready explanations of market signals.',
+      insights:[
+        'Summarize leases into key dates, rent steps, renewal options, and tenant obligations.',
+        'Draft listing descriptions and investment memos from structured property facts.',
+        'Explain market drivers in client-friendly language for emails and decks.',
+      ],
+      note:'Tip: confirm numbers and MLS rules locally — use AI to accelerate drafting, not replace licensed advice where required.',
+    },
+    accounting:{
+      label:'Accounting',
+      agents:9,prompts:3500,
+      desc:'Help firms prep workpapers, client memos, and month-end narratives while keeping professional skepticism in the loop.',
+      insights:[
+        'Draft variance commentary from trial balance movements and narrative prompts.',
+        'Generate audit-style questions from process descriptions and control lists.',
+        'Summarize standards guidance into practical checklists for engagement teams.',
+      ],
+      note:'Tip: AI can speed drafting; final positions should follow firm policy and professional standards.',
+    },
+    logistics:{
+      label:'Logistics',
+      agents:8,prompts:2800,
+      desc:'Improve throughput narratives: lane analysis, carrier comms, warehouse KPI commentary, and scenario planning language.',
+      insights:[
+        'Explain SLA misses with root-cause hypotheses and mitigation options.',
+        'Draft carrier/customer updates during disruptions with clear timelines.',
+        'Turn operational metrics into exec summaries with risks and next steps.',
+      ],
+      note:'Tip: pair quantitative inputs (cost, lead time, fill rate) with prompts for sharper recommendations.',
+    },
+    manufacturing:{
+      label:'Manufacturing',
+      agents:9,prompts:2600,
+      desc:'Support QA, procurement, and plant leadership with structured issue writeups, supplier comms, and continuous-improvement artifacts.',
+      insights:[
+        'Draft 8D-style reports from bullet findings and containment actions.',
+        'Summarize supplier quality issues with evidence requests and timelines.',
+        'Generate Gemba-style observations and follow-up tasks from shift notes.',
+      ],
+      note:'Tip: include units, tolerances, and defect codes when you want precise manufacturing language.',
+    },
+  };
+  const agentsBase = "{% url 'agents' %}";
+  const promptsBase = "{% url 'prompts' %}";
+  function getIndustrySlug(){
+    const raw = new URLSearchParams(window.location.search).get('i') || '';
+    return String(raw).toLowerCase().trim();
+  }
+  function applyIndustryFromUrl(){
+    const slug = getIndustrySlug();
+    const cards = document.querySelectorAll('.ind-hero-card[data-industry]');
+    const panel = document.getElementById('industry-focus');
+    const titleEl = document.getElementById('industry-focus-title');
+    const descEl = document.getElementById('industry-focus-desc');
+    const statsEl = document.getElementById('industry-focus-stats');
+    const bulletsEl = document.getElementById('industry-focus-bullets');
+    const noteEl = document.getElementById('industry-focus-note');
+    const agentsLink = document.getElementById('industry-focus-agents');
+    const promptsLink = document.getElementById('industry-focus-prompts');
+    cards.forEach((c)=>c.classList.toggle('is-selected', slug && c.getAttribute('data-industry') === slug));
+    if(!slug || !INDUSTRY_META[slug]){
+      if(panel){
+        panel.classList.remove('visible');
+      }
+      const statsEl0 = document.getElementById('industry-focus-stats');
+      const bulletsEl0 = document.getElementById('industry-focus-bullets');
+      const noteEl0 = document.getElementById('industry-focus-note');
+      if(statsEl0) statsEl0.innerHTML = '';
+      if(bulletsEl0) bulletsEl0.innerHTML = '';
+      if(noteEl0) noteEl0.textContent = '';
+      return;
+    }
+    const meta = INDUSTRY_META[slug];
+    if(titleEl) titleEl.textContent = meta.label;
+    if(descEl) descEl.textContent = meta.desc;
+    if(statsEl){
+      statsEl.innerHTML =
+        '<span class="industry-focus-stat"><i class="fa-solid fa-robot"></i> '+meta.agents+' specialized agents</span>'+
+        '<span class="industry-focus-stat"><i class="fa-solid fa-book-open"></i> '+meta.prompts.toLocaleString()+' curated prompts</span>';
+    }
+    if(bulletsEl){
+      bulletsEl.innerHTML = (meta.insights||[]).map(function(t){
+        return '<li><i class="fa-solid fa-circle-check" aria-hidden="true"></i><span>'+esc(t)+'</span></li>';
+      }).join('');
+    }
+    if(noteEl) noteEl.textContent = meta.note || '';
+    if(agentsLink){
+      agentsLink.href = agentsBase + '?industry=' + encodeURIComponent(slug);
+      agentsLink.innerHTML = '<i class="fa-solid fa-robot"></i> Browse '+meta.agents+' agents';
+    }
+    if(promptsLink){
+      promptsLink.href = promptsBase + '?industry=' + encodeURIComponent(slug);
+      promptsLink.innerHTML = '<i class="fa-solid fa-book-open"></i> Browse '+meta.prompts.toLocaleString()+' prompts';
+    }
+    if(panel){
+      panel.classList.add('visible');
+      panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+    }
+  }
+  window.addEventListener('DOMContentLoaded', applyIndustryFromUrl);
+  window.addEventListener('popstate', applyIndustryFromUrl);
+})();
 const pmToggle = document.getElementById('profile-menu-toggle');
 const profileMenu = document.getElementById('profile-menu');
 if(pmToggle && profileMenu){
