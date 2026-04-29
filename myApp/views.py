@@ -267,12 +267,14 @@ def register(request):
 
 
 def verify_email_required(request):
-    """Page shown when a logged-in user has not yet verified their email."""
+    """Page shown after registration while the email is still unverified.
+
+    Public on purpose: the user has just registered and has no session yet
+    (we don't auto-login on register). The template falls back to
+    sessionStorage('pendingEmail') so the resend button still works.
+    """
     user = get_current_user(request)
-    if not user:
-        return redirect("login")
-    if user.email_verified:
-        # Already verified — bounce to onboarding or dashboard depending on state.
+    if user and user.email_verified:
         return redirect("onboarding" if not user.onboarding_completed else "dashboard")
     return render(request, "verify-email-required.html")
 
@@ -401,6 +403,11 @@ def api_login(request):
                 "last_name": django_user.last_name or "",
                 "industry": "",
                 "password_hash": django_user.password,
+                # Django superusers don't go through the email-verify or
+                # onboarding flows — they're created via createsuperuser.
+                # Pre-mark them so the auth gate doesn't trap them.
+                "email_verified": True,
+                "onboarding_completed": True,
             },
         )
         # Keep the bridge record synced to Django auth credentials.
@@ -538,6 +545,10 @@ def api_verify_email(request):
         "email_verification_sent_at",
         "updated_at",
     ])
+    # Establish a session so the user lands inside the app (e.g. /onboarding/)
+    # without having to log in again. Safe: clicking the unique token link
+    # proved control of the inbox.
+    login_user(request, user)
     return JsonResponse({"verified": True, "email": user.email})
 
 

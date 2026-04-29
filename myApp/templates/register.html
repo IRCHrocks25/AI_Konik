@@ -19,30 +19,10 @@
 .auth-feature-icon{font-size:20px;width:36px;text-align:center}
 .auth-feature-text{font-size:13px;color:rgba(255,255,255,.8);line-height:1.4}
 .auth-form-wrap{max-width:440px}
-.step-indicator{display:flex;align-items:center;gap:0;margin-bottom:32px}
-.step{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
-.step-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;transition:all .3s}
-.step.active .step-num{background:var(--teal);color:#fff}
-.step.done .step-num{background:var(--green);color:#fff}
-.step.inactive .step-num{background:var(--border);color:var(--slate2)}
-.step.active{color:var(--teal)}
-.step.done{color:var(--green)}
-.step.inactive{color:var(--slate2)}
-.step-line{flex:1;height:1px;background:var(--border);margin:0 8px}
-.step-line.done{background:var(--green)}
 .auth-footer a{font-weight:500}
 .name-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-/* Industry picker step */
-.industry-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
-.ind-pick-card{padding:14px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all .2s;text-align:center}
-.ind-pick-card:hover{border-color:var(--teal);background:var(--teal-light)}
-.ind-pick-card.selected{border-color:var(--teal);background:var(--teal-light)}
-.ind-pick-card.selected .ind-pick-icon{background:var(--teal);color:#fff;border-radius:8px}
-.ind-pick-icon{font-size:20px;margin-bottom:6px;display:block}
-.ind-pick-name{font-size:12px;font-weight:600;color:var(--ink)}
-/* steps */
-.form-step{display:none}
-.form-step.active{display:block}
+.error-banner{padding:10px 14px;margin-bottom:16px;display:none}
+.error-banner.show{display:block}
 </style>
 </head>
 <body class="auth-layout">
@@ -62,87 +42,29 @@
 </div>
 <div class="auth-right">
   <div class="auth-form-wrap">
-    <!-- STEP 1 -->
-    <div class="form-step active" id="step1">
-      <h1>Create your account</h1>
-      <p class="subtitle">Free forever — no credit card needed</p>
-      <div class="step-indicator">
-        <div class="step active"><div class="step-num">1</div><span>Account</span></div>
-        <div class="step-line"></div>
-        <div class="step inactive"><div class="step-num">2</div><span>Industry</span></div>
-        <div class="step-line"></div>
-        <div class="step inactive"><div class="step-num">3</div><span>Done</span></div>
-      </div>
-      <div class="name-row">
-        <div class="form-group"><label class="form-label">First name</label><input class="form-input" placeholder="Sarah" type="text" id="first-name"></div>
-        <div class="form-group"><label class="form-label">Last name</label><input class="form-input" placeholder="Chen" type="text" id="last-name"></div>
-      </div>
-      <div class="form-group"><label class="form-label">Work email</label><input class="form-input" placeholder="sarah@yourcompany.com" type="email" id="email"></div>
-      <div class="form-group"><label class="form-label">Password</label><input class="form-input" placeholder="Min 8 characters" type="password" id="pw" oninput="checkPw(this.value)">
-        <div style="display:flex;gap:4px;margin-top:6px" id="pw-bars">
-          <div style="flex:1;height:3px;border-radius:2px;background:var(--border)" id="pw-b1"></div>
-          <div style="flex:1;height:3px;border-radius:2px;background:var(--border)" id="pw-b2"></div>
-          <div style="flex:1;height:3px;border-radius:2px;background:var(--border)" id="pw-b3"></div>
-        </div>
-        <div class="form-hint" id="pw-hint">Choose a strong password</div>
-      </div>
-      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" onclick="goStep(2)" id="step1-btn">Continue <i class="fa-solid fa-arrow-right"></i></button>
-      <div class="divider-or">or</div>
-      <button class="btn btn-ghost btn-lg" style="width:100%;justify-content:center">Continue with Google</button>
-      <div class="auth-footer">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+    <h1>Create your account</h1>
+    <p class="subtitle">Free forever — no credit card needed</p>
+    <div class="error-banner" id="err-banner"></div>
+    <div class="name-row">
+      <div class="form-group"><label class="form-label">First name</label><input class="form-input" placeholder="Sarah" type="text" id="first-name"></div>
+      <div class="form-group"><label class="form-label">Last name</label><input class="form-input" placeholder="Chen" type="text" id="last-name"></div>
     </div>
-
-    <!-- STEP 2 -->
-    <div class="form-step" id="step2">
-      <h1>Pick your industry</h1>
-      <p class="subtitle">We'll personalise your agents and prompts</p>
-      <div class="step-indicator">
-        <div class="step done"><div class="step-num"><i class="fa-solid fa-check"></i></div><span>Account</span></div>
-        <div class="step-line done"></div>
-        <div class="step active"><div class="step-num">2</div><span>Industry</span></div>
-        <div class="step-line"></div>
-        <div class="step inactive"><div class="step-num">3</div><span>Done</span></div>
+    <div class="form-group"><label class="form-label">Work email</label><input class="form-input" placeholder="sarah@yourcompany.com" type="email" id="email"></div>
+    <div class="form-group"><label class="form-label">Password</label><input class="form-input" placeholder="Min 8 characters" type="password" id="pw" oninput="checkPw(this.value)">
+      <div style="display:flex;gap:4px;margin-top:6px" id="pw-bars">
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--border)" id="pw-b1"></div>
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--border)" id="pw-b2"></div>
+        <div style="flex:1;height:3px;border-radius:2px;background:var(--border)" id="pw-b3"></div>
       </div>
-      <div class="industry-picker" id="ind-picker">
-        <div class="ind-pick-card" onclick="selectInd(this,'Legal')"><span class="ind-pick-icon"><i class="fa-solid fa-scale-balanced"></i></span><div class="ind-pick-name">Legal</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Healthcare')"><span class="ind-pick-icon"><i class="fa-solid fa-hospital"></i></span><div class="ind-pick-name">Healthcare</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Finance')"><span class="ind-pick-icon"><i class="fa-solid fa-sack-dollar"></i></span><div class="ind-pick-name">Finance</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Marketing')"><span class="ind-pick-icon"><i class="fa-solid fa-bullhorn"></i></span><div class="ind-pick-name">Marketing</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Technology')"><span class="ind-pick-icon"><i class="fa-solid fa-laptop-code"></i></span><div class="ind-pick-name">Technology</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Real Estate')"><span class="ind-pick-icon"><i class="fa-solid fa-house"></i></span><div class="ind-pick-name">Real Estate</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Accounting')"><span class="ind-pick-icon"><i class="fa-solid fa-chart-line"></i></span><div class="ind-pick-name">Accounting</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Logistics')"><span class="ind-pick-icon"><i class="fa-solid fa-truck"></i></span><div class="ind-pick-name">Logistics</div></div>
-        <div class="ind-pick-card" onclick="selectInd(this,'Manufacturing')"><span class="ind-pick-icon"><i class="fa-solid fa-gears"></i></span><div class="ind-pick-name">Manufacturing</div></div>
-      </div>
-      <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center;opacity:.5" id="ind-btn" disabled onclick="goStep(3)">Continue <i class="fa-solid fa-arrow-right"></i></button>
+      <div class="form-hint" id="pw-hint">Choose a strong password</div>
     </div>
-
-    <!-- STEP 3 -->
-    <div class="form-step" id="step3">
-      <div style="text-align:center;padding:20px 0">
-        <div style="width:72px;height:72px;background:var(--teal-light);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 24px"><i class="fa-solid fa-party-horn"></i></div>
-        <h1 style="margin-bottom:8px">You're all set!</h1>
-        <p class="subtitle" style="margin-bottom:32px">Welcome to AI KONIK. Your personalized dashboard is ready.</p>
-        <a href="{% url 'dashboard' %}" class="btn btn-teal btn-lg" style="width:100%;justify-content:center">Go to my dashboard <i class="fa-solid fa-arrow-right"></i></a>
-      </div>
-    </div>
+    <button class="btn btn-teal btn-lg" style="width:100%;justify-content:center" id="signup-btn">Create account <i class="fa-solid fa-arrow-right"></i></button>
+    <div class="divider-or">or</div>
+    <button class="btn btn-ghost btn-lg" style="width:100%;justify-content:center">Continue with Google</button>
+    <div class="auth-footer">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
   </div>
 </div>
 <script>
-let selectedIndustry='';
-function goStep(n){
-  if(n===2){
-    const firstName=document.getElementById('first-name').value.trim();
-    const email=document.getElementById('email').value.trim();
-    const password=document.getElementById('pw').value;
-    if(!firstName||!email||!password){
-      alert('Please fill first name, email, and password.');
-      return;
-    }
-  }
-  document.querySelectorAll('.form-step').forEach(s=>s.classList.remove('active'));
-  document.getElementById('step'+n).classList.add('active');
-}
 function checkPw(v){
   const b1=document.getElementById('pw-b1'),b2=document.getElementById('pw-b2'),b3=document.getElementById('pw-b3'),hint=document.getElementById('pw-hint');
   const colors=['var(--red)','var(--amber)','var(--green)'];
@@ -155,47 +77,66 @@ function checkPw(v){
   hint.textContent=score===0?'Choose a strong password':labels[score-1]+' password';
   hint.style.color=score>0?colors[score-1]:'var(--slate2)';
 }
-function selectInd(el,name){
-  document.querySelectorAll('.ind-pick-card').forEach(c=>c.classList.remove('selected'));
-  el.classList.add('selected');
-  selectedIndustry=name;
-  const btn=document.getElementById('ind-btn');
-  btn.disabled=false;btn.style.opacity='1';
+
+function showError(msg){
+  const banner=document.getElementById('err-banner');
+  banner.textContent=msg;
+  banner.classList.add('show');
 }
-document.getElementById('ind-btn').addEventListener('click',function(e){
-  e.preventDefault();
+
+async function doSignup(){
+  const btn=document.getElementById('signup-btn');
   const first_name=document.getElementById('first-name').value.trim();
   const last_name=document.getElementById('last-name').value.trim();
   const email=document.getElementById('email').value.trim();
   const password=document.getElementById('pw').value;
-  this.disabled=true;
-  fetch('/api/auth/register',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    credentials:'same-origin',
-    body:JSON.stringify({
-      first_name,
-      last_name,
-      email,
-      password,
-      industry:selectedIndustry
-    })
-  })
-  .then(async r=>({ok:r.ok,data:await r.json()}))
-  .then(({ok,data})=>{
-    if(!ok){throw new Error(data.error||'Registration failed');}
-    goStep(3);
-  })
-  .catch(err=>{
-    alert(err.message||'Registration failed');
-  })
-  .finally(()=>{
-    this.disabled=false;
-  });
-});
+  document.getElementById('err-banner').classList.remove('show');
+  if(!first_name || !email || !password){
+    showError('Please fill first name, email, and password.');
+    return;
+  }
+  if(password.length < 8){
+    showError('Password must be at least 8 characters.');
+    return;
+  }
+  btn.disabled=true;
+  const original=btn.innerHTML;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+  try{
+    const r=await fetch('/api/auth/register',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({first_name,last_name,email,password}),
+    });
+    const data=await r.json().catch(()=>({}));
+    if(!r.ok){
+      throw new Error(data.error || 'Registration failed');
+    }
+    // Server response is {"message": "Check your email to verify", "email": ...}.
+    // We did NOT auto-login. Stash the email in sessionStorage so the
+    // verify-required page can show "we sent a link to <email>" and run
+    // the resend button without needing a session.
+    try{ sessionStorage.setItem('pendingEmail', data.email || email); }catch(_e){}
+    window.location.href='/verify-email-required/';
+  }catch(err){
+    showError(err.message || 'Registration failed');
+    btn.disabled=false;
+    btn.innerHTML=original;
+  }
+}
+
+document.getElementById('signup-btn').addEventListener('click', doSignup);
+document.addEventListener('keydown', e=>{ if(e.key==='Enter') doSignup(); });
+
 fetch('/api/auth/me',{credentials:'same-origin'})
   .then(async r=>({ok:r.ok,data:await r.json()}))
-  .then(({data})=>{if(data.authenticated){window.location.href='{% url 'dashboard' %}';}});
+  .then(({data})=>{
+    if(!data || !data.authenticated) return;
+    if(!data.email_verified){ window.location.replace('/verify-email-required/'); return; }
+    if(!data.onboarding_completed){ window.location.replace('/onboarding/'); return; }
+    window.location.replace("{% url 'dashboard' %}");
+  });
 </script>
 </body>
 </html>

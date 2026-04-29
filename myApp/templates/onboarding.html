@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.ob-wrap{min-height:100vh;background:var(--bg);padding:32px 16px;display:flex;justify-content:center}
+.ob-shell{max-width:760px;width:100%}
+.ob-progress{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:32px}
+.ob-dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:all .25s}
+.ob-dot.active{background:var(--teal);width:30px;border-radius:5px}
+.ob-dot.done{background:var(--teal)}
+.ob-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:42px 36px;box-shadow:0 12px 32px rgba(0,0,0,.05)}
+.ob-card h1{font-family:'DM Serif Display',serif;font-size:30px;color:var(--ink);line-height:1.2;margin-bottom:12px}
+.ob-card .subtitle{font-size:15px;color:var(--slate);line-height:1.6;margin-bottom:28px}
+.ob-step{display:none}
+.ob-step.active{display:block}
+.ob-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:28px}
+.ob-actions .btn{justify-content:center}
+.ob-back{background:none;border:none;color:var(--slate);cursor:pointer;font-size:14px;font-weight:500;padding:10px 4px}
+.ob-back:hover{color:var(--ink)}
+.ob-skip{display:block;margin:18px auto 0;background:none;border:none;color:var(--slate2);cursor:pointer;font-size:12px;text-decoration:underline;padding:6px}
+.ob-skip:hover{color:var(--ink)}
+
+/* Step 2 — industry picker */
+.ind-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ind-card{padding:18px 12px;border:1.5px solid var(--border);border-radius:12px;cursor:pointer;text-align:center;transition:all .15s;background:#fff}
+.ind-card:hover{border-color:var(--teal);background:var(--teal-light)}
+.ind-card.selected{border-color:var(--teal);background:var(--teal-light);box-shadow:0 0 0 3px rgba(20,184,166,.18)}
+.ind-card-icon{font-size:24px;margin-bottom:8px;display:block;color:var(--teal)}
+.ind-card-name{font-size:13px;font-weight:600;color:var(--ink)}
+#ind-other-input{display:none;margin-top:14px;width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font:inherit;color:var(--ink)}
+#ind-other-input:focus{outline:none;border-color:var(--teal)}
+
+/* Step 3 — use cases */
+.uc-grid{display:flex;flex-wrap:wrap;gap:10px}
+.uc-chip{padding:10px 16px;border:1.5px solid var(--border);border-radius:24px;cursor:pointer;font-size:13px;font-weight:500;color:var(--ink);background:#fff;transition:all .15s;user-select:none}
+.uc-chip:hover{border-color:var(--teal)}
+.uc-chip.selected{border-color:var(--teal);background:var(--teal);color:#fff}
+.uc-counter{margin-top:18px;font-size:13px;color:var(--slate)}
+.uc-counter.warn{color:#dc2626}
+
+/* Final screen */
+.final-section{margin-top:28px}
+.final-section h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--slate2);margin-bottom:14px}
+.final-agent-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+.final-agent-card{padding:18px;border:1.5px solid var(--border);border-radius:12px;background:#fff;display:flex;flex-direction:column;gap:8px;text-decoration:none;color:inherit;transition:all .15s}
+.final-agent-card:hover{border-color:var(--teal);transform:translateY(-2px)}
+.final-agent-card .agent-emoji{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.final-agent-card h3{font-size:14px;font-weight:600;color:var(--ink)}
+.final-agent-card p{font-size:12px;color:var(--slate);line-height:1.5;flex:1}
+.final-prompt-list{display:flex;flex-direction:column;gap:8px}
+.final-prompt-card{padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:#fff;display:flex;justify-content:space-between;align-items:center;gap:12px;transition:all .15s}
+.final-prompt-card:hover{border-color:var(--teal);background:#fafffe}
+.final-prompt-card.featured{border-color:var(--teal);background:linear-gradient(135deg,var(--teal-light),#fff)}
+.final-prompt-info{flex:1;min-width:0}
+.final-prompt-info h4{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.final-prompt-info p{font-size:12px;color:var(--slate);line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.final-prompt-cta{flex-shrink:0;font-size:12px;font-weight:600;color:var(--teal);text-decoration:none;white-space:nowrap}
+.final-prompt-card.featured .final-prompt-cta{background:var(--teal);color:#fff;padding:8px 14px;border-radius:8px}
+.final-empty{padding:24px;text-align:center;color:var(--slate2);font-size:13px;border:1px dashed var(--border);border-radius:10px}
+.final-bottom{display:flex;justify-content:space-between;align-items:center;margin-top:28px;gap:12px}
+.spinner-block{padding:60px 0;text-align:center}
+.spinner-ring{width:36px;height:36px;border:3px solid var(--teal-light);border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:transform .25s ease;z-index:1000;max-width:360px;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:#dc2626}
+
+@media(max-width:720px){
+  .ind-grid{grid-template-columns:repeat(2,1fr)}
+  .final-agent-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="ob-wrap">
+  <div class="ob-shell">
+
+    <div class="ob-progress" id="ob-progress">
+      <div class="ob-dot active" data-step="1"></div>
+      <div class="ob-dot" data-step="2"></div>
+      <div class="ob-dot" data-step="3"></div>
+    </div>
+
+    <div class="ob-card">
+
+      <!-- Step 1: welcome -->
+      <div class="ob-step active" id="step-1">
+        <h1>Welcome to Ikonik</h1>
+        <p class="subtitle">Let's set up your workspace in 60 seconds. We'll personalize your dashboard with the agents and prompts that match your day-to-day work.</p>
+        <button type="button" class="btn btn-teal btn-lg" style="width:100%;justify-content:center" id="step1-continue">Get started <i class="fa-solid fa-arrow-right"></i></button>
+      </div>
+
+      <!-- Step 2: industry -->
+      <div class="ob-step" id="step-2">
+        <h1>Which industry are you in?</h1>
+        <p class="subtitle">We'll show you agents and prompts built for your sector.</p>
+        <div class="ind-grid" id="ind-grid">
+          <div class="spinner-block" style="grid-column:1/-1"><div class="spinner-ring"></div>Loading industries...</div>
+        </div>
+        <input type="text" id="ind-other-input" maxlength="80" placeholder="Tell us your industry">
+        <div class="ob-actions">
+          <button type="button" class="ob-back" id="step2-back"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button type="button" class="btn btn-teal btn-lg" id="step2-continue" disabled>Continue <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Step 3: use cases -->
+      <div class="ob-step" id="step-3">
+        <h1>What do you spend the most time on?</h1>
+        <p class="subtitle">Pick 3 — we'll surface the most relevant tools first.</p>
+        <div class="uc-grid" id="uc-grid"></div>
+        <div class="uc-counter" id="uc-counter">Pick 3 (0 selected)</div>
+        <div class="ob-actions">
+          <button type="button" class="ob-back" id="step3-back"><i class="fa-solid fa-arrow-left"></i> Back</button>
+          <button type="button" class="btn btn-teal btn-lg" id="step3-continue" disabled>Continue <i class="fa-solid fa-arrow-right"></i></button>
+        </div>
+      </div>
+
+      <!-- Final screen: recommendations -->
+      <div class="ob-step" id="step-final">
+        <h1>Here's what we recommend for you</h1>
+        <p class="subtitle">Try the first prompt to see Ikonik in action.</p>
+
+        <div class="final-section" id="final-agents-wrap">
+          <h2 id="final-agents-heading">Agents for you</h2>
+          <div class="final-agent-grid" id="final-agents">
+            <div class="spinner-block" style="grid-column:1/-1"><div class="spinner-ring"></div>Finding agents...</div>
+          </div>
+        </div>
+
+        <div class="final-section" id="final-prompts-wrap">
+          <h2>Starter prompts</h2>
+          <div class="final-prompt-list" id="final-prompts">
+            <div class="spinner-block"><div class="spinner-ring"></div>Finding prompts...</div>
+          </div>
+        </div>
+
+        <div class="final-bottom">
+          <button type="button" class="ob-back" id="final-skip-rest">Skip and go to dashboard</button>
+          <a href="/dashboard/" class="btn btn-teal btn-lg">Open my dashboard <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+      </div>
+
+    </div>
+
+    <button type="button" class="ob-skip" id="ob-skip">Skip for now — I'll do this later</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────
+const state = {
+  step: 1,           // 1 | 2 | 3 | 'final'
+  industry: '',     // slug, or "other" if free-text path
+  industryName: '', // display name shown on final screen
+  industryOther: '',
+  useCases: [],
+};
+
+const USE_CASES = [
+  'Content creation',
+  'Contract review',
+  'Customer support',
+  'Financial analysis',
+  'Meeting prep',
+  'Sales outreach',
+  'Technical documentation',
+  'Market research',
+  'Email management',
+  'Internal training',
+  'Compliance reporting',
+  'Strategic planning',
+];
+
+// ── UI helpers ──────────────────────────────────────────────────────
+function showStep(n){
+  document.querySelectorAll('.ob-step').forEach(s=>s.classList.remove('active'));
+  const id = (n === 'final') ? 'step-final' : ('step-' + n);
+  document.getElementById(id).classList.add('active');
+  state.step = n;
+  // Progress dots: hide on final screen.
+  const progress = document.getElementById('ob-progress');
+  const skipBtn = document.getElementById('ob-skip');
+  if(n === 'final'){
+    progress.style.visibility = 'hidden';
+    skipBtn.style.display = 'none';
+  }else{
+    progress.style.visibility = 'visible';
+    skipBtn.style.display = 'block';
+    document.querySelectorAll('.ob-dot').forEach(d=>{
+      const idx = +d.getAttribute('data-step');
+      d.classList.remove('active','done');
+      if(idx < n) d.classList.add('done');
+      else if(idx === n) d.classList.add('active');
+    });
+  }
+}
+
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+function escapeHtml(s){
+  return String(s||'').replace(/[&<>"']/g, c=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;',
+  }[c]));
+}
+
+// ── Step 1 ──────────────────────────────────────────────────────────
+document.getElementById('step1-continue').addEventListener('click', ()=>{
+  showStep(2);
+  loadIndustries();
+});
+
+// ── Step 2: industry picker ────────────────────────────────────────
+let industriesLoaded = false;
+async function loadIndustries(){
+  if(industriesLoaded) return;
+  const grid = document.getElementById('ind-grid');
+  try{
+    const r = await fetch('/api/industries', {credentials:'same-origin'});
+    const data = await r.json();
+    const items = (data && data.industries) || [];
+    grid.innerHTML = '';
+    items.forEach(ind=>{
+      const card = document.createElement('div');
+      card.className = 'ind-card';
+      card.setAttribute('data-slug', ind.slug);
+      card.setAttribute('data-name', ind.name);
+      card.innerHTML = '<span class="ind-card-icon"><i class="fa-solid ' + escapeHtml(ind.icon_class||'fa-briefcase') + '"></i></span><div class="ind-card-name">' + escapeHtml(ind.name) + '</div>';
+      card.addEventListener('click', ()=>selectIndustry(ind.slug, ind.name, card));
+      grid.appendChild(card);
+    });
+    // "Other" card
+    const otherCard = document.createElement('div');
+    otherCard.className = 'ind-card';
+    otherCard.setAttribute('data-slug', 'other');
+    otherCard.innerHTML = '<span class="ind-card-icon"><i class="fa-solid fa-ellipsis"></i></span><div class="ind-card-name">Other</div>';
+    otherCard.addEventListener('click', ()=>selectIndustry('other', 'Other', otherCard));
+    grid.appendChild(otherCard);
+    industriesLoaded = true;
+  }catch(_e){
+    grid.innerHTML = '<div class="final-empty" style="grid-column:1/-1">Could not load industries. <button type="button" class="ob-back" onclick="loadIndustries()">Retry</button></div>';
+  }
+}
+
+function selectIndustry(slug, name, cardEl){
+  document.querySelectorAll('.ind-card').forEach(c=>c.classList.remove('selected'));
+  cardEl.classList.add('selected');
+  state.industry = slug;
+  state.industryName = name;
+  const otherInput = document.getElementById('ind-other-input');
+  if(slug === 'other'){
+    otherInput.style.display = 'block';
+    otherInput.focus();
+    state.industryOther = otherInput.value.trim();
+    refreshStep2Continue();
+    return;
+  }
+  otherInput.style.display = 'none';
+  otherInput.value = '';
+  state.industryOther = '';
+  refreshStep2Continue();
+}
+
+document.getElementById('ind-other-input').addEventListener('input', e=>{
+  state.industryOther = e.target.value.trim();
+  refreshStep2Continue();
+});
+
+function refreshStep2Continue(){
+  const btn = document.getElementById('step2-continue');
+  if(!state.industry){ btn.disabled = true; return; }
+  if(state.industry === 'other' && !state.industryOther){ btn.disabled = true; return; }
+  btn.disabled = false;
+}
+
+document.getElementById('step2-back').addEventListener('click', ()=>showStep(1));
+document.getElementById('step2-continue').addEventListener('click', ()=>{
+  // If "Other" + free text, the display name becomes the typed value.
+  if(state.industry === 'other'){ state.industryName = state.industryOther; }
+  renderUseCases();
+  showStep(3);
+});
+
+// ── Step 3: use case chips ─────────────────────────────────────────
+function renderUseCases(){
+  const grid = document.getElementById('uc-grid');
+  if(grid.children.length){ return; } // already rendered
+  USE_CASES.forEach(label=>{
+    const chip = document.createElement('div');
+    chip.className = 'uc-chip';
+    chip.textContent = label;
+    chip.setAttribute('role','checkbox');
+    chip.setAttribute('aria-checked','false');
+    chip.addEventListener('click', ()=>toggleUseCase(label, chip));
+    grid.appendChild(chip);
+  });
+}
+
+function toggleUseCase(label, chip){
+  const idx = state.useCases.indexOf(label);
+  if(idx >= 0){
+    state.useCases.splice(idx, 1);
+    chip.classList.remove('selected');
+    chip.setAttribute('aria-checked','false');
+  }else{
+    if(state.useCases.length >= 3){
+      showToast('Pick 3 — deselect one to swap', true);
+      return;
+    }
+    state.useCases.push(label);
+    chip.classList.add('selected');
+    chip.setAttribute('aria-checked','true');
+  }
+  refreshStep3Continue();
+}
+
+function refreshStep3Continue(){
+  const counter = document.getElementById('uc-counter');
+  const btn = document.getElementById('step3-continue');
+  const n = state.useCases.length;
+  counter.textContent = `Pick 3 (${n} selected)`;
+  counter.classList.toggle('warn', n !== 3);
+  btn.disabled = n !== 3;
+}
+
+document.getElementById('step3-back').addEventListener('click', ()=>showStep(2));
+document.getElementById('step3-continue').addEventListener('click', submitOnboarding);
+
+// ── Submit ─────────────────────────────────────────────────────────
+async function submitOnboarding(){
+  const btn = document.getElementById('step3-continue');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+  try{
+    const r = await fetch('/api/onboarding/complete', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({
+        industry: state.industry,
+        industry_other: state.industryOther,
+        use_cases: state.useCases,
+      }),
+    });
+    if(!r.ok){
+      const data = await r.json().catch(()=>({}));
+      throw new Error(data.error || 'Save failed');
+    }
+    showStep('final');
+    loadRecommendations();
+  }catch(err){
+    showToast(err.message || 'Something went wrong — try again', true);
+    btn.disabled = false;
+    btn.innerHTML = 'Continue <i class="fa-solid fa-arrow-right"></i>';
+  }
+}
+
+// ── Skip flow ──────────────────────────────────────────────────────
+async function doSkip(){
+  try{
+    await fetch('/api/onboarding/complete', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({industry:'', industry_other:'', use_cases:[]}),
+    });
+  }catch(_e){
+    // Even on failure we proceed — user can revisit from Settings.
+  }
+  showToast('Skipped — you can complete this anytime in Settings');
+  setTimeout(()=>{ window.location.replace('/dashboard/'); }, 800);
+}
+
+document.getElementById('ob-skip').addEventListener('click', doSkip);
+document.getElementById('final-skip-rest').addEventListener('click', ()=>{
+  window.location.replace('/dashboard/');
+});
+
+// ── Final screen recommendations ───────────────────────────────────
+async function loadRecommendations(){
+  // Use the chosen industry slug for filtering when it's a known slug;
+  // for "other" we omit the filter and show featured/all.
+  const useFilter = state.industry && state.industry !== 'other';
+  const slug = useFilter ? state.industry : '';
+  document.getElementById('final-agents-heading').textContent =
+    useFilter ? `Agents for ${state.industryName}` : 'Agents we recommend';
+  await Promise.all([loadFinalAgents(slug), loadFinalPrompts(slug)]);
+}
+
+async function loadFinalAgents(slug){
+  const wrap = document.getElementById('final-agents');
+  try{
+    const url = '/api/agents' + (slug ? ('?industry=' + encodeURIComponent(slug)) : '');
+    const r = await fetch(url, {credentials:'same-origin'});
+    const data = await r.json();
+    const items = ((data && data.items) || []).slice(0, 3);
+    if(!items.length){
+      wrap.innerHTML = '<div class="final-empty" style="grid-column:1/-1">No agents matched yet — explore the full catalog from your dashboard.</div>';
+      return;
+    }
+    wrap.innerHTML = '';
+    items.forEach(a=>{
+      const card = document.createElement('a');
+      card.className = 'final-agent-card';
+      const url = '/agent-chat/?industry=' + encodeURIComponent(a.industry || slug || '') + '&agent=' + encodeURIComponent(a.name || '') + '&new=1';
+      card.href = url;
+      card.innerHTML =
+        '<div class="agent-emoji" style="background:' + escapeHtml(a.accent_bg || '#EEF2FF') + '"><i class="fa-solid ' + escapeHtml(a.icon_class || 'fa-robot') + '"></i></div>' +
+        '<h3>' + escapeHtml(a.name || '') + '</h3>' +
+        '<p>' + escapeHtml((a.description || '').slice(0, 120)) + '</p>';
+      wrap.appendChild(card);
+    });
+  }catch(_e){
+    wrap.innerHTML = '<div class="final-empty" style="grid-column:1/-1">Could not load agents — open your dashboard to browse.</div>';
+  }
+}
+
+async function loadFinalPrompts(slug){
+  const wrap = document.getElementById('final-prompts');
+  try{
+    const url = '/api/prompts' + (slug ? ('?industry=' + encodeURIComponent(slug)) : '');
+    const r = await fetch(url, {credentials:'same-origin'});
+    const data = await r.json();
+    const items = ((data && data.items) || []).slice(0, 10);
+    if(!items.length){
+      wrap.innerHTML = '<div class="final-empty">No prompts matched yet — explore the library from your dashboard.</div>';
+      return;
+    }
+    wrap.innerHTML = '';
+    items.forEach((p, i)=>{
+      const card = document.createElement('div');
+      card.className = 'final-prompt-card' + (i === 0 ? ' featured' : '');
+      const ind = p.industry || slug || '';
+      const tryUrl = '/agent-chat/?industry=' + encodeURIComponent(ind) +
+        '&promptTitle=' + encodeURIComponent(p.title || '') +
+        '&prompt=' + encodeURIComponent(p.body || '') +
+        '&new=1';
+      const cta = (i === 0)
+        ? '<a class="final-prompt-cta" href="' + tryUrl + '">Try this prompt <i class="fa-solid fa-arrow-right"></i></a>'
+        : '<a class="final-prompt-cta" href="' + tryUrl + '">Try <i class="fa-solid fa-arrow-right"></i></a>';
+      card.innerHTML =
+        '<div class="final-prompt-info"><h4>' + escapeHtml(p.title || '') + '</h4>' +
+        '<p>' + escapeHtml((p.body || '').slice(0, 140)) + '</p></div>' + cta;
+      wrap.appendChild(card);
+    });
+  }catch(_e){
+    wrap.innerHTML = '<div class="final-empty">Could not load prompts — open your dashboard to browse.</div>';
+  }
+}
+
+// ── Bootstrap ──────────────────────────────────────────────────────
+async function bootstrap(){
+  // Server-side view function already gates email_verified + onboarding_completed,
+  // but a tiny client-side check protects against direct hits during transit.
+  try{
+    const r = await fetch('/api/auth/me', {credentials:'same-origin'});
+    const d = await r.json();
+    if(!d.authenticated){ window.location.replace('/login/'); return; }
+    if(!d.email_verified){ window.location.replace('/verify-email-required/'); return; }
+    if(d.onboarding_completed){ window.location.replace('/dashboard/'); return; }
+  }catch(_e){
+    // Network blip — let the user proceed; the API will reject any bad state.
+  }
+  showStep(1);
+}
+
+bootstrap();
+</script>
+</body>
+</html>

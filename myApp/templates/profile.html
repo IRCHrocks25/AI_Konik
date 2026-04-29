@@ -103,6 +103,16 @@ textarea.inp{resize:vertical;min-height:80px;line-height:1.6}
   .actions .btn,.actions a.btn{width:100%;text-align:center;justify-content:center}
 }
 </style>
+<script>
+/* Phase B email-verification + onboarding gate. Runs before page bootstrap. */
+(function(){
+  fetch('/api/auth/me',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.authenticated)return;
+    if(!d.email_verified){window.location.replace('/verify-email-required/');}
+    else if(!d.onboarding_completed){window.location.replace('/onboarding/');}
+  }).catch(function(){});
+})();
+</script>
 </head>
 <body class="dark-app">
 <nav>

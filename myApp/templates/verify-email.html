@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verifying your email — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.verify-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--bg)}
+.verify-card{max-width:480px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.06)}
+.verify-icon{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 20px}
+.icon-loading{background:var(--teal-light);color:var(--teal)}
+.icon-success{background:#dcfce7;color:#16a34a}
+.icon-error{background:#fee2e2;color:#dc2626}
+.verify-card h1{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink);margin-bottom:10px}
+.verify-card p{font-size:14px;color:var(--slate);line-height:1.6;margin-bottom:8px}
+.verify-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+.verify-actions .btn{justify-content:center;width:100%}
+.state{display:none}
+.state.active{display:block}
+.spinner-ring{width:38px;height:38px;border:3px solid var(--teal-light);border-top-color:var(--teal);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+.resend-form{display:flex;gap:8px;margin-top:18px}
+.resend-form input{flex:1;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font:inherit;color:var(--ink);background:#fff}
+.resend-form input:focus{outline:2px solid var(--teal);border-color:var(--teal)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:transform .25s ease;z-index:1000;max-width:360px;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:#dc2626}
+</style>
+</head>
+<body>
+<div class="verify-wrap">
+  <div class="verify-card">
+
+    <div class="state active" id="state-loading">
+      <div class="spinner-ring" style="margin-bottom:24px"></div>
+      <h1>Verifying your email...</h1>
+      <p>Just a second.</p>
+    </div>
+
+    <div class="state" id="state-success">
+      <div class="verify-icon icon-success"><i class="fa-solid fa-check"></i></div>
+      <h1>Email verified!</h1>
+      <p>Setting up your workspace...</p>
+    </div>
+
+    <div class="state" id="state-expired">
+      <div class="verify-icon icon-error"><i class="fa-solid fa-clock-rotate-left"></i></div>
+      <h1>This link has expired</h1>
+      <p>Verification links are valid for 72 hours. Enter your email and we'll send a new one.</p>
+      <div class="resend-form">
+        <input type="email" id="resend-email" placeholder="you@example.com" autocomplete="email">
+        <button type="button" class="btn btn-teal" id="resend-btn">Send</button>
+      </div>
+      <button type="button" class="btn btn-ghost btn-lg" style="width:100%;justify-content:center;margin-top:14px" onclick="window.location.href='/login/'">Back to sign in</button>
+    </div>
+
+    <div class="state" id="state-invalid">
+      <div class="verify-icon icon-error"><i class="fa-solid fa-circle-xmark"></i></div>
+      <h1>This link isn't valid</h1>
+      <p>It may have already been used, or the URL is incomplete. Try signing in to continue.</p>
+      <div class="verify-actions">
+        <a href="/login/" class="btn btn-teal btn-lg">Sign in</a>
+        <a href="/register/" class="btn btn-ghost btn-lg">Create an account</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+function showState(name){
+  document.querySelectorAll('.state').forEach(s=>s.classList.remove('active'));
+  const el = document.getElementById('state-' + name);
+  if(el) el.classList.add('active');
+}
+
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+async function verifyToken(token){
+  try{
+    const r = await fetch('/api/auth/verify-email', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({token}),
+    });
+    const data = await r.json().catch(()=>({}));
+    if(r.ok && data.verified){
+      showState('success');
+      // Redirect into the onboarding flow. The /onboarding/ view itself
+      // will bounce the user to /dashboard/ if they're already onboarded.
+      setTimeout(()=>{ window.location.replace('/onboarding/'); }, 1000);
+      return;
+    }
+    if(data.error === 'expired'){
+      showState('expired');
+      return;
+    }
+    showState('invalid');
+  }catch(_e){
+    showState('invalid');
+  }
+}
+
+async function resendFromExpired(){
+  const btn = document.getElementById('resend-btn');
+  const input = document.getElementById('resend-email');
+  const email = (input.value || '').trim();
+  if(!email){
+    showToast('Enter your email first', true);
+    input.focus();
+    return;
+  }
+  btn.disabled = true;
+  const original = btn.textContent;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+  try{
+    const r = await fetch('/api/auth/resend-verification', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({email}),
+    });
+    if(!r.ok) throw new Error('send failed');
+    showToast('If that email is registered, a new link has been sent');
+    input.value = '';
+  }catch(_e){
+    showToast('Could not send right now. Try again in a moment.', true);
+  }finally{
+    btn.disabled = false;
+    btn.textContent = original;
+  }
+}
+
+document.getElementById('resend-btn').addEventListener('click', resendFromExpired);
+document.getElementById('resend-email').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){ e.preventDefault(); resendFromExpired(); }
+});
+
+const token = new URLSearchParams(window.location.search).get('token');
+if(!token){
+  showState('invalid');
+}else{
+  verifyToken(token);
+}
+</script>
+</body>
+</html>

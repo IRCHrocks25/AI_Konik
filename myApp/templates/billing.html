@@ -102,6 +102,16 @@
   .current-plan-banner{flex-wrap:wrap}
 }
 </style>
+<script>
+/* Phase B email-verification + onboarding gate. Runs before page bootstrap. */
+(function(){
+  fetch('/api/auth/me',{credentials:'same-origin'}).then(function(r){return r.json();}).then(function(d){
+    if(!d||!d.authenticated)return;
+    if(!d.email_verified){window.location.replace('/verify-email-required/');}
+    else if(!d.onboarding_completed){window.location.replace('/onboarding/');}
+  }).catch(function(){});
+})();
+</script>
 </head>
 <body class="dark-app">
 <nav>

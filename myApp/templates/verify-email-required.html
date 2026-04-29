@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verify your email — AI KONIK</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+<style>
+.verify-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--bg)}
+.verify-card{max-width:480px;width:100%;background:var(--card);border:1px solid var(--border);border-radius:16px;padding:40px 36px;text-align:center;box-shadow:0 12px 32px rgba(0,0,0,.06)}
+.verify-icon{width:72px;height:72px;border-radius:50%;background:var(--teal-light);color:var(--teal);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 20px}
+.verify-card h1{font-family:'DM Serif Display',serif;font-size:26px;color:var(--ink);margin-bottom:10px}
+.verify-card p{font-size:14px;color:var(--slate);line-height:1.6;margin-bottom:8px}
+.verify-card .email-line{color:var(--ink);font-weight:600;word-break:break-all}
+.verify-actions{display:flex;flex-direction:column;gap:10px;margin-top:24px}
+.verify-actions .btn{justify-content:center;width:100%}
+.tiny-link{display:inline-block;font-size:12px;color:var(--slate2);margin-top:18px;text-decoration:underline;cursor:pointer;background:none;border:none}
+.tiny-link:hover{color:var(--ink)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120%);background:var(--ink);color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:transform .25s ease;z-index:1000;max-width:360px;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.error{background:var(--red,#dc2626)}
+</style>
+</head>
+<body>
+<div class="verify-wrap">
+  <div class="verify-card">
+    <div class="verify-icon"><i class="fa-solid fa-envelope-circle-check"></i></div>
+    <h1>Check your email</h1>
+    <p>We sent a verification link to</p>
+    <p class="email-line" id="user-email">your inbox</p>
+    <p style="margin-top:12px">Click the link to activate your account. The link expires in 72&nbsp;hours.</p>
+    <div class="verify-actions">
+      <button type="button" class="btn btn-teal btn-lg" id="resend-btn">Resend email</button>
+      <button type="button" class="btn btn-ghost btn-lg" id="refresh-btn">Already verified? Refresh</button>
+    </div>
+    <button type="button" class="tiny-link" id="signout-link">Wrong email? Sign out and re-register</button>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+let userEmail = '';
+const RESEND_COOLDOWN_MS = 30000;
+let resendArmedAt = 0;
+
+function showToast(msg, isError){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+async function loadMe(){
+  // Right after registration the user has no session (we don't auto-login).
+  // register.html stashes the email in sessionStorage so we can still
+  // show "we sent a link to <email>" and power the resend button.
+  const pending = (typeof sessionStorage !== 'undefined' && sessionStorage.getItem('pendingEmail')) || '';
+  try{
+    const r = await fetch('/api/auth/me', {credentials:'same-origin'});
+    const d = await r.json();
+    if(d && d.authenticated){
+      if(d.email_verified){
+        // Already verified — route forward.
+        window.location.replace(d.onboarding_completed ? '/dashboard/' : '/onboarding/');
+        return;
+      }
+      userEmail = d.email || pending || '';
+    }else{
+      userEmail = pending;
+    }
+  }catch(_e){
+    userEmail = pending;
+  }
+  document.getElementById('user-email').textContent = userEmail || 'your inbox';
+}
+
+async function doResend(){
+  const btn = document.getElementById('resend-btn');
+  if(!userEmail){
+    showToast('Could not detect your email — try refresh', true);
+    return;
+  }
+  const now = Date.now();
+  if(now - resendArmedAt < RESEND_COOLDOWN_MS){
+    const left = Math.ceil((RESEND_COOLDOWN_MS - (now - resendArmedAt))/1000);
+    showToast(`Please wait ${left}s before resending`, true);
+    return;
+  }
+  btn.disabled = true;
+  const original = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+  try{
+    const r = await fetch('/api/auth/resend-verification', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({email:userEmail}),
+    });
+    if(!r.ok) throw new Error('send failed');
+    resendArmedAt = Date.now();
+    showToast('Email sent — check your inbox');
+    // Keep button disabled for the cooldown window.
+    setTimeout(()=>{ btn.disabled = false; btn.innerHTML = original; }, RESEND_COOLDOWN_MS);
+    return;
+  }catch(_e){
+    showToast('Could not send right now. Try again in a moment.', true);
+    btn.disabled = false;
+    btn.innerHTML = original;
+  }
+}
+
+document.getElementById('resend-btn').addEventListener('click', doResend);
+document.getElementById('refresh-btn').addEventListener('click', ()=>window.location.reload());
+document.getElementById('signout-link').addEventListener('click', async ()=>{
+  try{
+    await fetch('/api/auth/logout', {method:'POST', credentials:'same-origin'});
+  }catch(_e){}
+  window.location.replace('/register/');
+});
+
+loadMe();
+</script>
+</body>
+</html>
