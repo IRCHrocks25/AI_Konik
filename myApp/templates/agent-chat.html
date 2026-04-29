@@ -128,6 +128,53 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
 .msg-wrap.user{align-self:flex-end;align-items:flex-end}
 .msg-wrap.agent{align-self:flex-start;align-items:flex-start}
 .msg-bubble{padding:13px 16px;border-radius:16px;font-size:14px;line-height:1.65}
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3,.msg-bubble h4{
+  margin:0 0 8px;
+  line-height:1.3;
+  color:#fff;
+}
+.msg-bubble h1{font-size:20px}
+.msg-bubble h2{font-size:18px}
+.msg-bubble h3{font-size:16px}
+.msg-bubble h4{font-size:15px}
+.msg-bubble p{margin:0 0 10px}
+.msg-bubble p:last-child{margin-bottom:0}
+.msg-bubble ul,.msg-bubble ol{margin:0 0 10px 18px;padding:0}
+.msg-bubble li{margin:0 0 4px}
+.msg-bubble pre{
+  margin:8px 0 10px;
+  padding:10px 12px;
+  border-radius:10px;
+  overflow:auto;
+  background:rgba(2,6,23,.55);
+  border:1px solid rgba(255,255,255,.2);
+}
+.msg-bubble code{
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.9em;
+}
+.msg-bubble :not(pre)>code{
+  padding:1px 6px;
+  border-radius:6px;
+  background:rgba(255,255,255,.16);
+}
+.msg-bubble table{
+  width:100%;
+  border-collapse:collapse;
+  margin:8px 0 10px;
+  font-size:13px;
+}
+.msg-bubble th,.msg-bubble td{
+  border:1px solid rgba(255,255,255,.22);
+  padding:7px 8px;
+  text-align:left;
+}
+.msg-bubble th{background:rgba(255,255,255,.14)}
+.msg-bubble hr{
+  border:none;
+  border-top:1px solid rgba(255,255,255,.24);
+  margin:10px 0;
+}
 .msg-wrap.user .msg-bubble{
   background:linear-gradient(135deg,#6366f1,#4f46e5);
   color:#fff;border-radius:16px 16px 5px 16px;box-shadow:0 8px 20px rgba(79,70,229,.3);
@@ -144,14 +191,31 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
 .msg-action-btn:hover{background:rgba(255,255,255,.2)}
 .msg-time{font-size:10px;color:rgba(255,255,255,.62)}
 .typing-indicator{
-  display:flex;align-items:center;gap:8px;padding:12px 16px;background:rgba(255,255,255,.14);
-  border:1px solid rgba(255,255,255,.22);border-radius:16px 16px 16px 5px;width:fit-content;
+  display:flex;align-items:center;gap:10px;padding:12px 16px;
+  background:linear-gradient(135deg,rgba(139,92,246,.35),rgba(45,212,191,.22));
+  border:1px solid rgba(196,181,253,.85);border-radius:16px 16px 16px 5px;width:fit-content;
+  box-shadow:0 8px 20px rgba(76,29,149,.3), inset 0 0 0 1px rgba(255,255,255,.14);
+  animation:typingPulse 1.6s ease-in-out infinite;
 }
-.typing-dots{display:flex;gap:3px}
-.typing-dots span{width:6px;height:6px;background:rgba(255,255,255,.75);border-radius:50%;animation:bounce .8s infinite}
+.typing-dots{display:flex;gap:5px;align-items:center}
+.typing-dots span{
+  width:8px;height:8px;background:#fff;border-radius:50%;
+  box-shadow:0 0 0 3px rgba(255,255,255,.2);
+  animation:bounce .8s infinite;
+}
 .typing-dots span:nth-child(2){animation-delay:.15s}
 .typing-dots span:nth-child(3){animation-delay:.3s}
+.typing-label{
+  font-size:12px;
+  font-weight:600;
+  letter-spacing:.02em;
+  color:rgba(255,255,255,.96);
+}
 @keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+@keyframes typingPulse{
+  0%,100%{box-shadow:0 8px 20px rgba(76,29,149,.3), inset 0 0 0 1px rgba(255,255,255,.14)}
+  50%{box-shadow:0 10px 26px rgba(45,212,191,.36), inset 0 0 0 1px rgba(255,255,255,.24)}
+}
 
 .chat-input-area{border-top:1px solid rgba(255,255,255,.2);padding:14px 18px}
 .chat-input-wrap{
@@ -191,6 +255,52 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
 .use-case:hover{background:rgba(255,255,255,.22)}
 .token-bar{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:12px;font-size:12px;color:rgba(255,255,255,.78)}
 .token-count{font-size:18px;font-weight:600;color:#fff;display:block;margin-bottom:2px}
+.agent-picker-overlay{
+  position:fixed;inset:0;background:rgba(2,6,23,.58);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;z-index:1200;padding:20px;
+}
+.agent-picker-overlay.open{display:flex}
+.agent-picker{
+  width:min(960px,100%);max-height:min(80vh,760px);overflow:hidden;display:flex;flex-direction:column;
+  border:1px solid rgba(255,255,255,.26);border-radius:18px;background:linear-gradient(150deg, rgba(255,255,255,.22), rgba(255,255,255,.08));
+  box-shadow:0 16px 44px rgba(0,0,0,.35);
+}
+.agent-picker-head{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;
+  border-bottom:1px solid rgba(255,255,255,.2);
+}
+.agent-picker-title{font-size:17px;font-weight:600;color:#fff}
+.agent-picker-sub{font-size:12px;color:rgba(255,255,255,.76);margin-top:3px}
+.agent-picker-close{
+  width:34px;height:34px;border:none;border-radius:10px;cursor:pointer;color:#fff;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+}
+.agent-picker-close:hover{background:rgba(255,255,255,.22)}
+.agent-picker-grid{
+  padding:16px;overflow:auto;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;
+}
+.agent-pick-card{
+  border:1px solid rgba(255,255,255,.24);border-radius:14px;padding:14px;background:rgba(255,255,255,.1);
+  display:flex;flex-direction:column;gap:10px;min-height:160px;
+}
+.agent-pick-top{display:flex;align-items:center;gap:10px}
+.agent-pick-icon{
+  width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff
+}
+.agent-pick-name{font-size:14px;color:#fff;font-weight:600;line-height:1.3}
+.agent-pick-meta{font-size:11px;color:rgba(255,255,255,.72)}
+.agent-online{
+  margin-left:auto;display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#86efac;font-weight:600
+}
+.agent-online-dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.2)}
+.agent-pick-btn{
+  margin-top:auto;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.14);color:#fff;
+  border-radius:10px;padding:9px 10px;font-size:12px;font-weight:600;cursor:pointer
+}
+.agent-pick-btn:hover{background:rgba(139,92,246,.35);border-color:rgba(196,181,253,.8)}
+.agent-picker-empty{
+  grid-column:1/-1;padding:24px;border:1px dashed rgba(255,255,255,.3);border-radius:12px;color:rgba(255,255,255,.8);text-align:center;font-size:13px;
+}
 @media(max-width:1180px){
   .chat-shell{grid-template-columns:260px minmax(0,1fr)}
   .agent-info-panel{display:none}
@@ -201,6 +311,7 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
   .chat-messages{padding:16px}
   .chat-header{padding:12px 14px}
   .chat-input-area{padding:12px}
+  .agent-picker-grid{grid-template-columns:1fr}
 }
 </style>
 <script>
@@ -225,6 +336,7 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
     <div class="nav-links">
       <a href="{% url 'agents' %}" class="active">Agents</a>
       <a href="{% url 'prompts' %}">Prompts</a>
+      <a href="{% url 'dashboard' %}">Dashboard</a>
       <a href="{% url 'industries' %}">Industries</a>
       <a href="{% url 'events' %}">Events</a>
       <a href="{% url 'tools' %}">Tools</a>
@@ -241,7 +353,7 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
   <div class="session-sidebar">
     <div class="session-header">
       <h3>My Sessions</h3>
-      <button class="new-chat-btn" onclick="newChat()"><i class="fa-solid fa-plus"></i> New Chat</button>
+      <button class="new-chat-btn" onclick="openAgentPicker()"><i class="fa-solid fa-plus"></i> New Chat</button>
     </div>
     <div class="session-list">
       <div class="session-item active">
@@ -312,6 +424,22 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
     </div>
   </div>
 </div>
+<div class="agent-picker-overlay" id="agent-picker-overlay" aria-hidden="true">
+  <div class="agent-picker">
+    <div class="agent-picker-head">
+      <div>
+        <div class="agent-picker-title">Choose who you want to chat with</div>
+        <div class="agent-picker-sub">All listed agents are available now.</div>
+      </div>
+      <button type="button" class="agent-picker-close" id="agent-picker-close" aria-label="Close">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+    <div class="agent-picker-grid" id="agent-picker-grid">
+      <div class="agent-picker-empty">Loading agents...</div>
+    </div>
+  </div>
+</div>
 
 <script>
 let currentSessionId = null;
@@ -320,6 +448,7 @@ let tokens = 0;
 let currentAgentName = "Contract Review Agent";
 let currentIndustry = "legal";
 let sessionsById = {};
+let availableAgents = [];
 const AGENT_CONFIG = {
   "Contract Review Agent": {
     icon: "fa-scale-balanced",
@@ -546,6 +675,19 @@ async function hydrateAgentConfigFromApi(){
     // Keep existing static fallback config when API is unavailable.
   }
 }
+function sanitizeImportedPromptText(text){
+  const raw = String(text || "");
+  return raw
+    .replace(
+      /\s*\[((?:(?:Difficulty|Use Case Type|Estimated Time Saved|Tags):[^\]]+)(?:\s*\|\s*(?:Difficulty|Use Case Type|Estimated Time Saved|Tags):[^\]]+)*)\]\s*$/i,
+      ""
+    )
+    .trim();
+}
+function escapeHtml(s){
+  return String(s || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
 const urlParams = new URLSearchParams(window.location.search);
 const forceNewChat = urlParams.get('new') === '1';
 const selectedIndustry = urlParams.get('industry') || 'legal';
@@ -560,9 +702,23 @@ const selectedAgentName = urlParams.get('agent') || {
   logistics: "Supply Chain Agent",
   manufacturing: "QA Analysis Agent",
 }[selectedIndustry] || 'Contract Review Agent';
-const incomingPrompt = urlParams.get('prompt') || '';
+const incomingPrompt = sanitizeImportedPromptText(urlParams.get('prompt') || '');
 const incomingPromptTitle = urlParams.get('promptTitle') || '';
 let preloaderHidden = false;
+
+function clearOneTimeChatParams(){
+  const url = new URL(window.location.href);
+  let changed = false;
+  ['new', 'prompt', 'promptTitle'].forEach((key)=>{
+    if(url.searchParams.has(key)){
+      url.searchParams.delete(key);
+      changed = true;
+    }
+  });
+  if(!changed) return;
+  const next = url.pathname + (url.searchParams.toString() ? ('?' + url.searchParams.toString()) : '') + url.hash;
+  window.history.replaceState({}, '', next);
+}
 
 function hidePreloader(){
   if(preloaderHidden) return;
@@ -582,6 +738,84 @@ function getAgentConfig(agentName, industry){
   if (INDUSTRY_CONFIG[industryKey]) return INDUSTRY_CONFIG[industryKey];
   return INDUSTRY_CONFIG.legal;
 }
+function normalizeAgentRecord(agent){
+  const industry = (agent.industry || 'legal').toLowerCase();
+  const cfg = getAgentConfig(agent.name || '', industry);
+  const icon = /^fa-[a-z0-9-]+$/i.test(agent.icon_class || '') ? agent.icon_class : (cfg.icon || 'fa-robot');
+  return {
+    name: agent.name || 'AI Agent',
+    industry,
+    industryLabel: cfg.industryLabel || titleCase(industry),
+    tag: agent.tag || cfg.tag || 'Specialized Agent',
+    icon,
+  };
+}
+async function loadAvailableAgents(){
+  try{
+    const r = await fetch('/api/agents',{credentials:'same-origin'});
+    const data = await r.json();
+    if(r.ok && Array.isArray(data.items) && data.items.length){
+      availableAgents = data.items.map(normalizeAgentRecord);
+      return;
+    }
+  }catch(_e){}
+  if(!availableAgents.length){
+    availableAgents = Object.keys(AGENT_CONFIG).map((name)=>normalizeAgentRecord({
+      name,
+      industry: selectedIndustry,
+      icon_class: AGENT_CONFIG[name]?.icon,
+      tag: AGENT_CONFIG[name]?.tag,
+    }));
+  }
+}
+function renderAgentPicker(){
+  const grid = document.getElementById('agent-picker-grid');
+  if(!grid) return;
+  if(!availableAgents.length){
+    grid.innerHTML = '<div class="agent-picker-empty">No agents available right now. Please try again.</div>';
+    return;
+  }
+  grid.innerHTML = availableAgents.map((a)=>(
+    `<div class="agent-pick-card">
+      <div class="agent-pick-top">
+        <div class="agent-pick-icon"><i class="fa-solid ${escapeHtml(a.icon)}"></i></div>
+        <div>
+          <div class="agent-pick-name">${escapeHtml(a.name)}</div>
+          <div class="agent-pick-meta">${escapeHtml(a.industryLabel)} · ${escapeHtml(a.tag)}</div>
+        </div>
+        <span class="agent-online"><span class="agent-online-dot"></span>Online</span>
+      </div>
+      <button type="button" class="agent-pick-btn" data-agent-name="${escapeHtml(a.name)}" data-agent-industry="${escapeHtml(a.industry)}">
+        Talk to agent <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>`
+  )).join('');
+  grid.querySelectorAll('.agent-pick-btn').forEach((btn)=>{
+    btn.addEventListener('click', ()=>{
+      closeAgentPicker();
+      newChat({
+        agent_name: btn.getAttribute('data-agent-name') || selectedAgentName,
+        industry: btn.getAttribute('data-agent-industry') || selectedIndustry,
+      });
+    });
+  });
+}
+async function openAgentPicker(){
+  const overlay = document.getElementById('agent-picker-overlay');
+  const grid = document.getElementById('agent-picker-grid');
+  if(!overlay || !grid) return;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden','false');
+  grid.innerHTML = '<div class="agent-picker-empty">Loading agents...</div>';
+  await loadAvailableAgents();
+  renderAgentPicker();
+}
+function closeAgentPicker(){
+  const overlay = document.getElementById('agent-picker-overlay');
+  if(!overlay) return;
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden','true');
+}
 
 function updateAgentUI(agentName, industry){
   currentAgentName = agentName || currentAgentName || "Contract Review Agent";
@@ -594,25 +828,36 @@ function updateAgentUI(agentName, industry){
   const infoIndustryEl = document.getElementById('info-industry');
   const infoTagEl = document.getElementById('info-tag');
   const displayIndustry = cfg.industryLabel || titleCase(currentIndustry);
-  if(agentEmojiEl) agentEmojiEl.innerHTML = `<i class="fa-solid ${cfg.icon}"></i>`;
+  const safeIcon = /^fa-[a-z0-9-]+$/i.test(cfg.icon || '') ? cfg.icon : 'fa-robot';
+  if(agentEmojiEl) agentEmojiEl.innerHTML = `<i class="fa-solid ${safeIcon}"></i>`;
   if(agentNameEl) agentNameEl.textContent = currentAgentName;
   if(agentSubEl) agentSubEl.textContent = `${displayIndustry} · ${cfg.tag || "Specialized Agent"}`;
-  if(infoTitleEl) infoTitleEl.innerHTML = `<i class="fa-solid ${cfg.icon}"></i> ${currentAgentName}`;
+  if(infoTitleEl) infoTitleEl.innerHTML = `<i class="fa-solid ${safeIcon}"></i> ${currentAgentName}`;
   if(infoIndustryEl) infoIndustryEl.textContent = displayIndustry;
   if(infoTagEl) infoTagEl.textContent = cfg.tag || "Specialized";
 
   const hintsEl = document.getElementById("hints");
   if (hintsEl) {
-    hintsEl.innerHTML = (cfg.hints || []).map((hint) => (
-      `<div class="chat-hint" onclick="fillInput('${hint.replace(/'/g, "\\'")}')">${hint}</div>`
-    )).join("");
+    hintsEl.innerHTML = "";
+    (cfg.hints || []).forEach((hint) => {
+      const item = document.createElement("div");
+      item.className = "chat-hint";
+      item.textContent = hint;
+      item.addEventListener("click", () => fillInput(hint));
+      hintsEl.appendChild(item);
+    });
   }
 
   const useCasesEl = document.getElementById("use-cases-list");
   if (useCasesEl) {
-    useCasesEl.innerHTML = (cfg.useCases || []).map((uc) => (
-      `<div class="use-case" onclick="fillInput('${uc.replace(/'/g, "\\'")}')">${uc}</div>`
-    )).join("");
+    useCasesEl.innerHTML = "";
+    (cfg.useCases || []).forEach((uc) => {
+      const item = document.createElement("div");
+      item.className = "use-case";
+      item.textContent = uc;
+      item.addEventListener("click", () => fillInput(uc));
+      useCasesEl.appendChild(item);
+    });
   }
 }
 
@@ -620,13 +865,149 @@ function getTime() {
   return new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
 }
 
+function renderMessageContent(rawContent){
+  const src = String(rawContent || '').replace(/\r\n/g, '\n');
+  const lines = src.split('\n');
+  const out = [];
+  let inCodeBlock = false;
+  let inUl = false;
+  let inOl = false;
+  let inTable = false;
+  let tableBodyOpen = false;
+
+  function closeLists(){
+    if(inUl){ out.push('</ul>'); inUl = false; }
+    if(inOl){ out.push('</ol>'); inOl = false; }
+  }
+  function closeTable(){
+    if(inTable){
+      if(tableBodyOpen) out.push('</tbody>');
+      out.push('</table>');
+      inTable = false;
+      tableBodyOpen = false;
+    }
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+  function inline(s){
+    const e = esc(s);
+    return e
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+  }
+  function splitTableCells(line){
+    const trimmed = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+    return trimmed.split('|').map(c => c.trim());
+  }
+
+  for(let i = 0; i < lines.length; i++){
+    const line = lines[i];
+    const t = line.trim();
+
+    if(t.startsWith('```')){
+      closeLists();
+      closeTable();
+      if(!inCodeBlock){
+        inCodeBlock = true;
+        out.push('<pre><code>');
+      }else{
+        inCodeBlock = false;
+        out.push('</code></pre>');
+      }
+      continue;
+    }
+    if(inCodeBlock){
+      out.push(esc(line) + '\n');
+      continue;
+    }
+
+    if(!t){
+      closeLists();
+      closeTable();
+      continue;
+    }
+
+    if(/^---+$/.test(t)){
+      closeLists();
+      closeTable();
+      out.push('<hr>');
+      continue;
+    }
+
+    if(/^#{1,4}\s+/.test(t)){
+      closeLists();
+      closeTable();
+      const level = Math.min(4, (t.match(/^#+/) || ['#'])[0].length);
+      out.push(`<h${level}>${inline(t.replace(/^#{1,4}\s+/, ''))}</h${level}>`);
+      continue;
+    }
+
+    if(/^\|\s*.+\s*\|$/.test(t)){
+      closeLists();
+      const cells = splitTableCells(t);
+      const next = (lines[i + 1] || '').trim();
+      const isHeader = /^\|?[\s:-]+\|[\s|:-]*$/.test(next);
+      if(!inTable){
+        inTable = true;
+        out.push('<table>');
+      }
+      if(isHeader){
+        if(tableBodyOpen){
+          out.push('</tbody>');
+          tableBodyOpen = false;
+        }
+        out.push('<thead><tr>' + cells.map(c => `<th>${inline(c)}</th>`).join('') + '</tr></thead><tbody>');
+        tableBodyOpen = true;
+        i += 1;
+      }else{
+        if(!tableBodyOpen){
+          out.push('<tbody>');
+          tableBodyOpen = true;
+        }
+        out.push('<tr>' + cells.map(c => `<td>${inline(c)}</td>`).join('') + '</tr>');
+      }
+      continue;
+    }
+
+    const ulMatch = t.match(/^[-*]\s+(.+)/);
+    if(ulMatch){
+      closeTable();
+      if(!inUl){ closeLists(); inUl = true; out.push('<ul>'); }
+      out.push(`<li>${inline(ulMatch[1])}</li>`);
+      continue;
+    }
+
+    const olMatch = t.match(/^\d+\.\s+(.+)/);
+    if(olMatch){
+      closeTable();
+      if(!inOl){ closeLists(); inOl = true; out.push('<ol>'); }
+      out.push(`<li>${inline(olMatch[1])}</li>`);
+      continue;
+    }
+
+    closeLists();
+    closeTable();
+    out.push(`<p>${inline(t)}</p>`);
+  }
+
+  closeLists();
+  closeTable();
+  if(inCodeBlock){ out.push('</code></pre>'); }
+  return out.join('');
+}
+
 function addMessage(content, role, messageId=null) {
   const wrap = document.createElement('div');
   wrap.className = `msg-wrap ${role}`;
   const isAgent = role === 'agent';
   const actionsHtml = isAgent ? `<div class="msg-actions"><button class="msg-action-btn" onclick="copyMsg(this)">Copy</button><button class="msg-action-btn" onclick="sendFeedback(${messageId || 'null'},'up')">👍</button><button class="msg-action-btn" onclick="sendFeedback(${messageId || 'null'},'down')">👎</button></div>` : '';
+  const renderedContent = role === 'agent'
+    ? renderMessageContent(content)
+    : String(content || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])).replace(/\n/g,'<br>');
   wrap.innerHTML = `
-    <div class="msg-bubble">${content.replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>
+    <div class="msg-bubble">${renderedContent}</div>
     ${actionsHtml}
     <div class="msg-time">${getTime()}</div>
   `;
@@ -640,7 +1021,7 @@ function showTyping() {
   const el = document.createElement('div');
   el.className = 'msg-wrap agent';
   el.id = 'typing-indicator';
-  el.innerHTML = `<div class="typing-indicator"><div class="typing-dots"><span></span><span></span><span></span></div><span style="font-size:12px;color:var(--slate)">Agent is thinking...</span></div>`;
+  el.innerHTML = `<div class="typing-indicator"><div class="typing-dots"><span></span><span></span><span></span></div><span class="typing-label">AI is typing...</span></div>`;
   document.getElementById('chat-messages').appendChild(el);
   el.scrollIntoView({behavior:'smooth'});
 }
@@ -982,6 +1363,8 @@ fetch('/api/auth/me',{credentials:'same-origin'})
     applyActiveBanners();
     await hydrateAgentConfigFromApi();
     if(forceNewChat){
+      // Prevent refresh from repeatedly creating a brand-new chat.
+      clearOneTimeChatParams();
       newChat({
         agent_name:selectedAgentName,
         industry:selectedIndustry,
@@ -996,6 +1379,13 @@ fetch('/api/auth/me',{credentials:'same-origin'})
 document.getElementById('chat-file-input').addEventListener('change',(e)=>{
   const file = e.target.files && e.target.files[0];
   if(file) uploadChatFile(file);
+});
+document.getElementById('agent-picker-close').addEventListener('click', closeAgentPicker);
+document.getElementById('agent-picker-overlay').addEventListener('click',(e)=>{
+  if(e.target.id === 'agent-picker-overlay') closeAgentPicker();
+});
+document.addEventListener('keydown',(e)=>{
+  if(e.key === 'Escape') closeAgentPicker();
 });
 </script>
 </body>
