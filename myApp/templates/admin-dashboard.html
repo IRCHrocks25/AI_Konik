@@ -350,7 +350,18 @@ textarea.ud-inp{resize:vertical;min-height:70px;line-height:1.6}
 .agents-table tr:last-child td{border-bottom:none}
 .agents-table tbody tr{cursor:pointer;transition:background .13s}
 .agents-table tbody tr:hover{background:rgba(255,255,255,.06)}
-.agent-icon-cell{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1e1b2e;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
+.agent-icon-cell{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#1e1b2e;flex-shrink:0;border:1px solid rgba(255,255,255,.15);overflow:hidden}
+.agent-icon-cell-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.ae-avatar-frame{width:96px;height:96px;border-radius:18px;border:1px solid rgba(255,255,255,.2);overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.06);font-size:32px;color:rgba(255,255,255,.5);flex-shrink:0}
+.ae-avatar-frame img{width:100%;height:100%;object-fit:cover;display:block}
+.ae-avatar-row{display:flex;align-items:center;gap:14px}
+.ae-avatar-actions{display:flex;flex-direction:column;gap:6px;min-width:0;flex:1}
+.ae-avatar-btn{appearance:none;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.06);color:#fff;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.ae-avatar-btn:hover{background:rgba(255,255,255,.12)}
+.ae-avatar-btn:disabled{opacity:.55;cursor:not-allowed}
+.ae-avatar-hint{font-size:11px;color:rgba(255,255,255,.5);line-height:1.45}
+.ae-pcard-icon-wrap.has-avatar{padding:0;overflow:hidden;background:transparent}
+.ae-pcard-icon-wrap.has-avatar img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
 .agent-name-cell{font-weight:600;color:#fff;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .spill-on{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(16,185,129,.2);color:#34d399;border:1px solid rgba(16,185,129,.3)}
 .spill-off{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:rgba(255,255,255,.06);color:rgba(255,255,255,.42);border:1px solid rgba(255,255,255,.12)}
@@ -2816,8 +2827,11 @@ function agentsRenderRow(a) {
     : '<span class="spill-off"><i class="fa-solid fa-pause" style="font-size:9px"></i> Inactive</span>';
   const accent = escHtml(a.accent_bg || '#EEF2FF');
   const icon = escHtml(a.icon_class || 'fa-robot');
+  const visual = a.avatar_url
+    ? `<img src="${escHtml(a.avatar_url)}" alt="" class="agent-icon-cell-img">`
+    : `<i class="fa-solid ${icon}"></i>`;
   return `<tr onclick="agentsOpenEdit(${a.id})" title="Edit agent #${a.id}">
-    <td><div class="agent-icon-cell" style="background:${accent}"><i class="fa-solid ${icon}"></i></div></td>
+    <td><div class="agent-icon-cell" style="background:${accent}">${visual}</div></td>
     <td><div class="agent-name-cell" title="${escHtml(a.name)}">${escHtml(a.name)}</div></td>
     <td>${escHtml(agentsTitleCase(a.industry))}</td>
     <td>${escHtml(a.tag || '—')}</td>
@@ -2970,8 +2984,10 @@ let aeHints = [];
 let aeUseCases = [];
 let aeIconClass = 'fa-robot';
 let aeAccentBg = '#EEF2FF';
+let aeAvatarUrl = '';
 let aeSaving = false;
 let aeGenerating = false;
+let aeRegeneratingAvatar = false;
 
 let _industriesCache = [];
 let _industriesFetch = null;
@@ -3006,8 +3022,10 @@ async function agentEditMount(params) {
   aeUseCases = [];
   aeIconClass = 'fa-robot';
   aeAccentBg = '#EEF2FF';
+  aeAvatarUrl = '';
   aeSaving = false;
   aeGenerating = false;
+  aeRegeneratingAvatar = false;
 
   const el = document.getElementById('agent-edit-content');
   if (!el) return;
@@ -3063,6 +3081,7 @@ async function agentEditMount(params) {
 
   aeIconClass = agentData.icon_class || 'fa-robot';
   aeAccentBg = agentData.accent_bg || '#EEF2FF';
+  aeAvatarUrl = agentData.avatar_url || '';
   aeHints = (agentData.hints || []).map(h => h.content || h);
   aeUseCases = (agentData.use_cases || []).map(u => u.content || u);
   await loadIndustries();
@@ -3142,7 +3161,23 @@ function aeRenderFull(agentData) {
         '<div class="ae-card">' +
           '<div class="ae-card-title">Appearance</div>' +
           '<div class="ae-field">' +
-            '<label class="ae-label">Icon</label>' +
+            '<label class="ae-label">Avatar</label>' +
+            '<div class="ae-avatar-row">' +
+              '<div class="ae-avatar-frame" id="ae-avatar-frame">' +
+                (aeAvatarUrl
+                  ? '<img src="' + escHtml(aeAvatarUrl) + '" alt="Agent avatar">'
+                  : '<i class="fa-solid fa-user-astronaut"></i>') +
+              '</div>' +
+              '<div class="ae-avatar-actions">' +
+                (aeIsCreate
+                  ? '<div class="ae-avatar-hint">An illustrated portrait will be generated automatically when you save this new agent.</div>'
+                  : '<button class="ae-avatar-btn" id="ae-avatar-regen-btn" type="button"><i class="fa-solid fa-wand-magic-sparkles"></i> ' + (aeAvatarUrl ? 'Regenerate avatar' : 'Generate avatar') + '</button>' +
+                    '<div class="ae-avatar-hint">Falls back to the icon below if generation fails. Re-rolling overwrites the stored portrait.</div>') +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div class="ae-field">' +
+            '<label class="ae-label">Icon (fallback)</label>' +
             '<button class="ae-icon-btn" id="ae-icon-btn" type="button">' +
               '<i class="fa-solid ' + escHtml(aeIconClass) + ' ae-icon-preview" id="ae-icon-preview-i" style="font-size:14px"></i>' +
               '<span id="ae-icon-class-label">' + escHtml(aeIconClass) + '</span>' +
@@ -3311,10 +3346,12 @@ function aeUpdatePreview() {
     ? '<div class="ae-pcard-hints">' + aeHints.slice(0,2).map(h => '<div class="ae-pcard-hint" style="color:' + textColor + '">' + escHtml((h || '').slice(0,60)) + '</div>').join('') + '</div>'
     : '';
 
+  const iconWrapHtml = aeAvatarUrl
+    ? '<div class="ae-pcard-icon-wrap has-avatar"><img src="' + escHtml(aeAvatarUrl) + '" alt="Agent avatar"></div>'
+    : '<div class="ae-pcard-icon-wrap" style="color:' + textColor + '"><i class="fa-solid ' + escHtml(aeIconClass) + '"></i></div>';
+
   card.innerHTML = (
-    '<div class="ae-pcard-icon-wrap" style="color:' + textColor + '">' +
-      '<i class="fa-solid ' + escHtml(aeIconClass) + '"></i>' +
-    '</div>' +
+    iconWrapHtml +
     pillsHtml +
     '<div class="ae-pcard-name" style="color:' + textColor + '">' + escHtml(name) + '</div>' +
     (desc ? '<div class="ae-pcard-desc" style="color:' + textColor + ';opacity:.75">' + escHtml(desc) + '</div>' : '') +
@@ -3330,6 +3367,55 @@ function aeRefreshIconBtn() {
   const lbl = document.getElementById('ae-icon-class-label');
   if (i) i.className = 'fa-solid ' + aeIconClass + ' ae-icon-preview';
   if (lbl) lbl.textContent = aeIconClass;
+}
+
+function aeRefreshAvatarFrame() {
+  const frame = document.getElementById('ae-avatar-frame');
+  if (frame) {
+    frame.innerHTML = aeAvatarUrl
+      ? '<img src="' + escHtml(aeAvatarUrl) + '" alt="Agent avatar">'
+      : '<i class="fa-solid fa-user-astronaut"></i>';
+  }
+  const btn = document.getElementById('ae-avatar-regen-btn');
+  if (btn && !aeRegeneratingAvatar) {
+    btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> ' + (aeAvatarUrl ? 'Regenerate avatar' : 'Generate avatar');
+  }
+}
+
+async function aeRegenerateAvatar() {
+  if (aeRegeneratingAvatar) return;
+  if (aeIsCreate || !aeAgentId) {
+    udToast('Save the agent first, then a portrait will be generated automatically.', 'info');
+    return;
+  }
+  aeRegeneratingAvatar = true;
+  const btn = document.getElementById('ae-avatar-regen-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating…';
+  }
+  try {
+    const r = await fetch('/api/admin/agents/' + aeAgentId + '/regenerate-avatar', {
+      method: 'POST',
+      credentials: 'same-origin',
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      udToast(data.error || 'Avatar generation failed.', 'error');
+      return;
+    }
+    aeAvatarUrl = data.avatar_url || '';
+    agentsAllItems = [];  // bust list cache so the row reflects the new image
+    udToast('Avatar regenerated.', 'success');
+    aeRefreshAvatarFrame();
+    aeUpdatePreview();
+  } catch(e) {
+    udToast('Avatar generation request failed.', 'error');
+  } finally {
+    aeRegeneratingAvatar = false;
+    if (btn) btn.disabled = false;
+    aeRefreshAvatarFrame();
+  }
 }
 
 function openIconPicker(initialIcon, onSelect) {
@@ -3449,6 +3535,8 @@ function aeBindAll() {
   if (saveBtn) saveBtn.addEventListener('click', aeSave);
   if (genBtn) genBtn.addEventListener('click', aeGenerate);
   if (delBtn) delBtn.addEventListener('click', aeDeleteAgent);
+  const avatarRegenBtn = document.getElementById('ae-avatar-regen-btn');
+  if (avatarRegenBtn) avatarRegenBtn.addEventListener('click', aeRegenerateAvatar);
 
   if (colorNative) {
     colorNative.addEventListener('input', () => {

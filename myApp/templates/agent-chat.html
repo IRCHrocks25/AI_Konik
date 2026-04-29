@@ -100,10 +100,18 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
   padding:15px 20px;display:flex;align-items:center;gap:12px;
 }
 .chat-agent-emoji{
-  width:44px;height:44px;border-radius:12px;
+  width:54px;height:54px;border-radius:14px;
   background:linear-gradient(135deg,#8b5cf6,#6366f1);
-  display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:22px;color:#fff;flex-shrink:0;
+  overflow:hidden;
+  box-shadow:
+    0 10px 24px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.22),
+    0 0 0 1px rgba(255,255,255,.14);
 }
+.chat-avatar-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.chat-avatar-inline{width:20px;height:20px;border-radius:6px;object-fit:cover;vertical-align:middle;margin-right:4px}
+.agent-avatar-img{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
 .chat-agent-name{font-size:16px;font-weight:600;color:#fff}
 .chat-agent-sub{font-size:12px;color:rgba(255,255,255,.74)}
 .chat-top-actions{margin-left:auto;display:flex;gap:8px}
@@ -285,7 +293,8 @@ body{overflow:hidden;min-height:100vh;padding-top:64px}
 }
 .agent-pick-top{display:flex;align-items:center;gap:10px}
 .agent-pick-icon{
-  width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff
+  width:52px;height:52px;border-radius:14px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;color:#fff;overflow:hidden;flex-shrink:0;
+  box-shadow:0 8px 18px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.18);
 }
 .agent-pick-name{font-size:14px;color:#fff;font-weight:600;line-height:1.3}
 .agent-pick-meta{font-size:11px;color:rgba(255,255,255,.72)}
@@ -670,6 +679,7 @@ async function hydrateAgentConfigFromApi(){
     (data.items || []).forEach((agent)=>{
       AGENT_CONFIG[agent.name] = {
         icon: agent.icon_class || INDUSTRY_CONFIG[agent.industry]?.icon || "fa-robot",
+        avatarUrl: agent.avatar_url || "",
         industryLabel: INDUSTRY_CONFIG[agent.industry]?.industryLabel || titleCase(agent.industry),
         tag: agent.tag || INDUSTRY_CONFIG[agent.industry]?.tag || "Specialized Agent",
         hints: (agent.hints && agent.hints.length) ? agent.hints : (INDUSTRY_CONFIG[agent.industry]?.hints || []),
@@ -747,12 +757,16 @@ function normalizeAgentRecord(agent){
   const industry = (agent.industry || 'legal').toLowerCase();
   const cfg = getAgentConfig(agent.name || '', industry);
   const icon = /^fa-[a-z0-9-]+$/i.test(agent.icon_class || '') ? agent.icon_class : (cfg.icon || 'fa-robot');
+  const avatarUrl = (typeof agent.avatar_url === 'string' && /^https?:\/\//i.test(agent.avatar_url))
+    ? agent.avatar_url
+    : (cfg.avatarUrl || '');
   return {
     name: agent.name || 'AI Agent',
     industry,
     industryLabel: cfg.industryLabel || titleCase(industry),
     tag: agent.tag || cfg.tag || 'Specialized Agent',
     icon,
+    avatarUrl,
   };
 }
 async function loadAvailableAgents(){
@@ -780,10 +794,13 @@ function renderAgentPicker(){
     grid.innerHTML = '<div class="agent-picker-empty">No agents available right now. Please try again.</div>';
     return;
   }
-  grid.innerHTML = availableAgents.map((a)=>(
-    `<div class="agent-pick-card">
+  grid.innerHTML = availableAgents.map((a)=>{
+    const visual = a.avatarUrl
+      ? `<img src="${escapeHtml(a.avatarUrl)}" alt="${escapeHtml(a.name)} avatar" class="agent-avatar-img">`
+      : `<i class="fa-solid ${escapeHtml(a.icon)}"></i>`;
+    return `<div class="agent-pick-card">
       <div class="agent-pick-top">
-        <div class="agent-pick-icon"><i class="fa-solid ${escapeHtml(a.icon)}"></i></div>
+        <div class="agent-pick-icon">${visual}</div>
         <div>
           <div class="agent-pick-name">${escapeHtml(a.name)}</div>
           <div class="agent-pick-meta">${escapeHtml(a.industryLabel)} · ${escapeHtml(a.tag)}</div>
@@ -793,8 +810,8 @@ function renderAgentPicker(){
       <button type="button" class="agent-pick-btn" data-agent-name="${escapeHtml(a.name)}" data-agent-industry="${escapeHtml(a.industry)}">
         Talk to agent <i class="fa-solid fa-arrow-right"></i>
       </button>
-    </div>`
-  )).join('');
+    </div>`;
+  }).join('');
   grid.querySelectorAll('.agent-pick-btn').forEach((btn)=>{
     btn.addEventListener('click', ()=>{
       closeAgentPicker();
@@ -834,10 +851,18 @@ function updateAgentUI(agentName, industry){
   const infoTagEl = document.getElementById('info-tag');
   const displayIndustry = cfg.industryLabel || titleCase(currentIndustry);
   const safeIcon = /^fa-[a-z0-9-]+$/i.test(cfg.icon || '') ? cfg.icon : 'fa-robot';
-  if(agentEmojiEl) agentEmojiEl.innerHTML = `<i class="fa-solid ${safeIcon}"></i>`;
+  const safeAvatar = (typeof cfg.avatarUrl === 'string' && /^https?:\/\//i.test(cfg.avatarUrl)) ? cfg.avatarUrl : '';
+  const headerVisual = safeAvatar
+    ? `<img src="${escapeHtml(safeAvatar)}" alt="${escapeHtml(currentAgentName)} avatar" class="chat-avatar-img">`
+    : `<i class="fa-solid ${safeIcon}"></i>`;
+  if(agentEmojiEl) agentEmojiEl.innerHTML = headerVisual;
   if(agentNameEl) agentNameEl.textContent = currentAgentName;
   if(agentSubEl) agentSubEl.textContent = `${displayIndustry} · ${cfg.tag || "Specialized Agent"}`;
-  if(infoTitleEl) infoTitleEl.innerHTML = `<i class="fa-solid ${safeIcon}"></i> ${currentAgentName}`;
+  if(infoTitleEl){
+    infoTitleEl.innerHTML = safeAvatar
+      ? `<img src="${escapeHtml(safeAvatar)}" alt="" class="chat-avatar-inline"> ${escapeHtml(currentAgentName)}`
+      : `<i class="fa-solid ${safeIcon}"></i> ${escapeHtml(currentAgentName)}`;
+  }
   if(infoIndustryEl) infoIndustryEl.textContent = displayIndustry;
   if(infoTagEl) infoTagEl.textContent = cfg.tag || "Specialized";
 

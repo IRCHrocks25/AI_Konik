@@ -176,6 +176,7 @@ class Agent(models.Model):
     description = models.TextField()
     icon_class = models.CharField(max_length=80, default="fa-robot")
     accent_bg = models.CharField(max_length=20, default="#EEF2FF")
+    avatar_url = models.URLField(max_length=500, blank=True, default="")
     tag = models.CharField(max_length=120, blank=True)
     usage_count = models.PositiveIntegerField(default=0)
     is_featured = models.BooleanField(default=False)

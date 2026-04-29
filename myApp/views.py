@@ -822,6 +822,7 @@ def _serialize_agent(agent, include_prompts=False):
         "description": agent.description,
         "icon_class": agent.icon_class,
         "accent_bg": agent.accent_bg,
+        "avatar_url": agent.avatar_url or "",
         "tag": agent.tag,
         "usage_count": agent.usage_count,
         "is_featured": agent.is_featured,
@@ -945,6 +946,12 @@ def api_admin_agents(request):
                 "use_cases_count": len(use_cases),
             },
         )
+        # Generate avatar best-effort, after the row is committed. A failure
+        # here leaves avatar_url empty and the UI falls back to icon_class.
+        try:
+            _generate_and_store_agent_avatar(agent)
+        except Exception:  # noqa: BLE001
+            logger.exception("Avatar generation failed for new agent %s", agent.id)
         return JsonResponse(_serialize_agent(agent, include_prompts=True), status=201)
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
@@ -1088,6 +1095,34 @@ def api_admin_agent_detail(request, agent_id):
         return JsonResponse(_serialize_agent(agent, include_prompts=True))
 
     return JsonResponse({"error": "Method not allowed"}, status=405)
+
+
+@csrf_exempt
+@login_required_api
+def api_admin_agent_regenerate_avatar(request, agent_id):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    if not _is_admin_user(request.current_user):
+        return JsonResponse({"error": "Admin access required"}, status=403)
+    agent = Agent.objects.filter(id=agent_id).first()
+    if not agent:
+        return JsonResponse({"error": "Agent not found"}, status=404)
+
+    new_url = _generate_and_store_agent_avatar(agent)
+    if not new_url:
+        return JsonResponse(
+            {"error": "Avatar generation failed. Check OpenAI/Cloudinary configuration."},
+            status=502,
+        )
+
+    record_admin_action(
+        admin=request.current_user,
+        action_type="agent.regenerate_avatar",
+        target_type="agent",
+        target_id=agent.id,
+        metadata={"name": agent.name},
+    )
+    return JsonResponse({"avatar_url": new_url})
 
 
 # Fixed prompt template for agent AI generation. Single user message — no
@@ -1376,6 +1411,62 @@ def _upload_to_cloudinary(file_name, file_bytes):
         overwrite=True,
     )
     return uploaded.get("secure_url")
+
+
+def _upload_avatar_to_cloudinary(image_bytes, slug):
+    """Upload PNG bytes to Cloudinary as an image (not raw) under
+    aikonik/agent_avatars/. Returns the secure URL, or None when Cloudinary
+    is not configured or the upload fails."""
+    if not (
+        cloudinary
+        and settings.CLOUDINARY_CLOUD_NAME
+        and settings.CLOUDINARY_API_KEY
+        and settings.CLOUDINARY_API_SECRET
+    ):
+        return None
+    try:
+        cloudinary.config(
+            cloud_name=settings.CLOUDINARY_CLOUD_NAME,
+            api_key=settings.CLOUDINARY_API_KEY,
+            api_secret=settings.CLOUDINARY_API_SECRET,
+            secure=True,
+        )
+        uploaded = cloudinary.uploader.upload(
+            io.BytesIO(image_bytes),
+            resource_type="image",
+            folder="aikonik/agent_avatars",
+            public_id=f"{(slug or 'agent')[:60]}-{uuid.uuid4().hex[:8]}",
+            use_filename=False,
+            overwrite=False,
+            format="png",
+        )
+        return uploaded.get("secure_url")
+    except Exception as exc:  # noqa: BLE001
+        logger.exception("_upload_avatar_to_cloudinary failed: %s", exc)
+        return None
+
+
+def _generate_and_store_agent_avatar(agent):
+    """End-to-end: generate avatar bytes via OpenAI, upload to Cloudinary,
+    persist the resulting URL on the Agent. Best-effort — leaves
+    `avatar_url` unchanged on any failure so the icon_class fallback kicks
+    in. Returns the new URL or None."""
+    from .openai_service import generate_agent_avatar_bytes
+
+    image_bytes = generate_agent_avatar_bytes(
+        name=agent.name,
+        industry=agent.industry,
+        description=agent.description,
+        tag=agent.tag,
+    )
+    if not image_bytes:
+        return None
+    url = _upload_avatar_to_cloudinary(image_bytes, agent.slug)
+    if not url:
+        return None
+    agent.avatar_url = url
+    agent.save(update_fields=["avatar_url", "updated_at"])
+    return url
 
 
 @csrf_exempt

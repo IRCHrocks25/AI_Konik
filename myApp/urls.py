@@ -115,6 +115,11 @@ urlpatterns = [
     path("api/admin/agents/generate", views.api_admin_agent_generate, name="api_admin_agent_generate"),
     path("api/admin/agents/<int:agent_id>", views.api_admin_agent_detail, name="api_admin_agent_detail"),
     path(
+        "api/admin/agents/<int:agent_id>/regenerate-avatar",
+        views.api_admin_agent_regenerate_avatar,
+        name="api_admin_agent_regenerate_avatar",
+    ),
+    path(
         "api/admin/agents/<int:agent_id>/prompts",
         views.api_admin_agent_prompts,
         name="api_admin_agent_prompts",
