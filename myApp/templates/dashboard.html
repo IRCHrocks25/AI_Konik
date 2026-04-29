@@ -167,6 +167,11 @@
 <nav>
   <div class="nav-inner">
     <a href="{% url 'index' %}" class="logo"><div class="logo-dot"></div>AI KONIK</a>
+    <button class="nav-hamburger" id="nav-hamburger-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
     <div class="nav-links">
       <a href="{% url 'agents' %}">Agents</a>
       <a href="{% url 'prompts' %}">Prompts</a>
@@ -634,6 +639,26 @@ if(pmToggle && profileMenu){
   });
 }
 initDashboard();
+</script>
+<script>
+/* Mobile nav hamburger — shared across authenticated templates */
+(function(){
+  var toggle = document.getElementById('nav-hamburger-toggle');
+  var links = document.querySelector('.nav-links');
+  if (!toggle || !links) return;
+  toggle.addEventListener('click', function(){
+    var isOpen = links.classList.toggle('is-open');
+    toggle.classList.toggle('is-open', isOpen);
+    toggle.setAttribute('aria-expanded', String(isOpen));
+  });
+  links.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click', function(){
+      links.classList.remove('is-open');
+      toggle.classList.remove('is-open');
+      toggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+})();
 </script>
 </body>
 </html>
