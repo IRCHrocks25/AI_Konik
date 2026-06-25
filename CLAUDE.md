@@ -27,8 +27,8 @@ Notes:
 
 ## Build Phase Status
 
-Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, B+F
-Remaining phases: none — admin dashboard build complete; launch sprint (email + onboarding) shipped
+Completed phases: 1a, 1b, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, B+F, G
+Remaining phases: none — admin dashboard build complete; launch sprint (email + onboarding) shipped; agent avatars shipped
 
 Phase summary:
 - **1a/1b** — Auth (CustomUser, session), core pages, shared.css design system
@@ -56,6 +56,17 @@ Phase summary:
 - Cron-ready management command: `send_lifecycle_emails` (idempotent, supports `--dry-run`)
 - All 12 authenticated templates carry the `email_verified` + `onboarding_completed` gate snippet
 - `OPENAI_API_KEY` loaded via `python-dotenv` in `settings.py`
+
+### Phase G (Agent Avatars — Photoreal Portraits)
+
+- New `Agent.avatar_url` field (URLField, blank-default) — migration `0007`
+- `gpt-image-1` portrait generation with industry-conditional backdrop and deterministic 50/50 gender split (see `AI Agent Avatar System` section below for the full design)
+- Cloudinary upload to `aikonik/agent_avatars/` (separate folder + separate upload helper from chat-upload `_upload_to_cloudinary`)
+- Generation runs **after** `Agent.objects.create` and **outside** the `transaction.atomic()` block — slow image API never holds the DB lock; failures leave `avatar_url=""` and the UI falls back to `icon_class`
+- New endpoint: `POST /api/admin/agents/<id>/regenerate-avatar` (admin-gated, audit-logged as `agent.regenerate_avatar`)
+- Admin dashboard agent edit form has an Avatar card with a Regenerate button (visible only in edit mode; create mode shows a "will be generated on save" hint)
+- Hero-cover layout in `agents.html` (full-bleed 1:1 cover with overlaid name + featured badge); avatar surfaced in chat header, info panel, agent picker, admin row, admin live preview
+- Backfill management command: `python manage.py backfill_agent_avatars` (`--dry-run`, `--force`, `--limit N`); idempotent — default mode only fills missing avatars
 
 ## Environment Variables
 
@@ -218,6 +229,58 @@ When editing chat behavior or adding profile fields:
 - New profile field requires: model field + migration + form section in `profile.html` + mapping in `personalization.py` + entry in `build_user_personalization_prompt`
 - Token cost ~440 tokens per request for fully-filled profile + agent — acceptable for now, caching strategy on `ChatSession` is the future optimization if needed
 
+## AI Agent Avatar System
+
+Photoreal upper-body portraits for every agent, generated on demand via OpenAI Images and stored on Cloudinary. The whole pipeline is **best-effort**: every failure path leaves `avatar_url=""` so the existing `icon_class` keeps rendering.
+
+### Pipeline (where it lives)
+
+1. **Prompt assembly** — `myApp/openai_service.py::_build_avatar_prompt(name, industry, description, tag)`
+   composes: subject line → industry backdrop → locked style suffix.
+2. **Image generation** — `generate_agent_avatar_bytes(...)` calls `client.images.generate(model="gpt-image-1", size="1024x1024", n=1)` and decodes `b64_json`. Returns `None` on any failure (no API key, network, content policy). **Never raises.**
+3. **Cloudinary upload** — `myApp/views.py::_upload_avatar_to_cloudinary(image_bytes, slug)` uploads as `resource_type="image"` (NOT `"raw"` — that's the chat-upload helper) under `aikonik/agent_avatars/<slug>-<uuid8>.png`.
+4. **Persist** — `_generate_and_store_agent_avatar(agent)` orchestrates 1→2→3, sets `agent.avatar_url`, saves with `update_fields=["avatar_url", "updated_at"]`.
+
+### The prompt is built from three pieces
+
+- **Subject line** (per-agent): name, role (tag + industry), description snippet (capped 280 chars), gender hint, "this is an AI assistant rendered as a real human, not a robot."
+- **Industry backdrop** — `INDUSTRY_BACKDROP_MAP` in `openai_service.py` keyed on a normalized industry slug (lowercase + alphanumerics only, so `"real estate"`, `"REAL-ESTATE"`, `"realestate"` all collapse to `realestate`). Misses fall through to `DEFAULT_INDUSTRY_BACKDROP`. Covers 12 industries (legal, healthcare, finance, marketing, technology, realestate, accounting, logistics, manufacturing, education, hospitality, retail). Each entry describes a **recognizable but softly blurred** environment — the f/2.2 aperture is intentional so the backdrop reads.
+- **Locked style suffix** — `AGENT_AVATAR_STYLE_SUFFIX`. Photoreal upper-body hero composition, 85mm @ f/2.2, warm key + cool ambient, "no extra people in frame." Editing this changes every NEWLY generated avatar; existing stored URLs are not retroactively re-rendered (regeneration required).
+
+### Bias mitigation: deterministic 50/50 gender split
+
+`_resolve_gender_presentation(name)` hashes `agent.name` with SHA-256 and uses the low byte's parity for the woman/man split. This is intentional, not a workaround:
+- **Why hash**: `gpt-image-1` skews heavily male on prompts containing "executive," "confident," "authority," "premium business team." A soft "vary gender presentation" instruction was empirically not enough — testing showed every avatar generated as male.
+- **Why deterministic**: the Regenerate button in admin would otherwise randomly flip a "Maria" agent into a man between rolls. Hashing on the stable `name` means re-rolls produce the same gender for the same agent.
+- **Why `name` and not `slug`**: both change together (slug derives from name), so they're equivalent for stability. `name` is already in scope; using it avoids extra plumbing.
+- **Distribution**: ~50/50 by construction. The current 9-agent catalog landed at 6/3 — that's normal small-sample variance, not a bug.
+
+### How regeneration works
+
+- API: `POST /api/admin/agents/<agent_id>/regenerate-avatar` (admin-gated, audit-logged as `agent.regenerate_avatar`).
+- UI: button in the Avatar card inside the admin agent edit form. Disabled in create mode (the agent has no ID yet — generation happens automatically after the create POST returns).
+- The endpoint always replaces `avatar_url` in place. Cloudinary `overwrite=False` + a UUID suffix means each generation is a fresh asset (good for cache invalidation across CDNs).
+- Regeneration costs ~$0.04 per call (`gpt-image-1` standard 1024×1024). One-time per agent under normal use.
+
+### Backfill command
+
+`python manage.py backfill_agent_avatars` — generates avatars for agents that don't have one. Defaults are idempotent (re-running is a no-op once the catalog is filled).
+
+- `--dry-run` — list eligible agents without touching OpenAI/Cloudinary
+- `--force` — regenerate every agent, including those with an existing `avatar_url` (use after editing `AGENT_AVATAR_STYLE_SUFFIX` or `INDUSTRY_BACKDROP_MAP` to apply changes to existing rows)
+- `--limit N` — process at most N agents (use for trial runs before committing to a full re-roll)
+
+### Where avatars surface in the UI (with `icon_class` fallback everywhere)
+
+- `agents.html` — full-bleed 1:1 hero cover at top of each agent card with name + featured badge overlaid; the Featured-this-week banner uses the avatar in a 38%-width portrait zone with a gradient blend into the content panel.
+- `agent-chat.html` — chat header, info panel inline, agent picker cards.
+- `admin-dashboard.html` — agent list row icon cell, edit form Avatar card with regenerate button, Live Preview card.
+
+When editing avatar logic:
+- The two Cloudinary helpers (`_upload_to_cloudinary` for chat uploads, `_upload_avatar_to_cloudinary` for avatars) are intentionally separate — chat uploads use `resource_type="raw"` for arbitrary file types; avatars use `resource_type="image"` so Cloudinary applies image-specific optimizations.
+- Generation must stay **outside** the `transaction.atomic()` block in agent create — a 5–15s API call holding a DB lock would be a real problem under concurrent admin edits.
+- All UI surfaces follow the same fallback contract: if `agent.avatar_url` is truthy and looks like an http(s) URL, render `<img>`; otherwise render the FontAwesome `icon_class`. Don't add a third visual state — keep the binary.
+
 ## API Conventions
 
 Most API views follow this pattern:
@@ -250,4 +313,9 @@ Before finishing a change:
   - verify admin access still keys off Django superuser
 - If touching uploads/chat:
   - preserve behavior where upload extraction is separate from message persistence
+  - keep `_upload_to_cloudinary` (raw) and `_upload_avatar_to_cloudinary` (image) as separate helpers — they target different folders and use different `resource_type`
+- If touching agent avatars:
+  - keep the icon_class fallback intact in every render site (cards, chat header, agent picker, admin row, admin live preview)
+  - keep `_generate_and_store_agent_avatar` outside any `transaction.atomic()` block — image-API latency must not hold a DB lock
+  - if you change `AGENT_AVATAR_STYLE_SUFFIX` or `INDUSTRY_BACKDROP_MAP`, run `python manage.py backfill_agent_avatars --force` to apply to existing rows (or accept that they stay on the old style until manually regenerated)
 - Run relevant tests and smoke-check key pages (`/agents/`, `/prompts/`, `/admin-dashboard/`, `/prompt-import/`).

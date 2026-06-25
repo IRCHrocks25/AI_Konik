@@ -18,10 +18,12 @@ from django.db.models import Count, Q, Sum
 from django.db.models.functions import TruncDate
 from django.http import Http404, HttpResponse, JsonResponse
 from django.shortcuts import redirect, render
+from django.template.loader import render_to_string
 from django.utils import timezone as dj_tz
 from django.utils.dateparse import parse_datetime as django_parse_datetime
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from .admin_audit import log_error, record_admin_action
 from .auth_utils import (
@@ -35,7 +37,22 @@ from .auth_utils import (
     login_user,
     logout_user,
 )
-from .models import AdminAction, Agent, AgentPrompt, Banner, ChatMessage, ChatSession, CustomUser, ErrorLog, Event, Industry, Prompt, SavedPrompt, Tool
+from .models import (
+    AdminAction,
+    Agent,
+    AgentPrompt,
+    Banner,
+    ChatMessage,
+    ChatSession,
+    CustomUser,
+    EmbeddableAssistant,
+    ErrorLog,
+    Event,
+    Industry,
+    Prompt,
+    SavedPrompt,
+    Tool,
+)
 from .openai_service import (
     MAX_REQUEST_TOKENS,
     estimate_messages_tokens,
@@ -322,6 +339,189 @@ def prompt_import_dashboard(request):
     if not _is_admin_user(user):
         return redirect("prompts")
     return render(request, "prompt-import.html")
+
+
+def _parse_embed_suggestions(raw_value):
+    if isinstance(raw_value, list):
+        return [str(item).strip() for item in raw_value if str(item).strip()]
+    raw_text = str(raw_value or "").strip()
+    if not raw_text:
+        return []
+    lines = [line.strip() for line in raw_text.replace(",", "\n").splitlines()]
+    return [line for line in lines if line]
+
+
+def _resolve_embed_runtime_config(assistant, request):
+    cfg = {
+        "slug": assistant.slug,
+        "name": assistant.name,
+        "description": assistant.description or "",
+        "brand": assistant.brand or assistant.name,
+        "brand_full": assistant.brand_full or assistant.name,
+        "greeting": assistant.greeting or "Hi! How can I help today?",
+        "suggestions": assistant.suggestions or [],
+        "powered_by": assistant.powered_by or "AI KONIK",
+        "logo_url": assistant.logo_url or "",
+        "orb_logo_url": assistant.orb_logo_url or "",
+        "launcher_label": assistant.launcher_label or "Need help? Ask us!",
+        "voice": assistant.voice or "",
+    }
+    for key in ("brand", "greeting", "logo_url", "orb_logo_url", "launcher_label"):
+        raw = request.GET.get(key)
+        if raw is not None and str(raw).strip():
+            cfg[key] = str(raw).strip()
+    return cfg
+
+
+def _set_frame_ancestors_header(response):
+    frame_ancestors = str(getattr(settings, "GHL_FRAME_ANCESTORS", "") or "").strip()
+    if frame_ancestors:
+        response["Content-Security-Policy"] = f"frame-ancestors {frame_ancestors};"
+    return response
+
+
+@admin_required
+def assistant_list(request):
+    assistants = EmbeddableAssistant.objects.all().order_by("name")
+    return render(
+        request,
+        "dashboard/assistant_list.html",
+        {"assistants": assistants, "public_origin": settings.EMBED_ASSISTANT_PUBLIC_ORIGIN},
+    )
+
+
+def _assistant_form_context(assistant, errors=None):
+    return {
+        "assistant": assistant,
+        "errors": errors or {},
+        "is_edit": bool(getattr(assistant, "pk", None)),
+        "public_origin": settings.EMBED_ASSISTANT_PUBLIC_ORIGIN,
+        "suggestions_text": "\n".join((assistant.suggestions or [])),
+    }
+
+
+@admin_required
+def assistant_form(request, pk=None):
+    assistant = EmbeddableAssistant.objects.filter(pk=pk).first() if pk else EmbeddableAssistant()
+    if pk and not assistant:
+        raise Http404("Assistant not found")
+
+    if request.method != "POST":
+        return render(request, "dashboard/assistant_form.html", _assistant_form_context(assistant))
+
+    errors = {}
+    assistant.name = str(request.POST.get("name", "")).strip()
+    assistant.slug = slugify(str(request.POST.get("slug", "")).strip() or assistant.name)
+    assistant.description = str(request.POST.get("description", "")).strip()
+    assistant.brand = str(request.POST.get("brand", "")).strip()
+    assistant.brand_full = str(request.POST.get("brand_full", "")).strip()
+    assistant.greeting = str(request.POST.get("greeting", "")).strip()
+    assistant.suggestions = _parse_embed_suggestions(request.POST.get("suggestions", ""))
+    assistant.powered_by = str(request.POST.get("powered_by", "")).strip()
+    assistant.logo_url = str(request.POST.get("logo_url", "")).strip()
+    assistant.orb_logo_url = str(request.POST.get("orb_logo_url", "")).strip()
+    assistant.launcher_label = str(request.POST.get("launcher_label", "")).strip()
+    assistant.voice = str(request.POST.get("voice", "")).strip()
+    assistant.extra_instructions = str(request.POST.get("extra_instructions", "")).strip()
+    assistant.is_active = str(request.POST.get("is_active", "")).strip().lower() in ("1", "true", "on", "yes")
+
+    if not assistant.name:
+        errors["name"] = "Name is required."
+    if not assistant.slug:
+        errors["slug"] = "Slug is required."
+    if EmbeddableAssistant.objects.exclude(pk=assistant.pk).filter(slug=assistant.slug).exists():
+        errors["slug"] = "This slug is already in use."
+
+    url_validator = URLValidator()
+    for field_name in ("logo_url", "orb_logo_url"):
+        value = getattr(assistant, field_name)
+        if not value:
+            continue
+        try:
+            url_validator(value)
+        except ValidationError:
+            errors[field_name] = "Enter a valid URL."
+
+    if errors:
+        return render(request, "dashboard/assistant_form.html", _assistant_form_context(assistant, errors))
+
+    assistant.save()
+    return redirect("assistant_list")
+
+
+@admin_required
+def assistant_delete(request, pk):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    assistant = EmbeddableAssistant.objects.filter(pk=pk).first()
+    if not assistant:
+        raise Http404("Assistant not found")
+    assistant.delete()
+    return redirect("assistant_list")
+
+
+def embed_assistant_loader(request):
+    public_origin = (getattr(settings, "EMBED_ASSISTANT_PUBLIC_ORIGIN", "") or "").strip().rstrip("/")
+    if not public_origin:
+        public_origin = request.build_absolute_uri("/").rstrip("/")
+    js = render_to_string("embed/sop-assistant.js", {"public_origin": public_origin})
+    return HttpResponse(js, content_type="application/javascript; charset=utf-8")
+
+
+@xframe_options_exempt
+def embed_assistant_frame(request, slug):
+    assistant = EmbeddableAssistant.objects.filter(slug=slug, is_active=True).first()
+    if not assistant:
+        raise Http404("Assistant not found")
+    cfg = _resolve_embed_runtime_config(assistant, request)
+    response = render(request, "embed/assistant_widget.html", {"assistant": assistant, "cfg": cfg})
+    return _set_frame_ancestors_header(response)
+
+
+@csrf_exempt
+def embed_assistant_chat(request, slug):
+    if request.method != "POST":
+        return JsonResponse({"error": "Method not allowed"}, status=405)
+    assistant = EmbeddableAssistant.objects.filter(slug=slug, is_active=True).first()
+    if not assistant:
+        raise Http404("Assistant not found")
+    payload = get_request_json(request)
+    if payload is None:
+        return JsonResponse({"error": "Invalid JSON payload"}, status=400)
+    user_message = str(payload.get("message", "")).strip()
+    if not user_message:
+        return JsonResponse({"error": "message is required"}, status=400)
+
+    system_prompt = (
+        f"You are {assistant.name}. "
+        f"Brand: {assistant.brand or assistant.name}. "
+        f"Description: {assistant.description or 'Helpful embeddable assistant.'} "
+        f"Extra instructions: {assistant.extra_instructions or 'Be concise and helpful.'}"
+    )
+    history = payload.get("history", [])
+    if not isinstance(history, list):
+        history = []
+    cleaned_history = []
+    for msg in history[-10:]:
+        if not isinstance(msg, dict):
+            continue
+        role = str(msg.get("role", "")).strip().lower()
+        content = str(msg.get("content", "")).strip()
+        if role in {"user", "assistant"} and content:
+            cleaned_history.append({"role": role, "content": content})
+
+    try:
+        messages = [{"role": "system", "content": system_prompt}]
+        messages.extend(cleaned_history)
+        messages.append({"role": "user", "content": user_message})
+        reply_text, _ = get_openai_reply(messages)
+    except Exception:
+        reply_text = (
+            f"{assistant.brand or assistant.name}: Thanks for your message. "
+            f"You said: \"{user_message[:220]}\""
+        )
+
+    return JsonResponse({"reply": reply_text, "assistant": assistant.slug})
 
 
 @csrf_exempt

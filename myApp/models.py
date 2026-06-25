@@ -211,6 +211,34 @@ class AgentPrompt(models.Model):
         return f"{self.agent.name} [{self.prompt_type}]"
 
 
+class EmbeddableAssistant(models.Model):
+    name = models.CharField(max_length=140)
+    slug = models.SlugField(max_length=160, unique=True)
+    description = models.TextField(blank=True)
+
+    brand = models.CharField(max_length=80, blank=True, default="")
+    brand_full = models.CharField(max_length=140, blank=True, default="")
+    greeting = models.CharField(max_length=240, blank=True, default="")
+    suggestions = models.JSONField(default=list, blank=True)
+    powered_by = models.CharField(max_length=120, blank=True, default="AI KONIK")
+
+    logo_url = models.URLField(max_length=500, blank=True, default="")
+    orb_logo_url = models.URLField(max_length=500, blank=True, default="")
+    launcher_label = models.CharField(max_length=120, blank=True, default="Need help? Ask us!")
+    voice = models.CharField(max_length=80, blank=True, default="")
+    extra_instructions = models.TextField(blank=True, default="")
+
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 # ── Admin dashboard models ──────────────────────────────────────────
 
 

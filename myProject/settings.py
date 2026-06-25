@@ -33,6 +33,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "")
 CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "")
 CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "")
+EMBED_ASSISTANT_PUBLIC_ORIGIN = os.getenv("EMBED_ASSISTANT_PUBLIC_ORIGIN", "https://sites.katek.app").rstrip("/")
+GHL_FRAME_ANCESTORS = os.getenv("GHL_FRAME_ANCESTORS", "").strip()
 
 if not DEBUG and not OPENAI_API_KEY:
     raise RuntimeError("OPENAI_API_KEY must be set when DEBUG is false")

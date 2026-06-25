@@ -41,6 +41,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(250,250,250,
 .btn-teal{background:var(--teal);color:#fff}
 .btn-teal:hover{background:var(--teal2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(13,124,102,.3)}
 .btn-lg{padding:14px 28px;font-size:15px;border-radius:10px}
+.btn:focus-visible{
+  outline:3px solid rgba(13,124,102,.45);
+  outline-offset:2px;
+}
 
 /* HERO */
 .hero{min-height:100vh;display:flex;align-items:center;padding:100px 40px 80px;position:relative;overflow:hidden}
@@ -329,7 +333,7 @@ footer{background:var(--navy);padding:60px 40px 32px;color:rgba(255,255,255,.7)}
 <div class="cta-band">
   <h2>Ready to make AI work<br>for your business?</h2>
   <p>Start free. No credit card required. Get your first AI agent running in minutes.</p>
-  <a href="{% url 'register' %}" class="btn btn-white btn-lg">Get started — it's free</a>
+  <a href="{% url 'register' %}" class="btn btn-white btn-lg" aria-label="Get started free">Get started — it's free</a>
 </div>
 
 <footer>
@@ -376,5 +380,11 @@ const io = new IntersectionObserver(entries=>{
 },{threshold:.1});
 document.querySelectorAll('.fade-in').forEach(el=>io.observe(el));
 </script>
+
+<script
+  src="https://sopmaster.katek.app/embed/sop-assistant.js"
+  data-brand="Katalyst"
+  data-brand-full="Katalyst"
+></script>
 </body>
 </html>

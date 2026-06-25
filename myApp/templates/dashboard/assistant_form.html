@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if is_edit %}Edit{% else %}New{% endif %} Assistant</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fb; color: #111827; }
+    .wrap { max-width: 1000px; margin: 32px auto; padding: 0 16px; }
+    .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .top h1 { margin: 0; font-size: 28px; }
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .full { grid-column: 1 / -1; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    label { display: block; font-size: 12px; font-weight: bold; color: #374151; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    input, textarea { width: 100%; border: 1px solid #d1d5db; border-radius: 8px; padding: 10px; font: inherit; box-sizing: border-box; }
+    textarea { min-height: 88px; resize: vertical; }
+    .hint { color: #6b7280; font-size: 12px; margin-top: 6px; }
+    .error { color: #b91c1c; font-size: 12px; margin-top: 4px; }
+    .actions { display: flex; justify-content: space-between; align-items: center; }
+    .btn { display: inline-block; border: 1px solid #0d7c66; background: #0d7c66; color: #fff; text-decoration: none; padding: 10px 14px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .btn.secondary { background: #fff; color: #0d7c66; }
+    .check { display: inline-flex; align-items: center; gap: 8px; margin-top: 26px; }
+    .notice { margin-bottom: 16px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+    pre { background: #111827; color: #e5e7eb; border-radius: 10px; padding: 12px; overflow-x: auto; font-size: 12px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>{% if is_edit %}Edit{% else %}New{% endif %} Assistant</h1>
+      <a class="btn secondary" href="{% url 'assistant_list' %}">Back to List</a>
+    </div>
+    <div class="notice">
+      This assistant is designed to be embedded on <strong>other websites</strong> using script/iframe snippets.
+      Public embed origin: <code>{{ public_origin }}</code>.
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      <div class="card grid">
+        <div>
+          <label for="name">Name</label>
+          <input id="name" name="name" required value="{{ assistant.name|default:'' }}">
+          {% if errors.name %}<div class="error">{{ errors.name }}</div>{% endif %}
+        </div>
+        <div>
+          <label for="slug">Slug</label>
+          <input id="slug" name="slug" required value="{{ assistant.slug|default:'' }}">
+          {% if errors.slug %}<div class="error">{{ errors.slug }}</div>{% endif %}
+        </div>
+        <div class="full">
+          <label for="description">Description</label>
+          <textarea id="description" name="description">{{ assistant.description|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <div class="card grid">
+        <div>
+          <label for="brand">Brand (short)</label>
+          <input id="brand" name="brand" value="{{ assistant.brand|default:'' }}">
+        </div>
+        <div>
+          <label for="brand_full">Brand (full)</label>
+          <input id="brand_full" name="brand_full" value="{{ assistant.brand_full|default:'' }}">
+        </div>
+        <div class="full">
+          <label for="greeting">Greeting</label>
+          <input id="greeting" name="greeting" value="{{ assistant.greeting|default:'' }}">
+        </div>
+        <div class="full">
+          <label for="suggestions">Suggestions (one per line)</label>
+          <textarea id="suggestions" name="suggestions">{{ suggestions_text }}</textarea>
+        </div>
+        <div>
+          <label for="powered_by">Powered by</label>
+          <input id="powered_by" name="powered_by" value="{{ assistant.powered_by|default:'AI KONIK' }}">
+        </div>
+        <div>
+          <label for="voice">Voice</label>
+          <input id="voice" name="voice" value="{{ assistant.voice|default:'' }}">
+        </div>
+        <div>
+          <label for="logo_url">Logo URL</label>
+          <input id="logo_url" name="logo_url" value="{{ assistant.logo_url|default:'' }}">
+          {% if errors.logo_url %}<div class="error">{{ errors.logo_url }}</div>{% endif %}
+        </div>
+        <div>
+          <label for="orb_logo_url">Orb Logo URL</label>
+          <input id="orb_logo_url" name="orb_logo_url" value="{{ assistant.orb_logo_url|default:'' }}">
+          {% if errors.orb_logo_url %}<div class="error">{{ errors.orb_logo_url }}</div>{% endif %}
+        </div>
+        <div class="full">
+          <label for="launcher_label">Launcher Label</label>
+          <input id="launcher_label" name="launcher_label" value="{{ assistant.launcher_label|default:'Need help? Ask us!' }}">
+        </div>
+        <div class="full">
+          <label for="extra_instructions">Extra Instructions</label>
+          <textarea id="extra_instructions" name="extra_instructions">{{ assistant.extra_instructions|default:'' }}</textarea>
+        </div>
+        <div class="full">
+          <label class="check">
+            <input type="checkbox" name="is_active" {% if assistant.is_active or not is_edit %}checked{% endif %}>
+            <span>Active</span>
+          </label>
+        </div>
+      </div>
+
+      {% if assistant.slug %}
+      <div class="card">
+        <h3>Embed Snippet</h3>
+        <div class="hint">Recommended script-loader snippet (safe escaping included):</div>
+        <pre id="scriptSnippet"></pre>
+        <div class="hint">Direct iframe option:</div>
+        <pre id="iframeSnippet"></pre>
+      </div>
+      {% endif %}
+
+      <div class="actions">
+        <a class="btn secondary" href="{% url 'assistant_list' %}">Cancel</a>
+        <button class="btn" type="submit">Save Assistant</button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    (function () {
+      function escAttr(v) {
+        return String(v || "")
+          .replace(/&/g, "&amp;")
+          .replace(/"/g, "&quot;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      var slug = "{{ assistant.slug|default:''|escapejs }}";
+      if (!slug) return;
+
+      var origin = "{{ public_origin|escapejs }}";
+      var scriptSrc = origin + "/embed/sop-assistant.js";
+      var iframeSrc = origin + "/embed/assistant/" + encodeURIComponent(slug) + "/";
+
+      var attrBrand = escAttr(document.getElementById("brand") ? document.getElementById("brand").value : "");
+      var attrGreeting = escAttr(document.getElementById("greeting") ? document.getElementById("greeting").value : "");
+      var attrLogo = escAttr(document.getElementById("logo_url") ? document.getElementById("logo_url").value : "");
+      var attrOrb = escAttr(document.getElementById("orb_logo_url") ? document.getElementById("orb_logo_url").value : "");
+      var attrLauncher = escAttr(document.getElementById("launcher_label") ? document.getElementById("launcher_label").value : "");
+
+      var snippet = ""
+        + "<script\n"
+        + "  src=\"" + escAttr(scriptSrc) + "\"\n"
+        + "  data-assistant=\"" + escAttr(slug) + "\"\n"
+        + "  data-brand=\"" + attrBrand + "\"\n"
+        + "  data-greeting=\"" + attrGreeting + "\"\n"
+        + "  data-logo-url=\"" + attrLogo + "\"\n"
+        + "  data-orb-logo-url=\"" + attrOrb + "\"\n"
+        + "  data-launcher-label=\"" + attrLauncher + "\"\n"
+        + "><\\/script>";
+
+      var iframe = ""
+        + "<iframe\n"
+        + "  src=\"" + escAttr(iframeSrc) + "\"\n"
+        + "  width=\"420\"\n"
+        + "  height=\"760\"\n"
+        + "  style=\"border:0;border-radius:16px;overflow:hidden;\"\n"
+        + "  allow=\"microphone; camera\"\n"
+        + "></iframe>";
+
+      var scriptEl = document.getElementById("scriptSnippet");
+      var iframeEl = document.getElementById("iframeSnippet");
+      if (scriptEl) scriptEl.textContent = snippet;
+      if (iframeEl) iframeEl.textContent = iframe;
+    })();
+  </script>
+</body>
+</html>

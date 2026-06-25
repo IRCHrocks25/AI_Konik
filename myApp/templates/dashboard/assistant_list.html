@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Assistants - Dashboard</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f7f8fb; color: #111827; }
+    .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+    .top { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 20px; }
+    .top h1 { margin: 0; font-size: 28px; }
+    .muted { color: #6b7280; font-size: 14px; margin-top: 4px; }
+    .btn { display: inline-block; border: 1px solid #0d7c66; background: #0d7c66; color: #fff; text-decoration: none; padding: 10px 14px; border-radius: 8px; font-size: 14px; }
+    .btn.secondary { background: #fff; color: #0d7c66; }
+    .notice { margin-bottom: 14px; border: 1px solid #bfdbfe; background: #eff6ff; color: #1e3a8a; border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+    .card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 14px; border-bottom: 1px solid #f3f4f6; text-align: left; font-size: 14px; vertical-align: top; }
+    th { background: #f9fafb; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: #6b7280; }
+    .pill { display: inline-block; font-size: 12px; border-radius: 999px; padding: 3px 10px; }
+    .pill.on { background: #dcfce7; color: #166534; }
+    .pill.off { background: #fee2e2; color: #991b1b; }
+    .row-actions a, .row-actions button { margin-right: 8px; font-size: 13px; color: #0d7c66; background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline; }
+    .code-wrap { margin-top: 8px; }
+    .code-toggle { border: 1px solid #d1d5db; background: #fff; color: #374151; padding: 6px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+    .embed-codes { display: none; margin-top: 10px; }
+    .embed-codes.show { display: block; }
+    .code-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin: 10px 0 6px; }
+    pre { margin: 0; background: #111827; color: #e5e7eb; border-radius: 8px; padding: 10px; font-size: 12px; overflow-x: auto; }
+    .copy-btn { margin-top: 6px; border: 1px solid #0d7c66; background: #0d7c66; color: #fff; padding: 5px 9px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .empty { padding: 30px; text-align: center; color: #6b7280; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <h1>AI Assistants</h1>
+        <div class="muted">Manage embeddable chat/call assistants for client websites.</div>
+      </div>
+      <div>
+        <a class="btn secondary" href="{% url 'admin_dashboard' %}">Back to Admin Dashboard</a>
+        <a class="btn" href="{% url 'assistant_new' %}">New Assistant</a>
+      </div>
+    </div>
+    <div class="notice">
+      These snippets are for <strong>external/client websites</strong> (other domains), not for this dashboard page.
+      Your public embed host is: <code>{{ public_origin }}</code>.
+    </div>
+
+    <div class="card">
+      {% if assistants %}
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Status</th>
+            <th>Embed URL</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for assistant in assistants %}
+          <tr>
+            <td>
+              <strong>{{ assistant.name }}</strong>
+              {% if assistant.brand %}<div class="muted">{{ assistant.brand }}</div>{% endif %}
+            </td>
+            <td><code>{{ assistant.slug }}</code></td>
+            <td>
+              {% if assistant.is_active %}
+                <span class="pill on">Active</span>
+              {% else %}
+                <span class="pill off">Inactive</span>
+              {% endif %}
+            </td>
+            <td>
+              <code>{{ public_origin }}/embed/assistant/{{ assistant.slug }}/</code>
+              <div class="code-wrap">
+                <button type="button" class="code-toggle" data-target="embed-{{ assistant.pk }}">Show embed code</button>
+                <div id="embed-{{ assistant.pk }}" class="embed-codes">
+                  <div class="code-label">Script Loader</div>
+                  <pre id="script-{{ assistant.pk }}">&lt;script
+  src="{{ public_origin }}/embed/sop-assistant.js"
+  data-assistant="{{ assistant.slug }}"
+  data-brand="{{ assistant.brand }}"
+  data-greeting="{{ assistant.greeting }}"
+  data-logo-url="{{ assistant.logo_url }}"
+  data-orb-logo-url="{{ assistant.orb_logo_url }}"
+  data-launcher-label="{{ assistant.launcher_label }}"
+&gt;&lt;\/script&gt;</pre>
+                  <button type="button" class="copy-btn" data-copy="script-{{ assistant.pk }}">Copy script</button>
+
+                  <div class="code-label">Direct iframe</div>
+                  <pre id="iframe-{{ assistant.pk }}">&lt;iframe
+  src="{{ public_origin }}/embed/assistant/{{ assistant.slug }}/"
+  width="420"
+  height="760"
+  style="border:0;border-radius:16px;overflow:hidden;"
+  allow="microphone; camera"
+&gt;&lt;/iframe&gt;</pre>
+                  <button type="button" class="copy-btn" data-copy="iframe-{{ assistant.pk }}">Copy iframe</button>
+                </div>
+              </div>
+            </td>
+            <td class="row-actions">
+              <a href="{% url 'assistant_edit' assistant.pk %}">Edit</a>
+              <form method="post" action="{% url 'assistant_delete' assistant.pk %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" onclick="return confirm('Delete this assistant?')">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">
+        No assistants yet. Create one to enable `/embed/sop-assistant.js` and iframe embeds.
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <script>
+    (function () {
+      document.querySelectorAll(".code-toggle").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var target = document.getElementById(btn.getAttribute("data-target"));
+          if (!target) return;
+          var isOpen = target.classList.contains("show");
+          target.classList.toggle("show", !isOpen);
+          btn.textContent = isOpen ? "Show embed code" : "Hide embed code";
+        });
+      });
+
+      document.querySelectorAll(".copy-btn").forEach(function (btn) {
+        btn.addEventListener("click", async function () {
+          var id = btn.getAttribute("data-copy");
+          var codeEl = document.getElementById(id);
+          if (!codeEl) return;
+          try {
+            await navigator.clipboard.writeText(codeEl.textContent);
+            var old = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(function () { btn.textContent = old; }, 1200);
+          } catch (e) {}
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

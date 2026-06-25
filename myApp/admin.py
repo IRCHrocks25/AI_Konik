@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, Prompt, SavedPrompt
+from .models import Agent, AgentPrompt, ChatMessage, ChatSession, CustomUser, EmbeddableAssistant, Prompt, SavedPrompt
 
 
 @admin.register(CustomUser)
@@ -45,3 +45,10 @@ class AgentPromptAdmin(admin.ModelAdmin):
     list_display = ("id", "agent", "prompt_type", "sort_order", "created_at")
     list_filter = ("prompt_type",)
     search_fields = ("agent__name", "content")
+
+
+@admin.register(EmbeddableAssistant)
+class EmbeddableAssistantAdmin(admin.ModelAdmin):
+    list_display = ("id", "name", "slug", "brand", "is_active", "updated_at")
+    list_filter = ("is_active",)
+    search_fields = ("name", "slug", "brand", "brand_full")
